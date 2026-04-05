@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Consultar Clima</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111; /* Fondo negro */
+            margin: 0;
+            padding: 0;
+            color: #eee; /* Texto claro */
+        }
+
+        .container {
+            width: 90%;
+            max-width: 550px;
+            background: #1a1a1a; /* Caja gris oscura */
+            padding: 25px;
+            margin: 60px auto;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.55);
+            border: 1px solid #222;
+        }
+
+        h2 {
+            text-align: center;
+            color: #ffcc00; /* Amarillo gerente */
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+
+        /* Botón regresar estilo gerente */
+        .btn-dashboard {
+            display: inline-block;
+            background: #ffcc00;
+            color: black;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            border: 2px solid #b38f00;
+            margin-bottom: 20px;
+        }
+
+        .btn-dashboard:hover {
+            background: #e6b800;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #2b2b2b;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        input[type="text"]::placeholder {
+            color: #999;
+        }
+
+        button {
+            padding: 12px 20px;
+            background: #ffcc00;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            border: 2px solid #b38f00;
+        }
+
+        button:hover {
+            background: #e6b800;
+        }
+
+        .card {
+            margin-top: 25px;
+            background: #1f1f1f; /* Tarjeta oscura */
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 6px solid #ffcc00;
+        }
+
+        .card h3 {
+            color: #ffcc00;
+        }
+
+        .error {
+            margin-top: 20px;
+            color: white;
+            background: #c1121f;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .sugerencias a:hover {
+            text-decoration: underline !important;
+        }
+
+        .clima-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .clima-item {
+            background: #2b2b2b;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+
+        .clima-item strong {
+            display: block;
+            color: #ffcc00;
+            margin-bottom: 5px;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<div class="container">
+
+    <h2>Consulta del Clima</h2>
+
+    <!-- BOTÓN GERENTE -->
+    <a class="btn-dashboard" th:href="@{/gerente}">
+        ⮌ Regresar al Panel del Gerente
+    </a>
+
+    <!-- FORMULARIO -->
+    <form action="/consultar" method="get" id="climaForm">
+        <input type="text" name="ciudad" placeholder="Escribe una ciudad (ej: Medellín, Cali, Cartagena)..." 
+               required minlength="2" maxlength="50" id="ciudadInput">
+        <button type="submit" id="buscarBtn">
+            <span id="btnText">Buscar</span>
+            <span id="btnLoader" style="display: none;">🔄</span>
+        </button>
+    </form>
+    
+    <!-- ERROR -->
+    <div th:if="${error}" class="error">
+        <p th:text="${error}"></p>
+    </div>
+
+    <!-- RESULTADO -->
+    <div th:if="${clima}" class="card">
+        <h3 th:text="'Clima en ' + ${ciudad}"></h3>
+
+        <div class="clima-info">
+            <div class="clima-item">
+                <strong>🌡 Temperatura</strong>
+                <span th:text="${clima.main.temp} + ' °C'"></span>
+            </div>
+            <div class="clima-item">
+                <strong>🔥 Sensación térmica</strong>
+                <span th:text="${clima.main.feels_like} + ' °C'"></span>
+            </div>
+            <div class="clima-item">
+                <strong>💧 Humedad</strong>
+                <span th:text="${clima.main.humidity} + '%'"></span>
+            </div>
+            <div class="clima-item">
+                <strong>📘 Descripción</strong>
+                <span th:text="${clima.weather[0].description}"></span>
+            </div>
+            <div class="clima-item">
+                <strong>💨 Viento</strong>
+                <span th:text="${clima.wind.speed} + ' m/s'"></span>
+            </div>
+            <div class="clima-item">
+                <strong>👁 Visibilidad</strong>
+                <span th:text="${clima.visibility != null ? clima.visibility/1000 + ' km' : 'N/A'}"></span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Mejorar la experiencia del usuario
+    document.getElementById('climaForm').addEventListener('submit', function() {
+        const btn = document.getElementById('buscarBtn');
+        const btnText = document.getElementById('btnText');
+        const btnLoader = document.getElementById('btnLoader');
+        
+        // Mostrar indicador de carga
+        btnText.style.display = 'none';
+        btnLoader.style.display = 'inline';
+        btn.disabled = true;
+        btn.classList.add('loading');
+    });
+
+    // Limpiar el campo de entrada al hacer clic
+    document.getElementById('ciudadInput').addEventListener('focus', function() {
+        this.select();
+    });
+
+    // Validación del lado cliente
+    document.getElementById('ciudadInput').addEventListener('input', function() {
+        const valor = this.value.trim();
+        const btn = document.getElementById('buscarBtn');
+        
+        if (valor.length >= 2) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        }
+    });
+
+    // Inicializar estado del botón
+    document.addEventListener('DOMContentLoaded', function() {
+        const input = document.getElementById('ciudadInput');
+        const btn = document.getElementById('buscarBtn');
+        
+        if (input.value.trim().length < 2) {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        }
+    });
+</script>
+
+</body>
+</html>

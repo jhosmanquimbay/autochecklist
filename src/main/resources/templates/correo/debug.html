@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug - Sistema de Correos</title>
+    <link rel="stylesheet" href="/css/themes.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--color-bg-dark);
+            color: var(--color-text-primary);
+            padding: 2rem;
+        }
+        .debug-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--color-bg-card);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            border: 1px solid var(--color-border);
+        }
+        .debug-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--color-border);
+        }
+        .debug-header h1 {
+            margin: 0;
+            color: var(--color-primary);
+            font-size: 1.8rem;
+        }
+        .sync-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.5rem;
+            background: linear-gradient(135deg, var(--color-primary), #FFD166);
+            color: var(--color-bg-darker);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .sync-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 166, 35, 0.3);
+        }
+        .sync-btn:active {
+            transform: translateY(0);
+        }
+        .error-box {
+            background: #ffebee;
+            border-left: 4px solid #c62828;
+            color: #c62828;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+        .error-box i {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .success-box {
+            background: #e8f5e8;
+            border-left: 4px solid #2e7d32;
+            color: #2e7d32;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+        .success-box i {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .info-box {
+            background: rgba(245, 166, 35, 0.1);
+            border: 1px solid var(--color-border);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .info-item {
+            background: var(--color-bg-darker);
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--color-border);
+        }
+        .info-item strong {
+            color: var(--color-primary);
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+        .mensaje-item {
+            border: 1px solid var(--color-border);
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            background: var(--color-bg-darker);
+            transition: all 0.2s ease;
+        }
+        .mensaje-item:hover {
+            background: rgba(245, 166, 35, 0.05);
+            border-color: var(--color-primary);
+        }
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.6rem 1.2rem;
+            background: var(--color-primary);
+            color: var(--color-bg-darker);
+            text-decoration: none;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        .btn:hover {
+            background: #FFD166;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: var(--color-border);
+            color: var(--color-text-secondary);
+        }
+        .btn-secondary:hover {
+            background: var(--color-text-secondary);
+            color: var(--color-bg-darker);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: var(--color-bg-darker);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid var(--color-border);
+            padding: 1rem;
+            text-align: left;
+        }
+        th {
+            background: rgba(245, 166, 35, 0.2);
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+        tr:hover {
+            background: rgba(245, 166, 35, 0.05);
+        }
+        .alert-instructions {
+            background: rgba(33, 150, 243, 0.1);
+            border-left: 4px solid #2196F3;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .alert-instructions h4 {
+            margin-top: 0;
+            color: #2196F3;
+        }
+        .alert-instructions ol {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+        .alert-instructions li {
+            margin: 0.5rem 0;
+            color: var(--color-text-secondary);
+        }
+        .sync-status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            display: none;
+        }
+        .sync-status.showing {
+            display: block;
+        }
+        .spinner {
+            display: inline-block;
+            width: 1.2rem;
+            height: 1.2rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <!-- HEADER CON BOTÓN DE SINCRONIZACIÓN -->
+        <div class="debug-header">
+            <h1><i class="fas fa-tools"></i> 🔧 Diagnóstico de Correos</h1>
+            <button class="sync-btn" onclick="sincronizarAhora()">
+                <i class="fas fa-sync"></i> <span id="sync-text">Sincronizar Ahora</span>
+            </button>
+        </div>
+
+        <!-- STATUS MESSAGES -->
+        <div id="sync-status" class="sync-status"></div>
+        
+        <div th:if="${error}" class="error-box">
+            <i class="fas fa-exclamation-circle"></i>
+            <div>
+                <strong>❌ Error encontrado:</strong>
+                <p th:text="${error}">Error message</p>
+            </div>
+        </div>
+        
+        <div th:unless="${error}" class="success-box">
+            <i class="fas fa-check-circle"></i>
+            <div>
+                <strong>✅ Sistema operacional:</strong>
+                <p>El sistema de correos está funcionando correctamente.</p>
+            </div>
+        </div>
+
+        <!-- INFORMACIÓN DEL USUARIO -->
+        <div th:if="${usuario}" class="info-box">
+            <h3><i class="fas fa-user"></i> Información del Usuario</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>ID:</strong>
+                    <span th:text="${usuario.idUsuario}">ID</span>
+                </div>
+                <div class="info-item">
+                    <strong>Nombre:</strong>
+                    <span th:text="${usuario.nombre}">Nombre</span>
+                </div>
+                <div class="info-item">
+                    <strong>Correo:</strong>
+                    <span th:text="${usuario.correo}">Correo</span>
+                </div>
+                <div class="info-item">
+                    <strong>Rol:</strong>
+                    <span th:text="${usuarioRol}">Rol</span>
+                </div>
+                <div class="info-item">
+                    <strong>No Leídos:</strong>
+                    <span th:text="${unreadCount}">0</span>
+                </div>
+                <div class="info-item">
+                    <strong>Total Mensajes:</strong>
+                    <span th:text="${totalMensajes != null ? totalMensajes : 0}">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROBLEMAS FRECUENTES Y SOLUCIONES -->
+        <div class="alert-instructions">
+            <h4><i class="fas fa-lightbulb"></i> ¿No llegan los correos externos?</h4>
+            <p><strong>Si no ves mensajes que deberían haber llegado, intenta estos pasos:</strong></p>
+            <ol>
+                <li><strong>Haz clic en "Sincronizar Ahora"</strong> - Esto fuerza la lectura inmediata de la bandeja IMAP</li>
+                <li><strong>Verifica la configuración IMAP</strong> - Ve a <code>application.properties</code> y confirma que:
+                    <ul>
+                        <li>El correo IMAP es correcto</li>
+                        <li>La contraseña de aplicación es válida (no la contraseña normal de Gmail)</li>
+                        <li>El host es <code>imap.gmail.com</code></li>
+                        <li>El puerto es <code>993</code></li>
+                    </ul>
+                </li>
+                <li><strong>Habilita acceso IMAP en Gmail</strong>:
+                    <ul>
+                        <li>Abre tu cuenta de Gmail</li>
+                        <li>Ve a Configuración → Reenvío y correo POP/IMAP</li>
+                        <li>Habilita IMAP</li>
+                    </ul>
+                </li>
+                <li><strong>Genera una nueva contraseña de aplicación</strong>:
+                    <ul>
+                        <li>Ve a <a href="https://myaccount.google.com/security" target="_blank" style="color: var(--color-primary);">myaccount.google.com/security</a></li>
+                        <li>Busca "Contraseñas de aplicación"</li>
+                        <li>Crea una nueva y reemplázala en <code>mail.inbound.password</code></li>
+                    </ul>
+                </li>
+                <li><strong>Reinicia la aplicación</strong> - Después de cambiar la configuración</li>
+            </ol>
+        </div>
+
+        <!-- LISTA DE MENSAJES RECIBIDOS -->
+        <div th:if="${mensajes != null and !mensajes.empty}" class="info-box">
+            <h3><i class="fas fa-inbox"></i> Mensajes en la Bandeja (<span th:text="${totalMensajes}">0</span>)</h3>
+            <div th:each="m : ${mensajes}" class="mensaje-item">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="flex: 1;">
+                        <p style="margin: 0 0 0.5rem 0;">
+                            <strong th:text="${m.remitente != null ? m.remitente.nombre : 'Desconocido'}">Remitente</strong>
+                            <span style="color: var(--gray); font-size: 0.9rem;" th:text="${' <' + (m.remitente != null ? m.remitente.correo : 'desconocido') + '>'}"></span>
+                        </p>
+                        <p style="margin: 0.3rem 0; font-weight: 600;" th:text="${m.asunto}">Asunto</p>
+                        <p style="margin: 0.3rem 0; color: var(--gray); font-size: 0.85rem;">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span th:text="${#temporals.format(m.fechaEnvio,'dd/MM/yyyy HH:mm')}">Fecha</span>
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <span th:if="${m.leido}" class="btn btn-secondary" style="font-size: 0.8rem;">
+                            <i class="fas fa-check-double"></i> Leído
+                        </span>
+                        <span th:unless="${m.leido}" class="btn" style="background: var(--color-primary); font-size: 0.8rem;">
+                            <i class="fas fa-envelope"></i> No Leído
+                        </span>
+                        <a th:href="@{/correo/ver/{id}(id=${m.id})}" class="btn" style="font-size: 0.8rem;">
+                            Ver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${mensajes == null or mensajes.empty}" class="info-box">
+            <h3><i class="fas fa-inbox"></i> Bandeja Vacía</h3>
+            <p>No hay mensajes en esta bandeja. Esto puede ser normal para usuarios nuevos.</p>
+            <p>Si esperas recibir mensajes, haz clic en el botón "Sincronizar Ahora" arriba para forzar la lectura de correos.</p>
+        </div>
+
+        <!-- LISTA DE USUARIOS DISPONIBLES -->
+        <div th:if="${usuarios != null and !usuarios.empty}" class="info-box">
+            <h3><i class="fas fa-users"></i> Usuarios en el Sistema</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Rol</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u : ${usuarios}">
+                        <td th:text="${u.idUsuario}">ID</td>
+                        <td th:text="${u.nombre}">Nombre</td>
+                        <td th:text="${u.correo}">Correo</td>
+                        <td th:text="${u.rol != null ? u.rol.nombre : 'Sin rol'}">Rol</td>
+                        <td>
+                            <div class="btn-group">
+                                <a th:href="@{/correo/inbox/{id}(id=${u.idUsuario})}" class="btn">Ver Inbox</a>
+                                <a th:href="@{/correo/debug/{id}(id=${u.idUsuario})}" class="btn btn-secondary">Diagnóstico</a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ENLACES ÚTILES -->
+        <div class="info-box">
+            <h3><i class="fas fa-link"></i> Enlaces Útiles</h3>
+            <div class="btn-group">
+                <a href="/correo/inbox" class="btn"><i class="fas fa-inbox"></i> Mi Inbox</a>
+                <a href="/correo/enviados" class="btn"><i class="fas fa-paper-plane"></i> Enviados</a>
+                <a href="/email/enviar" class="btn"><i class="fas fa-envelope"></i> Enviar Correo</a>
+                <a href="/" class="btn btn-secondary"><i class="fas fa-home"></i> Inicio</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function sincronizarAhora() {
+            const btn = document.querySelector('.sync-btn');
+            const statusDiv = document.getElementById('sync-status');
+            const syncText = document.getElementById('sync-text');
+            
+            // Mostrar estado de carga
+            btn.disabled = true;
+            syncText.innerHTML = '<span class="spinner"></span> Sincronizando...';
+            statusDiv.className = 'sync-status showing';
+            statusDiv.innerHTML = '<div style="display: flex; align-items: center; gap: 1rem;"><span class="spinner"></span> <strong>Conectando con IMAP...</strong></div>';
+            statusDiv.style.background = 'rgba(33, 150, 243, 0.1)';
+            statusDiv.style.borderLeft = '4px solid #2196F3';
+            statusDiv.style.color = '#2196F3';
+            
+            // Hacer POST al endpoint
+            fetch('/correo/api/sync-inbox', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    btn.disabled = false;
+                    syncText.textContent = 'Sincronizar Ahora';
+                    
+                    if (data.status === 'success') {
+                        statusDiv.innerHTML = `<div style="display: flex; align-items: center; gap: 1rem;"><i class="fas fa-check-circle" style="color: #4CAF50; font-size: 1.5rem;"></i> <strong style="color: #4CAF50;">${data.message}</strong></div>`;
+                        statusDiv.style.background = 'rgba(76, 175, 80, 0.1)';
+                        statusDiv.style.borderLeft = '4px solid #4CAF50';
+                        statusDiv.style.color = '#4CAF50';
+                        
+                        // Recarga la página después de 2 segundos
+                        setTimeout(() => location.reload(), 2000);
+                    } else {
+                        statusDiv.innerHTML = `<div style="display: flex; align-items: center; gap: 1rem;"><i class="fas fa-times-circle" style="color: #f44336; font-size: 1.5rem;"></i> <strong style="color: #f44336;">${data.message}</strong></div>`;
+                        statusDiv.style.background = 'rgba(244, 67, 54, 0.1)';
+                        statusDiv.style.borderLeft = '4px solid #f44336';
+                        statusDiv.style.color = '#f44336';
+                    }
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    syncText.textContent = 'Sincronizar Ahora';
+                    statusDiv.innerHTML = `<div style="color: #f44336;"><strong>❌ Error:</strong> ${err.message}</div>`;
+                    statusDiv.style.background = 'rgba(244, 67, 54, 0.1)';
+                    statusDiv.style.borderLeft = '4px solid #f44336';
+                });
+        }
+    </script>
+</body>
+</html>

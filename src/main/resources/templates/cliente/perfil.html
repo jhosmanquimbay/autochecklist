@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Perfil | AutoCheckList</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/cliente-area.css}">
+</head>
+<body class="client-page">
+<header class="client-homebar">
+    <a th:href="@{/}" class="client-logo">
+        <img th:src="@{/images/AUTOCHECKLIST (4).png}" alt="AutoCheckList">
+        <div class="client-logo-text">
+            <span>AUTO</span>
+            <strong>CHECKLIST</strong>
+        </div>
+    </a>
+
+    <nav>
+        <a th:href="@{/#inicio}">Inicio</a>
+        <a th:href="@{/#marcas}">Marcas</a>
+        <a th:href="@{/#destacados}">Destacados</a>
+        <a th:href="@{/#vehiculos}">Vehículos</a>
+        <a th:href="@{/#contacto}">Contacto</a>
+
+        <div class="client-profile-menu">
+            <button type="button" class="client-profile-trigger" onclick="toggleClientProfileMenu(event)">
+                <span class="client-profile-avatar" th:text="${#strings.substring(usuarioActual.nombre, 0, 1)}">A</span>
+                <span class="client-profile-name" th:text="${usuarioActual.nombre}">Mi perfil</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+
+            <div id="clientProfileDropdown" class="client-profile-dropdown">
+                <a th:href="@{/cliente/compras}"><i class="fas fa-bag-shopping"></i> Mis compras</a>
+                <a th:href="@{/cliente/favoritos}"><i class="fas fa-heart"></i> Mis favoritos</a>
+                <a th:href="@{/cliente/perfil}"><i class="fas fa-user-gear"></i> Gestionar perfil</a>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="client-profile-logout"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="client-shell">
+    <section class="client-hero-card">
+        <div>
+            <span class="client-badge">Perfil Cliente</span>
+            <h1 th:text="${usuarioActual.nombre}">Nombre Cliente</h1>
+            <p>Edita tu información personal, datos de contacto y contraseña desde un solo lugar.</p>
+        </div>
+        <div class="client-hero-meta">
+            <span><i class="fas fa-envelope"></i> <span th:text="${usuarioActual.correo}">correo@ejemplo.com</span></span>
+            <span><i class="fas fa-id-card"></i> <span th:text="${usuarioActual.cedula}">000000</span></span>
+        </div>
+    </section>
+
+    <section class="client-panel">
+        <div class="panel-header">
+            <h2>Gestionar perfil</h2>
+            <p>Todos los cambios se guardan sobre tu cuenta autenticada.</p>
+        </div>
+
+        <div class="alert-inline alert-success" th:if="${param.actualizado != null}">
+            Perfil actualizado correctamente.
+        </div>
+
+        <form th:action="@{/cliente/perfil}" th:object="${perfilForm}" method="post" class="client-form-grid">
+            <div class="form-field">
+                <label for="cedula">Cédula</label>
+                <input type="text" id="cedula" th:field="*{cedula}" required>
+                <small class="field-error" th:if="${#fields.hasErrors('cedula')}" th:errors="*{cedula}"></small>
+            </div>
+
+            <div class="form-field">
+                <label for="telefono">Teléfono</label>
+                <input type="text" id="telefono" th:field="*{telefono}" required>
+                <small class="field-error" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}"></small>
+            </div>
+
+            <div class="form-field field-span-2">
+                <label for="correo">Correo</label>
+                <input type="email" id="correo" th:field="*{correo}" required>
+                <small class="field-error" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}"></small>
+            </div>
+
+            <div class="form-field field-span-2">
+                <label for="nombreCompleto">Nombre completo</label>
+                <input type="text" id="nombreCompleto" th:field="*{nombreCompleto}" required>
+                <small class="field-error" th:if="${#fields.hasErrors('nombreCompleto')}" th:errors="*{nombreCompleto}"></small>
+            </div>
+
+            <div class="form-field field-span-2">
+                <label for="direccion">Dirección</label>
+                <input type="text" id="direccion" th:field="*{direccion}">
+                <small class="field-error" th:if="${#fields.hasErrors('direccion')}" th:errors="*{direccion}"></small>
+            </div>
+
+            <div class="form-field">
+                <label for="ciudad">Ciudad</label>
+                <input type="text" id="ciudad" th:field="*{ciudad}">
+                <small class="field-error" th:if="${#fields.hasErrors('ciudad')}" th:errors="*{ciudad}"></small>
+            </div>
+
+            <div class="form-field">
+                <label for="barrio">Barrio</label>
+                <input type="text" id="barrio" th:field="*{barrio}">
+                <small class="field-error" th:if="${#fields.hasErrors('barrio')}" th:errors="*{barrio}"></small>
+            </div>
+
+            <div class="form-field field-span-2">
+                <label for="localidad">Localidad</label>
+                <input type="text" id="localidad" th:field="*{localidad}">
+                <small class="field-error" th:if="${#fields.hasErrors('localidad')}" th:errors="*{localidad}"></small>
+            </div>
+
+            <div class="form-field field-span-2">
+                <label for="nuevaContrasena">Nueva contraseña</label>
+                <input type="password" id="nuevaContrasena" th:field="*{nuevaContrasena}" placeholder="Déjala vacía si no quieres cambiarla">
+                <small class="field-hint">Si la cambias, debe tener entre 8 y 16 caracteres, una mayúscula, un número y un carácter especial.</small>
+                <small class="field-error" th:if="${#fields.hasErrors('nuevaContrasena')}" th:errors="*{nuevaContrasena}"></small>
+            </div>
+
+            <div class="form-actions field-span-2">
+                <button type="submit" class="btn-client-primary">Guardar cambios</button>
+                <a th:href="@{/}" class="btn-client-secondary">Volver a la oficina</a>
+            </div>
+        </form>
+    </section>
+</main>
+<script th:src="@{/client-profile-nav.js}"></script>
+</body>
+</html>

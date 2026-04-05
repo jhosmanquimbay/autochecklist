@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Novedades del Vendedor</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+  <aside th:replace="~{fragments/vendedor-sidebar :: sidebar}"></aside>
+
+  <main class="main">
+    <div class="content-header">
+      <h1><i class="fa-solid fa-triangle-exclamation"></i> Reporte de Novedades</h1>
+      <p>Reporta daños, garantías, rayones o fallas técnicas para gestión del gerente.</p>
+    </div>
+
+    <div th:if="${success}" class="card card-alert success" th:text="${success}"></div>
+
+    <div class="card card-medium">
+      <div class="section-title">
+        <h2><i class="fa-solid fa-pen-to-square"></i> Nuevo reporte</h2>
+      </div>
+
+      <form th:action="@{/vendedor/novedades}" th:object="${novedad}" method="post" enctype="multipart/form-data">
+        <div class="form-grid">
+          <div>
+            <label>Vehículo</label>
+            <select th:field="*{vehiculoChasis}" required class="field-control">
+              <option value="">-- Seleccionar --</option>
+              <option th:each="inv : ${inventariosDisponibles}"
+                      th:value="${inv.chasis}"
+                      th:text="${(inv.chasis != null ? inv.chasis : 'SIN-CHASIS') + ' | ' + (inv.marca != null ? inv.marca : 'Sin marca') + ' ' + (inv.modelo != null ? inv.modelo : 'Sin modelo')}">Vehículo</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Tipo de novedad</label>
+            <select th:field="*{tipoNovedad}" required class="field-control">
+              <option value="">-- Seleccionar tipo --</option>
+              <option value="Garantia de fabrica">Garantía de fábrica</option>
+              <option value="Daño mecánico">Daño mecánico</option>
+              <option value="Daño de carrocería">Daño de carrocería</option>
+              <option value="Rayones o abolladuras">Rayones o abolladuras</option>
+              <option value="Daño eléctrico">Daño eléctrico</option>
+              <option value="Falla post entrega">Falla post entrega</option>
+              <option value="Daño en tapicería">Daño en tapicería</option>
+              <option value="Accidente">Accidente</option>
+              <option value="Accesorio faltante">Accesorio faltante</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Prioridad</label>
+            <select th:field="*{prioridad}" class="field-control" required>
+              <option value="baja">Baja</option>
+              <option value="media" selected>Media</option>
+              <option value="alta">Alta</option>
+              <option value="critica">Crítica</option>
+            </select>
+          </div>
+
+          <div class="form-check-row">
+            <label class="checkbox-line">
+              <input type="checkbox" th:field="*{aplicaGarantia}"/>
+              <span>Requiere gestión por garantía</span>
+            </label>
+          </div>
+
+          <div class="col-span-full">
+            <label>Descripción</label>
+            <textarea th:field="*{descripcion}" rows="3" required class="field-control field-textarea"
+                      placeholder="Describe el daño o incidencia observada en tienda."></textarea>
+          </div>
+
+          <div class="col-span-full">
+            <label>Acción sugerida al gerente</label>
+            <textarea th:field="*{accionRequerida}" rows="2" class="field-control field-textarea"
+                      placeholder="Ej: solicitar revisión técnica, abrir caso de garantía, autorizar reparación..."></textarea>
+          </div>
+
+          <div class="col-span-full">
+            <label>Evidencia (foto)</label>
+            <input type="file" name="file" accept="image/*" class="field-control"/>
+          </div>
+        </div>
+
+        <div class="action-buttons top-space">
+          <button type="submit" class="btn"><i class="fa-solid fa-floppy-disk"></i> Enviar al gerente</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <h2><i class="fa-solid fa-clock-rotate-left"></i> Mis novedades reportadas</h2>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Vehículo</th>
+            <th>Tipo</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+            <th>Evidencia</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="n : ${misNovedades}">
+            <td th:text="${n.idNovedades}">1</td>
+            <td th:text="${n.vehiculoReferencia != null ? n.vehiculoReferencia : n.vehiculoChasis}">Vehículo</td>
+            <td th:text="${n.tipoNovedad}">Tipo</td>
+            <td th:text="${n.prioridad}">media</td>
+            <td>
+              <span class="status-pill"
+                    th:classappend="${n.estado == 'resuelto' ? ' bg-success' : ' bg-danger'}"
+                    th:text="${n.estado}">pendiente</span>
+            </td>
+            <td th:text="${n.fechaReporte != null ? #temporals.format(n.fechaReporte, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+            <td>
+              <a th:if="${n.evidencia != null and !n.evidencia.isBlank()}" th:href="@{'/uploads/novedades/' + ${n.evidencia}}" target="_blank" class="btn ghost">
+                <i class="fa-solid fa-image"></i> Ver
+              </a>
+              <span th:if="${n.evidencia == null or n.evidencia.isBlank()}" class="empty-note">Sin evidencia</span>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(misNovedades)}">
+            <td colspan="7" class="empty-row">No has reportado novedades todavía.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>

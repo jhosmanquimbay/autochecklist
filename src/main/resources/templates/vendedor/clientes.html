@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width,initial-scale=1"/>
+	<title>Ventas y Oportunidades - Vendedor</title>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+	<link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+	<link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+	<aside th:replace="~{fragments/vendedor-sidebar :: sidebar}"></aside>
+
+	<main class="main">
+		<div class="content-header">
+			<h1><i class="fa-solid fa-cash-register"></i> Ventas y Oportunidades</h1>
+			<p>Registra negociaciones, cierres de venta y seguimiento comercial de clientes.</p>
+		</div>
+
+		<div th:if="${success}" class="card card-alert success" th:text="${success}"></div>
+		<div th:if="${mensajeFinanciamientoVendedor}" class="card card-alert success" th:text="${mensajeFinanciamientoVendedor}"></div>
+		<div th:if="${errorFinanciamientoVendedor}" class="card card-alert error" th:text="${errorFinanciamientoVendedor}"></div>
+
+		<div class="card card-medium">
+			<div class="section-title">
+				<h2><i class="fa-solid fa-plus"></i> Registrar oportunidad o venta</h2>
+			</div>
+
+			<form th:action="@{/vendedor/ventas}" method="post">
+				<div class="form-grid">
+					<div class="col-span-full">
+						<label>Vehículo</label>
+						<select name="inventarioId" class="field-control" required>
+							<option value="">-- Seleccionar vehículo --</option>
+							<option th:each="inv : ${inventariosDisponibles}"
+											th:value="${inv.idInventario}"
+											th:text="${(inv.marca != null ? inv.marca : 'Sin marca') + ' ' + (inv.modelo != null ? inv.modelo : 'Sin modelo') + ' | Chasis: ' + (inv.chasis != null ? inv.chasis : 'N/A')}">
+								Vehículo
+							</option>
+						</select>
+					</div>
+
+					<div>
+						<label>Nombre del cliente</label>
+						<input type="text" name="clienteNombre" class="field-control" required placeholder="Nombre completo"/>
+					</div>
+
+					<div>
+						<label>Teléfono</label>
+						<input type="text" name="clienteTelefono" class="field-control" placeholder="3001234567"/>
+					</div>
+
+					<div>
+						<label>Correo</label>
+						<input type="email" name="clienteCorreo" class="field-control" placeholder="cliente@correo.com"/>
+					</div>
+
+					<div>
+						<label>Estado comercial</label>
+						<select name="estado" class="field-control" required>
+							<option value="pendiente">Pendiente</option>
+							<option value="contactado">Contactado</option>
+							<option value="negociando" selected>Negociando</option>
+							<option value="vendido">Vendido</option>
+							<option value="entregado">Entregado</option>
+							<option value="perdido">Perdido</option>
+						</select>
+					</div>
+
+					<div class="col-span-full">
+						<label>Observación</label>
+						<textarea name="observacion" rows="3" class="field-control field-textarea" placeholder="Notas de negociación, condiciones, objeciones del cliente..."></textarea>
+					</div>
+				</div>
+
+				<div class="action-buttons top-space">
+					<button type="submit" class="btn"><i class="fa-solid fa-floppy-disk"></i> Guardar registro</button>
+				</div>
+			</form>
+		</div>
+
+		<div id="financiamiento" class="card">
+			<div class="section-title">
+				<h2><i class="fa-solid fa-building-columns"></i> Preaprobación financiera</h2>
+			</div>
+			<p class="muted-note">El vendedor puede simular cuota, tasa y viabilidad preliminar antes de cerrar la negociación. El resultado queda registrado para seguimiento.</p>
+
+			<div class="finance-preview-grid">
+				<div class="preview-metric">
+					<span>Solicitudes</span>
+					<strong th:text="${resumenFinanciamientoVendedor.totalSolicitudes}">0</strong>
+				</div>
+				<div class="preview-metric">
+					<span>Preaprobadas</span>
+					<strong th:text="${resumenFinanciamientoVendedor.preaprobadas}">0</strong>
+				</div>
+				<div class="preview-metric">
+					<span>En estudio</span>
+					<strong th:text="${resumenFinanciamientoVendedor.enEstudio}">0</strong>
+				</div>
+				<div class="preview-metric">
+					<span>Monto potencial</span>
+					<strong th:text="${'$ ' + #numbers.formatDecimal(resumenFinanciamientoVendedor.montoPotencialFinanciado, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+				</div>
+				<div class="preview-metric">
+					<span>Negocios</span>
+					<strong th:text="${resumenFinanciamientoVendedor.negociosOriginados}">0</strong>
+				</div>
+				<div class="preview-metric">
+					<span>Docs completos</span>
+					<strong th:text="${resumenFinanciamientoVendedor.documentacionCompleta}">0</strong>
+				</div>
+				<div class="preview-metric">
+					<span>Desembolsadas</span>
+					<strong th:text="${resumenFinanciamientoVendedor.desembolsadas}">0</strong>
+				</div>
+			</div>
+
+			<form th:action="@{/vendedor/ventas/financiamiento}" th:object="${financiamientoForm}" method="post" class="top-space">
+				<div class="form-grid">
+					<div class="col-span-full">
+						<label>Vehículo</label>
+						<select th:field="*{vehiculoId}" class="field-control" required>
+							<option value="">-- Seleccionar vehículo --</option>
+							<option th:each="vehiculo : ${vehiculosFinanciables}"
+									th:value="${vehiculo.idVehiculo}"
+									th:text="${vehiculo.marca + ' ' + vehiculo.modelo + (vehiculo.anio != null ? ' ' + vehiculo.anio : '') + ' | $ ' + #numbers.formatDecimal(vehiculo.precio, 1, 'COMMA', 0, 'POINT')}">
+								Vehículo
+							</option>
+						</select>
+					</div>
+					<div>
+						<label>Nombre del cliente</label>
+						<input type="text" th:field="*{nombreCompleto}" class="field-control" placeholder="Nombre completo" required/>
+					</div>
+					<div>
+						<label>Teléfono</label>
+						<input type="text" th:field="*{telefono}" class="field-control" placeholder="3001234567" required/>
+					</div>
+					<div>
+						<label>Correo</label>
+						<input type="email" th:field="*{correo}" class="field-control" placeholder="cliente@correo.com" required/>
+					</div>
+					<div>
+						<label>Plazo</label>
+						<input type="number" th:field="*{plazoMeses}" min="12" max="72" step="12" class="field-control" placeholder="60" required/>
+					</div>
+					<div>
+						<label>Cuota inicial</label>
+						<input type="number" th:field="*{cuotaInicial}" min="0" step="0.01" class="field-control" placeholder="15000000" required/>
+					</div>
+					<div>
+						<label>Ingreso mensual</label>
+						<input type="number" th:field="*{ingresoMensual}" min="0" step="0.01" class="field-control" placeholder="4500000" required/>
+					</div>
+					<div>
+						<label>Otras obligaciones</label>
+						<input type="number" th:field="*{otrasObligaciones}" min="0" step="0.01" class="field-control" placeholder="300000"/>
+					</div>
+					<div class="col-span-full">
+						<label>Observaciones</label>
+						<textarea th:field="*{observaciones}" rows="3" class="field-control field-textarea" placeholder="Tipo de contrato, codeudor, fecha estimada de compra..."></textarea>
+					</div>
+				</div>
+
+				<div class="action-buttons top-space">
+					<button type="submit" class="btn"><i class="fa-solid fa-calculator"></i> Simular preaprobación</button>
+				</div>
+			</form>
+
+			<div class="card top-space" th:if="${resultadoFinanciamientoVendedor != null}">
+				<div class="section-title compact-title">
+					<h2><i class="fa-solid fa-chart-line"></i> Resultado de la simulación</h2>
+				</div>
+				<div class="finance-preview-grid">
+					<div class="preview-metric">
+						<span>Estado</span>
+						<strong th:text="${resultadoFinanciamientoVendedor.estadoAnalisisEtiqueta}">Preaprobado</strong>
+					</div>
+					<div class="preview-metric">
+						<span>Tasa EA</span>
+						<strong th:text="${#numbers.formatDecimal(resultadoFinanciamientoVendedor.tasaEfectivaAnual, 1, 'COMMA', 2, 'POINT') + '%'}">0%</strong>
+					</div>
+					<div class="preview-metric">
+						<span>Cuota mensual</span>
+						<strong th:text="${'$ ' + #numbers.formatDecimal(resultadoFinanciamientoVendedor.cuotaMensualTotal, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+					</div>
+					<div class="preview-metric">
+						<span>Monto a financiar</span>
+						<strong th:text="${'$ ' + #numbers.formatDecimal(resultadoFinanciamientoVendedor.montoFinanciar, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+					</div>
+				</div>
+				<div class="finance-help-block top-space">
+					<strong><i class="fa-solid fa-circle-info"></i> Lectura comercial</strong>
+					<p th:text="${resultadoFinanciamientoVendedor.mensajeDecision}">Mensaje</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="card">
+			<div class="section-title">
+				<h2><i class="fa-solid fa-table"></i> Mis registros comerciales</h2>
+			</div>
+
+			<table>
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Cliente</th>
+						<th>Vehículo</th>
+						<th>Estado</th>
+						<th>Fecha</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="v : ${misVentas}">
+						<td th:text="${v.idPedido}">1</td>
+						<td th:text="${v.descripcion}">Cliente</td>
+						<td th:text="${v.vehiculo != null ? (v.vehiculo.marca + ' ' + v.vehiculo.modelo) : 'Sin vehículo'}">Vehículo</td>
+						<td>
+							<span class="status-pill"
+										th:classappend="${v.estado == 'vendido' or v.estado == 'entregado' ? ' bg-success' : ' bg-danger'}"
+										th:text="${v.estado}">estado</span>
+						</td>
+						<td th:text="${v.fechaCreacion != null ? #temporals.format(v.fechaCreacion, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+					</tr>
+					<tr th:if="${#lists.isEmpty(misVentas)}">
+						<td colspan="5" class="empty-row">Todavía no hay ventas/oportunidades registradas.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="card">
+			<div class="section-title">
+				<h2><i class="fa-solid fa-file-signature"></i> Simulaciones recientes</h2>
+			</div>
+
+			<table>
+				<thead>
+					<tr>
+						<th>Fecha</th>
+						<th>Cliente</th>
+						<th>Vehículo</th>
+						<th>Estado</th>
+						<th>Documentos</th>
+						<th>Etapa</th>
+						<th>Negocio</th>
+						<th>Cuota</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="sim : ${simulacionesFinanciamiento}">
+						<td th:text="${sim.fechaSimulacion != null ? #temporals.format(sim.fechaSimulacion, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+						<td th:text="${sim.solicitanteNombre}">Cliente</td>
+						<td>
+							<strong th:text="${sim.vehiculo != null ? sim.vehiculo.marca + ' ' + sim.vehiculo.modelo : 'Sin vehículo'}">Vehículo</strong>
+							<small class="table-subtext" th:text="${sim.entidadFinanciera != null and !sim.entidadFinanciera.isBlank() ? sim.entidadFinanciera : 'Entidad por definir'}">Entidad</small>
+						</td>
+						<td>
+							<span class="status-pill"
+									th:classappend="${sim.estadoAnalisis == 'PREAPROBADO'} ? ' bg-success' : (${sim.estadoAnalisis == 'EN_ESTUDIO'} ? ' bg-warning-soft' : ' bg-danger')"
+									th:text="${sim.estadoAnalisisEtiqueta}">Estado</span>
+						</td>
+						<td>
+							<span class="status-pill"
+									th:classappend="${sim.estadoDocumental == 'COMPLETO'} ? ' bg-success' : (${sim.estadoDocumental == 'VALIDANDO'} ? ' bg-info-soft' : (${sim.estadoDocumental == 'OBSERVADO'} ? ' bg-danger' : ' bg-warning-soft'))"
+									th:text="${sim.estadoDocumentalEtiqueta}">Documentos</span>
+						</td>
+						<td>
+							<span class="status-pill"
+									th:classappend="${sim.etapaProceso == 'DESEMBOLSADO'} ? ' bg-success' : (${sim.etapaProceso == 'APROBADO_ENTIDAD' or sim.etapaProceso == 'DESEMBOLSO_PROGRAMADO'} ? ' bg-info-soft' : (${sim.etapaProceso == 'DESCARTADO'} ? ' bg-danger' : ' bg-warning-soft'))"
+									th:text="${sim.etapaProcesoEtiqueta}">Etapa</span>
+						</td>
+						<td>
+							<span class="status-pill"
+									th:classappend="${sim.negocioCreado} ? ' bg-success' : ' bg-neutral-soft'"
+									th:text="${sim.negocioCreadoEtiqueta}">Negocio</span>
+						</td>
+						<td th:text="${'$ ' + #numbers.formatDecimal(sim.cuotaMensualTotal, 1, 'COMMA', 0, 'POINT')}">$0</td>
+					</tr>
+					<tr th:if="${#lists.isEmpty(simulacionesFinanciamiento)}">
+						<td colspan="8" class="empty-row">Todavía no hay simulaciones registradas por este vendedor.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div id="financiamiento-seguimiento" class="card">
+			<div class="section-title">
+				<h2><i class="fa-solid fa-route"></i> Seguimiento del negocio financiero</h2>
+			</div>
+			<p class="muted-note">Aquí conviertes la simulación en oportunidad real: pides documentos, radicas con entidad y mueves la operación hasta desembolso.</p>
+
+			<div th:if="${#lists.isEmpty(simulacionesFinanciamiento)}" class="finance-help-block">
+				<strong><i class="fa-solid fa-circle-info"></i> Sin operaciones para seguimiento</strong>
+				<p>Registra primero una simulación para habilitar el control comercial del negocio.</p>
+			</div>
+
+			<form th:unless="${#lists.isEmpty(simulacionesFinanciamiento)}"
+					th:action="@{/vendedor/ventas/financiamiento/seguimiento}"
+					th:object="${seguimientoFinanciamientoForm}"
+					method="post"
+					class="top-space">
+				<div class="form-grid">
+					<div class="col-span-full">
+						<label>Solicitud a gestionar</label>
+						<select th:field="*{solicitudId}" class="field-control" required>
+							<option value="">-- Seleccionar solicitud --</option>
+							<option th:each="sim : ${simulacionesFinanciamiento}"
+									th:value="${sim.idSolicitudFinanciamiento}"
+									th:text="${sim.solicitanteNombre + ' | ' + (sim.vehiculo != null ? sim.vehiculo.marca + ' ' + sim.vehiculo.modelo : 'Vehículo') + ' | ' + sim.estadoAnalisisEtiqueta}">Solicitud</option>
+						</select>
+					</div>
+					<div>
+						<label>Estado documental</label>
+						<select th:field="*{estadoDocumental}" class="field-control">
+							<option value="PENDIENTE">Pendiente</option>
+							<option value="INCOMPLETO">Incompleto</option>
+							<option value="VALIDANDO">Validando</option>
+							<option value="COMPLETO">Completo</option>
+							<option value="OBSERVADO">Observado</option>
+						</select>
+					</div>
+					<div>
+						<label>Etapa del proceso</label>
+						<select th:field="*{etapaProceso}" class="field-control">
+							<option value="RADICACION_PENDIENTE">Radicación pendiente</option>
+							<option value="EN_ANALISIS_ENTIDAD">En análisis de entidad</option>
+							<option value="APROBADO_ENTIDAD">Aprobado por entidad</option>
+							<option value="DESEMBOLSO_PROGRAMADO">Desembolso programado</option>
+							<option value="DESEMBOLSADO">Desembolsado</option>
+							<option value="DESCARTADO">Descartado</option>
+						</select>
+					</div>
+					<div>
+						<label>Entidad financiera</label>
+						<input type="text" th:field="*{entidadFinanciera}" class="field-control" placeholder="Banco, financiera o aliado"/>
+					</div>
+					<div>
+						<label>Fecha programada de desembolso</label>
+						<input type="date" th:field="*{fechaDesembolsoProgramada}" class="field-control"/>
+					</div>
+					<div>
+						<label>Monto desembolsado</label>
+						<input type="number" th:field="*{montoDesembolsado}" min="0" step="0.01" class="field-control" placeholder="0"/>
+					</div>
+					<div class="col-span-full form-check-row">
+						<label class="checkbox-line">
+							<input type="checkbox" th:field="*{crearNegocio}"/>
+							<span>Marcar como negocio comercial tomado por el vendedor</span>
+						</label>
+					</div>
+					<div class="col-span-full">
+						<label>Observación de gestión</label>
+						<textarea th:field="*{observacionesGestion}" rows="3" class="field-control field-textarea" placeholder="Documentos recibidos, entidad contactada, fecha pactada, razones de descarte..."></textarea>
+					</div>
+				</div>
+
+				<div class="finance-help-block top-space tracking-note">
+					<strong><i class="fa-solid fa-circle-info"></i> Regla comercial</strong>
+					<p>Cuando avances la operación a aprobado o desembolso, el sistema tomará la documentación como completa para reflejar un flujo real de concesionario.</p>
+				</div>
+
+				<div class="action-buttons top-space">
+					<button type="submit" class="btn"><i class="fa-solid fa-arrows-spin"></i> Actualizar seguimiento</button>
+				</div>
+			</form>
+		</div>
+	</main>
+</body>
+</html>

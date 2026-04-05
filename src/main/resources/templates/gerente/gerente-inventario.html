@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <title>Inventario - Gerente</title>
+
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+
+<body>
+
+  <!-- âœ… SIDEBAR AUTO HOVER -->
+  <aside id="sidebar" class="sidebar">
+
+    <div>
+      <h3>Dashboard</h3>
+
+      <nav> 
+        <ul>
+          <li><a th:href="@{/gerente}"><i class="fa-solid fa-house"></i> <span>Inicio</span></a>
+          <li><a th:href="@{/gerente/inventario}"><i class="fa-solid fa-warehouse"></i> Inventario</a></li>
+          <li><a th:href="@{/gerente/vehiculos}"><i class="fa-solid fa-car"></i> VehÃ­culos</a></li>
+          <li><a th:href="@{/gerente/novedades}"><i class="fa-solid fa-bullhorn"></i> Novedades</a></li>
+          <li class="dropdown-menu-item">
+            <a th:href="@{/correo/inbox}" class="dropdown-toggle">
+              <i class="fa-solid fa-envelope"></i> Correo
+              <span th:if="${unreadCount != null and unreadCount > 0}" class="notification-badge" th:text="${unreadCount}">0</span>
+            </a>
+            <ul class="dropdown-submenu">
+              <li><a th:href="@{/correo/inbox}">
+                <i class="fas fa-inbox"></i> Bandeja de entrada
+                <span th:if="${unreadCount != null and unreadCount > 0}" class="notification-badge" th:text="${unreadCount}">0</span>
+              </a></li>
+              <li><a th:href="@{/correo/enviados}"><i class="fas fa-paper-plane"></i> Enviados</a></li>
+              <li><a th:href="@{/correo/papelera}"><i class="fas fa-trash"></i> Papelera</a></li>
+              <li><a th:href="@{/email/enviar}"><i class="fas fa-users"></i> Correos Masivos</a></li>
+            </ul>
+          </li>           
+        </ul> 
+      </nav>
+    </div>
+
+
+  </aside>
+
+  <!-- âœ… MAIN (IMPORTANTE PARA HOVER CSS) -->
+  <main class="main">
+
+    <h1><i class="fa-solid fa-warehouse"></i> Inventario</h1>
+
+    <div class="nav-tabs">
+      <a th:href="@{/gerente/inventario}" class="btn">
+        <i class="fas fa-box"></i> Inventario Activo
+      </a>
+
+      <a th:href="@{/gerente/inventario/inactivos}" class="btn ghost">
+        <i class="fas fa-archive"></i> Inventario Inactivo
+      </a>
+    </div>
+
+    <div class="action-buttons">
+      <a th:href="@{/gerente/inventario/crear}" class="btn">
+        <i class="fas fa-plus"></i> Nuevo VehÃ­culo
+      </a>
+    </div>
+
+    <!-- âœ… TABLA (NO SE TOCÃ“) -->
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Chasis</th>
+          <th>Marca</th>
+          <th>Modelo</th>
+          <th>AÃ±o</th>
+          <th>Color</th>
+          <th>UbicaciÃ³n</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr th:each="inv : ${inventarios}">
+          <td th:text="${inv.idInventario}">1</td>
+          <td th:text="${inv.chasis}">---</td>
+          <td th:text="${inv.marca}">---</td>
+          <td th:text="${inv.modelo}">---</td>
+          <td th:text="${inv.anio}">2025</td>
+          <td th:text="${inv.color}">---</td>
+          <td th:text="${inv.ubicacionActual}">Bodega</td>
+
+          <td>
+            <span class="status-badge"
+                  th:classappend="${inv.activo ? 'status-active' : 'status-inactive'}">
+
+              <i class="fas"
+                 th:classappend="${inv.activo ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+
+              <span th:text="${inv.activo ? 'Activo' : 'Inactivo'}"></span>
+            </span>
+          </td>
+
+          <td>
+            <div class="actions">
+
+              <a th:href="@{/gerente/inventario/editar/{id}(id=${inv.idInventario})}"
+                 class="btn ghost">
+                <i class="fas fa-edit"></i> Editar
+              </a>
+
+                <form th:action="@{/gerente/inventario/cambiar-estado/{id}(id=${inv.idInventario})}"
+                  method="post">
+
+                <button type="submit"
+                        class="btn ghost"
+                        th:onclick="'return confirm(\\'Â¿EstÃ¡s seguro de ' + (${inv.activo} ? 'desactivar' : 'activar') + ' este vehÃ­culo?\\');'">
+
+                  <i class="fas"
+                     th:classappend="${inv.activo ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
+
+                  <span th:text="${inv.activo ? 'Desactivar' : 'Activar'}"></span>
+
+                </button>
+
+              </form>
+
+            </div>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+
+  </main>
+
+</body>
+</html>
+
+
+
+

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Correos con Adjuntos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/email-style.css}" rel="stylesheet">
+    <style>
+        .form-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .file-drop-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .file-drop-area:hover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        .file-drop-area.dragover {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+        .file-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .file-info {
+            display: flex;
+            align-items: center;
+        }
+        .file-icon {
+            width: 30px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        .preview-area {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            min-height: 200px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container">
+            <a class="navbar-brand" href="/email">
+                <i class="fas fa-paperclip"></i> Correos con Adjuntos
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/email">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Mensajes de estado -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> <span th:text="${warning}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-times-circle"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h1 class="card-title">
+                            <i class="fas fa-paperclip"></i> 
+                            Enviar Correos con Archivos Adjuntos
+                        </h1>
+                        <p class="card-text">Incluye documentos PDF, imágenes u otros archivos en tus correos masivos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form th:action="@{/email/enviar-adjuntos}" th:object="${emailRequest}" method="post" 
+              enctype="multipart/form-data" id="emailForm">
+            <div class="row">
+                <!-- Formulario -->
+                <div class="col-lg-8">
+                    <!-- Destinatarios -->
+                    <div class="form-section p-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-users text-success"></i> 
+                            Destinatarios
+                        </h5>
+                        <div class="mb-3">
+                            <label for="destinatariosTexto" class="form-label">
+                                Lista de correos electrónicos
+                                <small class="text-muted">(separados por comas o saltos de línea)</small>
+                            </label>
+                            <textarea class="form-control" id="destinatariosTexto" name="destinatariosTexto" 
+                                    rows="4" placeholder="usuario1@example.com, usuario2@example.com&#10;usuario3@example.com"
+                                    oninput="contarEmails()"></textarea>
+                            <div class="form-text">
+                                <span class="email-counter" id="emailCount">0 destinatarios</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Archivos adjuntos -->
+                    <div class="form-section p-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-file-upload text-success"></i> 
+                            Archivos Adjuntos
+                        </h5>
+                        
+                        <div class="file-drop-area" id="fileDropArea" onclick="document.getElementById('archivos').click()">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                            <h6>Arrastra archivos aquí o haz clic para seleccionar</h6>
+                            <p class="text-muted mb-0">
+                                Soporta: PDF, DOC, XLS, PPT, imágenes, etc.<br>
+                                <small>Tamaño máximo por archivo: 10MB</small>
+                            </p>
+                        </div>
+                        
+                        <input type="file" id="archivos" name="archivos" multiple 
+                               style="display: none;" onchange="manejarArchivos(this.files)">
+                        
+                        <div id="listaArchivos" class="mt-3"></div>
+                    </div>
+
+                    <!-- Contenido del correo -->
+                    <div class="form-section p-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-edit text-success"></i> 
+                            Contenido del Correo
+                        </h5>
+                        
+                        <div class="mb-3">
+                            <label for="asunto" class="form-label">Asunto *</label>
+                            <input type="text" class="form-control" th:field="*{asunto}" 
+                                   placeholder="Ingresa el asunto del correo" maxlength="200" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="mensaje" class="form-label">Mensaje *</label>
+                            <textarea class="form-control" th:field="*{mensaje}" rows="6" 
+                                    placeholder="Escribe tu mensaje aquí..." maxlength="5000" required
+                                    oninput="actualizarPreview()"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" th:field="*{esHtml}" 
+                                       id="esHtml" onchange="actualizarPreview()">
+                                <label class="form-check-label" for="esHtml">
+                                    <i class="fab fa-html5"></i> El mensaje contiene HTML
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón de envío -->
+                    <div class="form-section p-4">
+                        <button type="submit" class="btn btn-success btn-lg w-100" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i> 
+                            Enviar Correos con Adjuntos
+                        </button>
+                        <div class="text-center mt-2">
+                            <small class="text-muted">
+                                Los archivos se adjuntarán a todos los correos
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview y resumen -->
+                <div class="col-lg-4">
+                    <!-- Vista previa -->
+                    <div class="form-section p-4 sticky-top" style="top: 20px;">
+                        <h5 class="mb-3">
+                            <i class="fas fa-eye text-success"></i> 
+                            Vista Previa
+                        </h5>
+                        
+                        <div class="preview-area">
+                            <div class="mb-2">
+                                <strong>Asunto:</strong>
+                                <div id="previewAsunto" class="text-muted">Sin asunto</div>
+                            </div>
+                            <hr>
+                            <div class="mb-2">
+                                <strong>Archivos:</strong>
+                                <div id="previewArchivos" class="text-muted">Sin archivos</div>
+                            </div>
+                            <hr>
+                            <div>
+                                <strong>Mensaje:</strong>
+                                <div id="previewMensaje" class="text-muted mt-2">Sin mensaje</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información -->
+                    <div class="form-section p-4 mt-3">
+                        <h6 class="mb-3">
+                            <i class="fas fa-info-circle text-info"></i> 
+                            Información
+                        </h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="fas fa-check text-success"></i> Los archivos se adjuntan a todos los correos</li>
+                            <li><i class="fas fa-check text-success"></i> Formatos soportados: PDF, DOC, XLS, imágenes</li>
+                            <li><i class="fas fa-check text-success"></i> Máximo 10MB por archivo</li>
+                            <li><i class="fas fa-check text-success"></i> Hasta 100 destinatarios</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let archivosSeleccionados = [];
+
+        function contarEmails() {
+            const texto = document.getElementById('destinatariosTexto').value;
+            const emails = texto.split(/[,\n\r]+/).filter(email => email.trim().length > 0);
+            const count = emails.length;
+            
+            document.getElementById('emailCount').textContent = count + ' destinatario' + (count !== 1 ? 's' : '');
+        }
+
+        function actualizarPreview() {
+            const asunto = document.getElementById('asunto').value || 'Sin asunto';
+            const mensaje = document.getElementById('mensaje').value || 'Sin mensaje';
+            const esHtml = document.getElementById('esHtml').checked;
+            
+            document.getElementById('previewAsunto').textContent = asunto;
+            
+            const previewMensaje = document.getElementById('previewMensaje');
+            if (esHtml && mensaje !== 'Sin mensaje') {
+                previewMensaje.innerHTML = mensaje;
+            } else {
+                previewMensaje.textContent = mensaje;
+            }
+
+            // Actualizar preview de archivos
+            const previewArchivos = document.getElementById('previewArchivos');
+            if (archivosSeleccionados.length > 0) {
+                previewArchivos.innerHTML = archivosSeleccionados.map(archivo => 
+                    `<small class="d-block"><i class="fas fa-file"></i> ${archivo.name}</small>`
+                ).join('');
+            } else {
+                previewArchivos.textContent = 'Sin archivos';
+            }
+        }
+
+        function manejarArchivos(files) {
+            const listaArchivos = document.getElementById('listaArchivos');
+            
+            Array.from(files).forEach(archivo => {
+                if (archivo.size > 10 * 1024 * 1024) { // 10MB
+                    alert(`El archivo ${archivo.name} es demasiado grande (máximo 10MB)`);
+                    return;
+                }
+                
+                archivosSeleccionados.push(archivo);
+                
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-icon">
+                            <i class="fas ${getFileIcon(archivo.name)}"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold">${archivo.name}</div>
+                            <small class="text-muted">${formatFileSize(archivo.size)}</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarArchivo('${archivo.name}', this)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                listaArchivos.appendChild(fileItem);
+            });
+            
+            actualizarPreview();
+        }
+
+        function eliminarArchivo(nombreArchivo, boton) {
+            archivosSeleccionados = archivosSeleccionados.filter(archivo => archivo.name !== nombreArchivo);
+            boton.parentElement.remove();
+            actualizarPreview();
+        }
+
+        function getFileIcon(fileName) {
+            const extension = fileName.split('.').pop().toLowerCase();
+            const iconMap = {
+                'pdf': 'fa-file-pdf text-danger',
+                'doc': 'fa-file-word text-primary',
+                'docx': 'fa-file-word text-primary',
+                'xls': 'fa-file-excel text-success',
+                'xlsx': 'fa-file-excel text-success',
+                'ppt': 'fa-file-powerpoint text-warning',
+                'pptx': 'fa-file-powerpoint text-warning',
+                'jpg': 'fa-file-image text-info',
+                'jpeg': 'fa-file-image text-info',
+                'png': 'fa-file-image text-info',
+                'gif': 'fa-file-image text-info',
+                'txt': 'fa-file-alt text-secondary',
+                'zip': 'fa-file-archive text-dark',
+                'rar': 'fa-file-archive text-dark'
+            };
+            return iconMap[extension] || 'fa-file text-muted';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Drag and drop
+        const fileDropArea = document.getElementById('fileDropArea');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileDropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileDropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileDropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            fileDropArea.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            fileDropArea.classList.remove('dragover');
+        }
+
+        fileDropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            manejarArchivos(files);
+        }
+
+        // Validación del formulario
+        document.getElementById('emailForm').addEventListener('submit', function(e) {
+            const destinatarios = document.getElementById('destinatariosTexto').value.trim();
+            if (!destinatarios) {
+                e.preventDefault();
+                alert('Por favor ingresa al menos un destinatario');
+                return;
+            }
+            
+            // Mostrar indicador de carga
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        });
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            contarEmails();
+            actualizarPreview();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Compras | AutoCheckList</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/cliente-area.css}">
+</head>
+<body class="client-page">
+<header class="client-homebar">
+    <a th:href="@{/}" class="client-logo">
+        <img th:src="@{/images/AUTOCHECKLIST (4).png}" alt="AutoCheckList">
+        <div class="client-logo-text">
+            <span>AUTO</span>
+            <strong>CHECKLIST</strong>
+        </div>
+    </a>
+
+    <nav>
+        <a th:href="@{/#inicio}">Inicio</a>
+        <a th:href="@{/#marcas}">Marcas</a>
+        <a th:href="@{/#destacados}">Destacados</a>
+        <a th:href="@{/#vehiculos}">Vehículos</a>
+        <a th:href="@{/#contacto}">Contacto</a>
+
+        <div class="client-profile-menu">
+            <button type="button" class="client-profile-trigger" onclick="toggleClientProfileMenu(event)">
+                <span class="client-profile-avatar" th:text="${#strings.substring(usuarioActual.nombre, 0, 1)}">A</span>
+                <span class="client-profile-name" th:text="${usuarioActual.nombre}">Mi perfil</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+
+            <div id="clientProfileDropdown" class="client-profile-dropdown">
+                <a th:href="@{/cliente/compras}"><i class="fas fa-bag-shopping"></i> Mis compras</a>
+                <a th:href="@{/cliente/favoritos}"><i class="fas fa-heart"></i> Mis favoritos</a>
+                <a th:href="@{/cliente/perfil}"><i class="fas fa-user-gear"></i> Gestionar perfil</a>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="client-profile-logout"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="client-shell">
+    <section class="client-hero-card">
+        <div>
+            <span class="client-badge">Mis Compras</span>
+            <h1>Seguimiento de tu historial</h1>
+            <p>Consulta las oportunidades, ventas o entregas que ya quedaron asociadas a tu cuenta.</p>
+        </div>
+    </section>
+
+    <section class="client-panel">
+        <div class="panel-header">
+            <h2>Compras registradas</h2>
+            <p th:text="${#lists.size(compras) + ' registro(s) asociados a tu cuenta.'}">0 registro(s)</p>
+        </div>
+
+        <div class="client-empty" th:if="${compras == null or #lists.isEmpty(compras)}">
+            <i class="fas fa-bag-shopping"></i>
+            <h3>Aún no tienes compras asociadas</h3>
+            <p>Cuando una venta se registre con tu correo, aparecerá automáticamente en esta sección.</p>
+            <a th:href="@{/}" class="btn-client-primary">Explorar vehículos</a>
+        </div>
+
+        <div class="purchase-list" th:if="${compras != null and !#lists.isEmpty(compras)}">
+            <article th:each="compra : ${compras}" class="purchase-card">
+                <div class="purchase-card-top">
+                    <div>
+                        <span class="purchase-label">Vehículo</span>
+                        <h3 th:text="${compra.vehiculo != null ? compra.vehiculo.marca + ' ' + compra.vehiculo.modelo : 'Vehículo por confirmar'}">Vehículo</h3>
+                    </div>
+                    <span class="purchase-state" th:text="${compra.estado}">pendiente</span>
+                </div>
+
+                <div class="purchase-meta">
+                    <span th:if="${compra.fechaCreacion != null}"><i class="fas fa-calendar"></i> <span th:text="${#temporals.format(compra.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/04/2026</span></span>
+                    <span th:if="${compra.vehiculo != null and compra.vehiculo.anio != null}"><i class="fas fa-car-side"></i> Año <span th:text="${compra.vehiculo.anio}">2024</span></span>
+                </div>
+
+                <p class="purchase-description" th:text="${compra.descripcion}">Descripción de la compra.</p>
+            </article>
+        </div>
+    </section>
+</main>
+<script th:src="@{/client-profile-nav.js}"></script>
+</body>
+</html>

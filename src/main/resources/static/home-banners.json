@@ -1,0 +1,74 @@
+[
+  {
+    "placement": "hero",
+    "eyebrow": "Lanzamiento activo",
+    "title": "SUVs con entrega inmediata",
+    "description": "Promocion principal con imagen protagonista para comunicar ofertas fuertes sin recargar la pagina.",
+    "ctaText": "Explorar inventario",
+    "ctaUrl": "#vehiculos",
+    "metricValue": "48h",
+    "metricLabel": "respuesta",
+    "theme": "gold",
+    "icon": "fas fa-car-side"
+  },
+  {
+    "placement": "hero",
+    "eyebrow": "Financiacion",
+    "title": "Promociones de temporada con imagen editable",
+    "description": "Muestra una pieza visual grande, cambia la foto desde admin y manten la portada siempre actualizada.",
+    "ctaText": "Ver promociones",
+    "ctaUrl": "#catalogPromoBand",
+    "metricValue": "0%",
+    "metricLabel": "entrada",
+    "theme": "blue",
+    "icon": "fas fa-percent"
+  },
+  {
+    "placement": "catalog",
+    "eyebrow": "Promocion home",
+    "title": "Agenda una prueba de manejo",
+    "description": "Tarjeta secundaria para ofertas o llamados concretos antes de entrar al catalogo.",
+    "ctaText": "Reservar ahora",
+    "ctaUrl": "#contacto",
+    "metricValue": "15m",
+    "metricLabel": "confirmacion",
+    "theme": "gold",
+    "icon": "fas fa-calendar-check"
+  },
+  {
+    "placement": "catalog",
+    "eyebrow": "Beneficio vigente",
+    "title": "Modelos con bono especial",
+    "description": "Campana puntual dentro del home para apoyar una categoria o una oferta temporal.",
+    "ctaText": "Ver destacados",
+    "ctaUrl": "#destacados",
+    "metricValue": "Top",
+    "metricLabel": "consulta",
+    "theme": "emerald",
+    "icon": "fas fa-award"
+  },
+  {
+    "placement": "client",
+    "eyebrow": "Portal cliente",
+    "title": "Promociones visibles tambien para tus clientes",
+    "description": "El portal cliente muestra un carrusel compacto con imagen y boton para destacar beneficios activos.",
+    "ctaText": "Ir a favoritos",
+    "ctaUrl": "/cliente/favoritos",
+    "metricValue": "VIP",
+    "metricLabel": "beneficio",
+    "theme": "blue",
+    "icon": "fas fa-user-shield"
+  },
+  {
+    "placement": "client",
+    "eyebrow": "Seguimiento",
+    "title": "Activa mensajes para compras y perfil",
+    "description": "Usa esta ubicacion para campañas de fidelizacion, bonos o recordatorios dentro del portal.",
+    "ctaText": "Ir a compras",
+    "ctaUrl": "/cliente/compras",
+    "metricValue": "3x",
+    "metricLabel": "impacto",
+    "theme": "emerald",
+    "icon": "fas fa-gem"
+  }
+]

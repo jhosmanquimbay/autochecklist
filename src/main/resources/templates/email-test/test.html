@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Test de Configuración de Email</title>
+    <style>
+        body {
+            background: #0d0d0d;
+            color: #FFD600;
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            padding: 2rem;
+            border-radius: 10px;
+        }
+        .config-section {
+            background: #333;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .form-group {
+            margin: 1rem 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background: #222;
+            color: #FFD600;
+        }
+        .btn {
+            background: #FFD600;
+            color: #000;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+        .alert-success {
+            background: #4CAF50;
+            color: white;
+        }
+        .alert-error {
+            background: #e53935;
+            color: white;
+        }
+        .config-item {
+            margin: 0.5rem 0;
+        }
+        .config-label {
+            font-weight: bold;
+            color: #FFD600;
+        }
+        .config-value {
+            color: #ccc;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test de Configuración de Email</h1>
+        
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        
+        <div class="config-section">
+            <h2>Configuración Actual</h2>
+            <div class="config-item">
+                <span class="config-label">SMTP Usuario:</span>
+                <span class="config-value" th:text="${smtpUser}">No configurado</span>
+            </div>
+            <div class="config-item">
+                <span class="config-label">SMTP Password:</span>
+                <span class="config-value" th:text="${smtpPassword}">No configurado</span>
+            </div>
+            <div class="config-item">
+                <span class="config-label">IMAP Usuario:</span>
+                <span class="config-value" th:text="${imapUser}">No configurado</span>
+            </div>
+            <div class="config-item">
+                <span class="config-label">IMAP Password:</span>
+                <span class="config-value" th:text="${imapPassword}">No configurado</span>
+            </div>
+        </div>
+        
+        <div class="config-section">
+            <h2>Probar Envío de Email (SMTP)</h2>
+            <form th:action="@{/email-test/send}" method="post">
+                <div class="form-group">
+                    <label for="to">Destinatario:</label>
+                    <input type="email" id="to" name="to" required placeholder="ejemplo@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label for="subject">Asunto:</label>
+                    <input type="text" id="subject" name="subject" required placeholder="Test de correo">
+                </div>
+                <div class="form-group">
+                    <label for="message">Mensaje:</label>
+                    <textarea id="message" name="message" rows="4" required placeholder="Este es un mensaje de prueba"></textarea>
+                </div>
+                <button type="submit" class="btn">Enviar Email de Prueba</button>
+            </form>
+        </div>
+        
+        <div class="config-section">
+            <h2>Probar Conexión IMAP</h2>
+            <p>Esto probará la conexión para recibir correos entrantes.</p>
+            <form th:action="@{/email-test/test-imap}" method="post">
+                <button type="submit" class="btn">Probar Conexión IMAP</button>
+            </form>
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            <a href="/dashboard" style="color: #FFD600;">Volver al Dashboard</a>
+        </div>
+        
+        <div class="config-section">
+            <h3>Instrucciones para Solucionar Problemas</h3>
+            <ol style="color: #ccc;">
+                <li><strong>Error de Autenticación:</strong> Genera una nueva contraseña de aplicación en Gmail</li>
+                <li><strong>Ve a:</strong> <a href="https://myaccount.google.com/security" target="_blank" style="color: #FFD600;">https://myaccount.google.com/security</a></li>
+                <li><strong>Busca:</strong> "Contraseñas de aplicaciones"</li>
+                <li><strong>Genera:</strong> Una nueva contraseña para "Correo"</li>
+                <li><strong>Actualiza:</strong> El archivo application.properties con la nueva contraseña</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>

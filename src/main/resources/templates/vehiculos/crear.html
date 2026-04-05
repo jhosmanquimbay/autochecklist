@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Vehículo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin-theme.css}">
+</head>
+<body>
+<aside class="sidebar collapsed" id="sidebar">
+    <div>
+        <div class="sidebar-header">
+            <button id="toggleSidebar" class="toggle-btn"><i class="fas fa-bars"></i></button>
+            <h3><span>Admin Panel</span></h3>
+        </div>
+        <nav>
+            <ul>
+                <li><a th:href="@{/dashboard}"><i class="fas fa-chart-line"></i><span>Dashboard</span></a></li>
+                <li><a th:href="@{/usuarios}"><i class="fas fa-users"></i><span>Usuarios</span></a></li>
+                <li><a th:href="@{/vehiculos}"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
+                <li><a th:href="@{/inventario}"><i class="fas fa-warehouse"></i><span>Inventario</span></a></li>
+                <li><a th:href="@{/roles}"><i class="fas fa-id-badge"></i><span>Roles</span></a></li>
+            </ul>
+        </nav>
+    </div>
+    <form th:action="@{/logout}" method="post"><button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button></form>
+</aside>
+
+<main class="main">
+    <div class="control-block" style="max-width:980px;margin:2rem auto;">
+        <div class="control-title"><i class="fas fa-plus"></i><h2>Crear Vehículo</h2></div>
+        <form th:action="@{/vehiculos/guardar}" method="post" enctype="multipart/form-data" th:object="${vehiculo}" style="background:#fff;border-radius:18px;padding:2rem;box-shadow:0 10px 30px rgba(20,40,60,0.08);display:grid;gap:1.2rem;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;">
+                <div><label for="chasis">Chasis</label><input id="chasis" th:field="*{chasis}" type="text" required class="form-control" style="width:100%;padding:.8rem;border-radius:10px;border:1px solid #d7e0ea;"></div>
+                <div><label for="marca">Marca</label><input id="marca" th:field="*{marca}" type="text" required class="form-control" style="width:100%;padding:.8rem;border-radius:10px;border:1px solid #d7e0ea;"></div>
+                <div><label for="modelo">Modelo</label><input id="modelo" th:field="*{modelo}" type="text" required class="form-control" style="width:100%;padding:.8rem;border-radius:10px;border:1px solid #d7e0ea;"></div>
+                <div><label for="anio">Año</label><input id="anio" th:field="*{anio}" type="number" min="1900" max="2100" class="form-control" style="width:100%;padding:.8rem;border-radius:10px;border:1px solid #d7e0ea;"></div>
+                <div><label for="cilindrada">Cilindrada</label><input id="cilindrada" th:field="*{cilindrada}" type="text" class="form-control" style="width:100%;padding:.8rem;border-radius:10px;border:1px solid #d7e0ea;"></div>
+                <div><label for="tipoCombustible">Combustible</label><input id="tipoCombustible" th:field="*{tipoCombustible}" type="text" class="form-control" style="width:100%;padding:.8rem;border-radius:10px;border:1px solid #d7e0ea;"></div>
+                <div><label for="transmision">Transmisión</label><input id="transmision" th:field="*{transmision}" type="text" class="form-control" style="width:100%;padding:.8rem;border-radius:10px;border:1px solid #d7e0ea;"></div>
+                <div><label for="precio">Precio</label><input id="precio" th:field="*{precio}" type="number" step="0.01" class="form-control" style="width:100%;padding:.8rem;border-radius:10px;border:1px solid #d7e0ea;"></div>
+                <div><label for="popularidad">Popularidad</label><input id="popularidad" th:field="*{popularidad}" type="number" min="0" class="form-control" style="width:100%;padding:.8rem;border-radius:10px;border:1px solid #d7e0ea;"></div>
+                <div><label for="imagenUrl">URL externa de imagen</label><input id="imagenUrl" th:field="*{imagenUrl}" type="text" class="form-control" style="width:100%;padding:.8rem;border-radius:10px;border:1px solid #d7e0ea;"></div>
+            </div>
+
+            <div><label for="descripcion">Descripción comercial</label><textarea id="descripcion" th:field="*{descripcion}" style="width:100%;min-height:100px;padding:.9rem;border-radius:10px;border:1px solid #d7e0ea;"></textarea></div>
+            <div><label for="especificacionesTecnicas">Especificaciones técnicas</label><textarea id="especificacionesTecnicas" th:field="*{especificacionesTecnicas}" style="width:100%;min-height:100px;padding:.9rem;border-radius:10px;border:1px solid #d7e0ea;"></textarea></div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
+                <div><label for="imagenFile">Foto principal</label><input id="imagenFile" name="imagenFile" type="file" accept="image/*" style="width:100%;"></div>
+                <div><label for="imagenFile2">Foto 2</label><input id="imagenFile2" name="imagenFile2" type="file" accept="image/*" style="width:100%;"></div>
+                <div><label for="imagenFile3">Foto 3</label><input id="imagenFile3" name="imagenFile3" type="file" accept="image/*" style="width:100%;"></div>
+                <div><label for="imagenFile4">Foto 4</label><input id="imagenFile4" name="imagenFile4" type="file" accept="image/*" style="width:100%;"></div>
+            </div>
+
+            <div style="background:#f7f9fc;border-left:4px solid var(--gold);padding:1rem;border-radius:10px;color:var(--gray);">
+                El stock público se calcula por chasis. Si este vehículo comparte chasis con inventario activo, la cantidad aparecerá automáticamente en la oficina de clientes.
+            </div>
+
+            <div style="display:flex;gap:1rem;justify-content:flex-end;flex-wrap:wrap;">
+                <a th:href="@{/vehiculos}" style="padding:.8rem 1.2rem;border-radius:10px;background:#eef3f8;color:var(--blue-dark);font-weight:700;text-decoration:none;">Cancelar</a>
+                <button type="submit" style="padding:.8rem 1.3rem;border-radius:10px;border:none;background:var(--gold);color:var(--blue-dark);font-weight:700;cursor:pointer;">Guardar vehículo</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+const sidebar = document.getElementById('sidebar');
+const toggleBtn = document.getElementById('toggleSidebar');
+let lockedOpen = false;
+toggleBtn.onclick = () => {
+    lockedOpen = !lockedOpen;
+    sidebar.classList.toggle('collapsed', !lockedOpen);
+    sidebar.classList.toggle('expanded', lockedOpen);
+};
+sidebar.onmouseenter = () => { if (!lockedOpen) { sidebar.classList.replace('collapsed', 'expanded'); } };
+sidebar.onmouseleave = () => { if (!lockedOpen) { sidebar.classList.replace('expanded', 'collapsed'); } };
+</script>
+</body>
+</html>

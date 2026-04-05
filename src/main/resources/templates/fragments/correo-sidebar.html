@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<body>
+<aside th:fragment="sidebar(activePage)" class="sidebar correo-sidebar" id="sidebar">
+    <div th:with="rol=${usuarioRolNormalizado != null ? usuarioRolNormalizado : ''}">
+        <div class="sidebar-header sidebar-brand-header">
+            <div class="sidebar-brand-title">
+                <i class="fas" th:classappend="${rol == 'ADMIN'} ? ' fa-user-shield' : (${rol == 'GERENTE'} ? ' fa-chart-line' : (${rol == 'VENDEDOR'} ? ' fa-handshake' : (${rol == 'CONDUCTOR'} ? ' fa-truck' : ' fa-envelope')))" aria-hidden="true"></i>
+                <span class="logo-text" th:text="${rol == 'ADMIN'} ? 'Admin Panel' : (${rol == 'GERENTE'} ? 'Concesionario' : (${rol == 'VENDEDOR'} ? 'Vendedor' : (${rol == 'CONDUCTOR'} ? 'Conductor' : 'Correo')))">Correo</span>
+            </div>
+        </div>
+
+        <nav>
+            <ul>
+                <th:block th:if="${rol == 'ADMIN'}">
+                    <li><a th:href="@{/dashboard}"><i class="fas fa-chart-line"></i><span>Dashboard</span></a></li>
+                    <li><a th:href="@{/usuarios}"><i class="fas fa-users"></i><span>Usuarios</span></a></li>
+                    <li><a th:href="@{/vehiculos}"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
+                    <li><a th:href="@{/inventario}"><i class="fas fa-warehouse"></i><span>Inventario</span></a></li>
+                    <li><a th:href="@{/roles}"><i class="fas fa-id-badge"></i><span>Roles</span></a></li>
+                    <li><a th:href="@{/transporte}"><i class="fas fa-truck-fast"></i><span>Transporte</span></a></li>
+                    <li><a th:href="@{/novedades}"><i class="fas fa-bullhorn"></i><span>Novedades</span></a></li>
+                </th:block>
+
+                <th:block th:if="${rol == 'GERENTE'}">
+                    <li><a th:href="@{/gerente}"><i class="fas fa-house"></i><span>Inicio</span></a></li>
+                    <li><a th:href="@{/gerente/valoracion}"><i class="fas fa-scale-balanced"></i><span>Valoración</span></a></li>
+                    <li><a th:href="@{/gerente/inventario}"><i class="fas fa-warehouse"></i><span>Inventario</span></a></li>
+                    <li><a th:href="@{/gerente/vehiculos(estadoPublicacion='PENDIENTE')}"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
+                    <li><a th:href="@{/gerente/contabilidad}"><i class="fas fa-chart-pie"></i><span>Contabilidad</span></a></li>
+                    <li><a href="/gerente#financiamiento"><i class="fas fa-building-columns"></i><span>Financiación</span></a></li>
+                    <li><a th:href="@{/gerente/novedades}"><i class="fas fa-triangle-exclamation"></i><span>Novedades</span></a></li>
+                    <li><a th:href="@{/gerente/clientes/interesados}"><i class="fas fa-users"></i><span>Interesados</span></a></li>
+                </th:block>
+
+                <th:block th:if="${rol == 'VENDEDOR'}">
+                    <li><a th:href="@{/vendedor/panel}"><i class="fas fa-gauge-high"></i><span>Panel</span></a></li>
+                    <li><a th:href="@{/vendedor/vehiculos}"><i class="fas fa-car-side"></i><span>Vehículos disponibles</span></a></li>
+                    <li><a th:href="@{/vendedor/ventas}"><i class="fas fa-sack-dollar"></i><span>Ventas y oportunidades</span></a></li>
+                    <li><a href="/vendedor/ventas#financiamiento"><i class="fas fa-building-columns"></i><span>Financiación</span></a></li>
+                    <li><a th:href="@{/vendedor/novedades}"><i class="fas fa-triangle-exclamation"></i><span>Reportar novedades</span></a></li>
+                </th:block>
+
+                <th:block th:if="${rol == 'CONDUCTOR'}">
+                    <li><a th:href="@{/conductor/panel}"><i class="fas fa-gauge"></i><span>Dashboard</span></a></li>
+                    <li><a th:href="@{/conductor/panel/notificaciones}"><i class="fas fa-bell"></i><span>Notificaciones</span></a></li>
+                    <li><a th:href="@{/conductor/novedades}"><i class="fas fa-bullhorn"></i><span>Reportar novedad</span></a></li>
+                </th:block>
+
+                <li class="dropdown-menu-item" th:classappend="${activePage == 'inbox' or activePage == 'enviados' or activePage == 'papelera' or activePage == 'masivos'} ? ' active-menu' : ''">
+                    <a th:href="@{/correo/inbox/{id}(id=${usuarioId})}" class="dropdown-toggle" th:classappend="${activePage == 'inbox' or activePage == 'enviados' or activePage == 'papelera' or activePage == 'masivos'} ? ' active' : ''">
+                        <i class="fas fa-envelope"></i>
+                        <span>Correo</span>
+                        <span th:if="${unreadCount != null and unreadCount > 0}" class="notification-badge" th:text="${unreadCount}">0</span>
+                    </a>
+                    <ul class="dropdown-submenu">
+                        <li><a th:href="@{/correo/inbox/{id}(id=${usuarioId})}" th:classappend="${activePage == 'inbox'} ? ' active' : ''"><i class="fas fa-inbox"></i><span>Bandeja de entrada</span><span th:if="${unreadCount != null and unreadCount > 0}" class="notification-badge" th:text="${unreadCount}">0</span></a></li>
+                        <li><a th:href="@{/correo/enviados/{id}(id=${usuarioId})}" th:classappend="${activePage == 'enviados'} ? ' active' : ''"><i class="fas fa-paper-plane"></i><span>Enviados</span></a></li>
+                        <li><a th:href="@{/correo/papelera/{id}(id=${usuarioId})}" th:classappend="${activePage == 'papelera'} ? ' active' : ''"><i class="fas fa-trash"></i><span>Papelera</span></a></li>
+                        <li th:if="${rol == 'ADMIN' or rol == 'GERENTE'}"><a th:href="@{/email/enviar}" th:classappend="${activePage == 'masivos'} ? ' active' : ''"><i class="fas fa-bullhorn"></i><span>Correos masivos</span></a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="logout">
+            <form th:action="@{/logout}" method="post" style="margin: 0;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</aside>
+</body>
+</html>

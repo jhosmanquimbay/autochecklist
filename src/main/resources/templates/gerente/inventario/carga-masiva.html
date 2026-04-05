@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Carga Masiva de Inventario — Gerente</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+  <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+
+  <main class="main inventory-modern">
+    <div class="content-header modern-header">
+      <h1><i class="fa-solid fa-file-arrow-up"></i> Carga Masiva de Inventario</h1>
+      <p>Importa y actualiza inventario desde Excel o CSV. El catálogo público también se sincroniza por chasis.</p>
+      <div class="info-pills">
+        <span class="info-pill"><i class="fa-solid fa-file-shield"></i> Validación de datos</span>
+        <span class="info-pill"><i class="fa-solid fa-rotate"></i> Actualización por chasis</span>
+      </div>
+    </div>
+
+    <div class="card upload-info-card">
+      <div class="layout-between">
+        <div>
+          <h2 class="upload-title">Plantillas y formato requerido</h2>
+          <p class="muted-note">Columnas: <strong>chasis, marca, modelo, anio, color, motor, ubicacion_actual, estado_logistico</strong>.</p>
+        </div>
+        <div class="btn-group">
+          <a th:href="@{/inventario/plantilla-excel}" class="btn ghost">
+            <i class="fa-solid fa-file-excel"></i> Plantilla Excel
+          </a>
+          <a th:href="@{/inventario/plantilla-csv}" class="btn ghost">
+            <i class="fa-solid fa-file-csv"></i> Plantilla CSV
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div th:if="${success}" class="card card-alert success" th:text="${success}"></div>
+    <div th:if="${error}" class="card card-alert error" th:text="${error}"></div>
+    <div th:if="${warning}" class="card card-alert warning" th:text="${warning}"></div>
+
+    <div class="card card-narrow centered-panel elevated-upload-card">
+      <form th:action="@{/gerente/inventario/carga-masiva}" method="post" enctype="multipart/form-data" class="upload-form">
+        <label for="archivo" class="upload-dropzone" id="dropZone">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Arrastra tu archivo o haz clic para seleccionar</span>
+          <small>Formatos soportados: .xlsx, .xls, .csv</small>
+        </label>
+
+        <input id="archivo" type="file" name="archivo" accept=".xlsx,.xls,.csv" required class="upload-input"/>
+        <div id="fileName" class="file-name"></div>
+
+        <div class="action-buttons top-space centered-actions premium-actions">
+          <button type="submit" class="btn">
+            <i class="fa-solid fa-upload"></i> Procesar Archivo
+          </button>
+          <a th:href="@{/gerente/inventario}" class="btn ghost">
+            <i class="fa-solid fa-arrow-left"></i> Volver a Inventario
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <div th:if="${resultado != null}" class="card">
+      <div class="section-title">
+        <h2><i class="fa-solid fa-clipboard-check"></i> Resultado de la Carga</h2>
+      </div>
+      <div class="kpi-grid compact">
+        <div class="kpi-card">
+          <span class="kpi-label">Filas procesadas</span>
+          <span class="kpi-value" th:text="${resultado.totalFilas}">0</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Exitosas</span>
+          <span class="kpi-value" th:text="${resultado.filasExitosas}">0</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Con error</span>
+          <span class="kpi-value" th:text="${resultado.filasConError}">0</span>
+        </div>
+      </div>
+
+      <p class="muted-note" th:text="${resultado.mensaje}">Carga completada.</p>
+
+      <table th:if="${resultado.errores != null and !#lists.isEmpty(resultado.errores)}">
+        <thead>
+          <tr>
+            <th>Fila</th>
+            <th>Chasis</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Error</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="item : ${resultado.errores}">
+            <td th:text="${item.fila}">1</td>
+            <td th:text="${item.chasis}">-</td>
+            <td th:text="${item.marca}">-</td>
+            <td th:text="${item.modelo}">-</td>
+            <td th:text="${item.error}">-</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const inputArchivo = document.getElementById('archivo');
+    const fileName = document.getElementById('fileName');
+    const dropZone = document.getElementById('dropZone');
+
+    if (inputArchivo) {
+      inputArchivo.addEventListener('change', function () {
+        if (this.files.length > 0) {
+          fileName.textContent = 'Archivo seleccionado: ' + this.files[0].name;
+          if (dropZone) {
+            dropZone.classList.add('is-ready');
+          }
+        } else {
+          fileName.textContent = '';
+          if (dropZone) {
+            dropZone.classList.remove('is-ready');
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

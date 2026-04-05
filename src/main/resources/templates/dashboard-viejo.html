@@ -1,0 +1,696 @@
+
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Control Center</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/admin-theme.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+
+</head>
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+<aside class="sidebar collapsed" id="sidebar"
+       onmouseenter="openSidebar()"
+       onmouseleave="closeSidebar()">
+
+    <div>
+
+        <!-- HEADER -->
+        <div class="sidebar-header">
+            <button class="toggle-btn" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span class="logo-text">Admin Panel</span>
+        </div>
+
+        <!-- NAVIGATION -->
+        <nav>
+            <ul>
+
+                <li>
+                    <a th:href="@{/dashboard}">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/usuarios}">
+                        <i class="fas fa-users"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/vehiculos}">
+                        <i class="fas fa-car"></i>
+                        <span>Vehículos</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/inventario}">
+                        <i class="fas fa-warehouse"></i>
+                        <span>Inventario</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/roles}">
+                        <i class="fas fa-id-badge"></i>
+                        <span>Roles</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/transporte}">
+                        <i class="fas fa-shipping-fast"></i>
+                        <span>Transporte</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/correo/inbox}">
+                        <i class="fas fa-envelope"></i>
+                        <span>Correo</span>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+
+    </div>
+
+    <!-- LOGOUT -->
+    <div class="logout">
+        <form th:action="@{/logout}" method="post">
+            <button type="submit">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Cerrar sesión</span>
+            </button>
+        </form>
+    </div>
+
+</aside>
+
+<!-- ================= MAIN CONTENT ================= -->
+<main class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div>
+            <h1>Centro de Control</h1>
+            <span>Administrador del sistema</span>
+        </div>
+    </div>
+
+    <!-- CONTROL BLOCK -->
+    <section class="control-block">
+
+        <!-- ENCABEZADO CON OPCIONES DE ACTUALIZACIÓN -->
+        <div class="dashboard-header">
+            <div>
+                <h2>📊 Estadísticas en Tiempo Real</h2>
+                <p class="update-info">Última actualización: <span id="lastUpdate">justo ahora</span></p>
+            </div>
+            <button class="refresh-btn" onclick="actualizarEstadisticas()">
+                <i class="fas fa-sync-alt"></i>
+                Actualizar
+            </button>
+        </div>
+
+        <!-- TARJETAS DE ESTADÍSTICAS -->
+        <div class="stats-container">
+            <div class="stat-card usuarios">
+                <i class="stat-card-icon fas fa-users"></i>
+                <span class="stat-card-label">Usuarios Activos</span>
+                <span class="stat-card-value" id="totalUsuarios">--</span>
+            </div>
+            <div class="stat-card vehiculos">
+                <i class="stat-card-icon fas fa-car"></i>
+                <span class="stat-card-label">Total Vehículos</span>
+                <span class="stat-card-value" id="totalVehiculos">--</span>
+            </div>
+            <div class="stat-card activos">
+                <i class="stat-card-icon fas fa-check-circle"></i>
+                <span class="stat-card-label">Vehículos Activos</span>
+                <span class="stat-card-value" id="vehiculosActivos">--</span>
+            </div>
+            <div class="stat-card roles">
+                <i class="stat-card-icon fas fa-id-badge"></i>
+                <span class="stat-card-label">Tipos de Roles</span>
+                <span class="stat-card-value" id="tiposRoles">--</span>
+            </div>
+            <div class="stat-card conductores">
+                <i class="stat-card-icon fas fa-person"></i>
+                <span class="stat-card-label">Conductores</span>
+                <span class="stat-card-value" id="totalConductores">--</span>
+            </div>
+            <div class="stat-card pedidos">
+                <i class="stat-card-icon fas fa-box"></i>
+                <span class="stat-card-label">Órdenes Activas</span>
+                <span class="stat-card-value" id="totalPedidos">--</span>
+            </div>
+        </div>
+
+        <!-- SECCIÓN DE ALERTAS CRÍTICAS -->
+        <div class="alerts-container">
+            <div class="alerts-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Alertas & Advertencias
+            </div>
+            
+            <div id="alertasContainer">
+                <!-- Se llenarán dinámicamente -->
+            </div>
+        </div>
+
+        <!-- SECCIÓN DE ACCIONES RÁPIDAS -->
+        <div class="quick-actions">
+            <div class="quick-actions-title">
+                <i class="fas fa-lightning-bolt"></i>
+                Acciones Rápidas
+            </div>
+            
+            <div class="actions-grid">
+                <a href="/usuarios" class="action-btn usuarios" title="Gestionar Usuarios">
+                    <i class="fas fa-user-plus"></i>
+                    <span class="action-btn-label">Nuevo Usuario</span>
+                </a>
+                
+                <a href="/vehiculos/crear" class="action-btn vehiculos" title="Registrar Vehículo">
+                    <i class="fas fa-car-plus"></i>
+                    <span class="action-btn-label">Nuevo Vehículo</span>
+                </a>
+                
+                <a href="/roles" class="action-btn roles" title="Administrar Roles">
+                    <i class="fas fa-key"></i>
+                    <span class="action-btn-label">Roles</span>
+                </a>
+                
+                <a href="/inventario" class="action-btn inventario" title="Ver Inventario">
+                    <i class="fas fa-warehouse"></i>
+                    <span class="action-btn-label">Inventario</span>
+                </a>
+                
+                <a href="/pedidos" class="action-btn pedidos" title="Órdenes de Envío">
+                    <i class="fas fa-truck"></i>
+                    <span class="action-btn-label">Pedidos</span>
+                </a>
+                
+                <a href="/conductor" class="action-btn conductores" title="Conductores">
+                    <i class="fas fa-person-hiking"></i>
+                    <span class="action-btn-label">Conductores</span>
+                </a>
+                
+                <a href="/novedades" class="action-btn reportes" title="Reportar Novedad">
+                    <i class="fas fa-flag"></i>
+                    <span class="action-btn-label">Novedades</span>
+                </a>
+                
+                <a href="/correo/inbox" class="action-btn info" title="Centro de Correos">
+                    <i class="fas fa-envelope"></i>
+                    <span class="action-btn-label">Correos</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- GRÁFICAS -->
+        <div class="charts-container">
+            <!-- Gráfica de Usuarios por Rol -->
+            <div class="chart-box">
+                <div class="chart-title">
+                    <i class="fas fa-chart-pie"></i>
+                    Distribución de Usuarios por Rol
+                </div>
+                <div class="chart-wrapper">
+                    <div id="chartUsuariosLoading" class="loading">
+                        <span>Cargando...</span>
+                    </div>
+                    <canvas id="chartUsuariosPorRol" style="display: none;"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfica de Vehículos por Marca -->
+            <div class="chart-box">
+                <div class="chart-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Vehículos por Marca
+                </div>
+                <div class="chart-wrapper">
+                    <div id="chartVehiculosLoading" class="loading">
+                        <span>Cargando...</span>
+                    </div>
+                    <canvas id="chartVehiculosPorMarca" style="display: none;"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfica de Estado de Vehículos -->
+            <div class="chart-box">
+                <div class="chart-title">
+                    <i class="fas fa-chart-doughnut"></i>
+                    Estado de Vehículos
+                </div>
+                <div class="chart-wrapper">
+                    <div id="chartEstadoLoading" class="loading">
+                        <span>Cargando...</span>
+                    </div>
+                    <canvas id="chartEstadoVehiculos" style="display: none;"></canvas>
+                </div>
+            </div>
+
+            <!-- Información General -->
+            <div class="chart-box">
+                <div class="chart-title">
+                    <i class="fas fa-info-circle"></i>
+                    Resumen General
+                </div>
+                <div class="summary-box">
+                    <div class="summary-item">
+                        <span>Usuarios en Sistema:</span>
+                        <strong id="resumeUsuarios" style="color: #667eea;">--</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>Vehículos Disponibles:</span>
+                        <strong id="resumeVehiculosActivos" style="color: #38f9d7;">--</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>Vehículos Inactivos:</span>
+                        <strong id="resumeVehiculosInactivos" style="color: #f5576c;">--</strong>
+                    </div>
+                    <div class="summary-footer">
+                        ✨ Dashboard actualizado cada 5 segundos
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+</main>
+
+<!-- ================= SCRIPT ================= -->
+
+<script>
+
+// ═══════════════════════════════════════════════════════════════
+// FUNCIONES DE MANEJO DEL SIDEBAR
+// ═══════════════════════════════════════════════════════════════
+
+function toggleSidebar(){
+    document.getElementById("sidebar").classList.toggle("collapsed");
+}
+
+function openSidebar(){
+    document.getElementById("sidebar").classList.remove("collapsed");
+}
+
+function closeSidebar(){
+    document.getElementById("sidebar").classList.add("collapsed");
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VARIABLES GLOBALES PARA GRÁFICAS
+// ═══════════════════════════════════════════════════════════════
+
+let chartUsuarios = null;
+let chartVehiculos = null;
+let chartEstado = null;
+
+// ═══════════════════════════════════════════════════════════════
+// OBTENER ESTADÍSTICAS DEL SERVIDOR
+// ═══════════════════════════════════════════════════════════════
+
+async function obtenerEstadisticas() {
+    try {
+        const response = await fetch('/api/estadisticas/general');
+        if (!response.ok) throw new Error('Error al obtener estadísticas');
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+        return null;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ACTUALIZAR TARJETAS DE ESTADÍSTICAS
+// ═══════════════════════════════════════════════════════════════
+
+function actualizarTarjetas(stats) {
+    if (!stats) return;
+
+    // Usuarios
+    document.getElementById('totalUsuarios').textContent = stats.totalUsuarios || 0;
+    document.getElementById('resumeUsuarios').textContent = stats.totalUsuarios || 0;
+
+    // Vehículos
+    document.getElementById('totalVehiculos').textContent = stats.totalVehiculos || 0;
+    document.getElementById('vehiculosActivos').textContent = stats.vehiculosActivos || 0;
+    document.getElementById('resumeVehiculosActivos').textContent = stats.vehiculosActivos || 0;
+    document.getElementById('resumeVehiculosInactivos').textContent = stats.vehiculosInactivos || 0;
+
+    // Tipos de roles
+    const rolesCount = Object.keys(stats.usuariosPorRol || {}).length;
+    document.getElementById('tiposRoles').textContent = rolesCount || 0;
+
+        // Conductores (si existen en stats)
+        if (stats.conductores) {
+            document.getElementById('totalConductores').textContent = stats.conductores.totalConductores || 0;
+        }
+
+        // Pedidos (si existen en stats)
+        if (stats.pedidos) {
+            document.getElementById('totalPedidos').textContent = stats.pedidos.totalPedidos || 0;
+        }
+
+
+    const colores = [
+        '#667eea', '#764ba2', '#f093fb', '#f5576c', '#43e97b', '#38f9d7', '#4facfe', '#00f2fe'
+    ];
+
+    if (chartUsuarios) {
+        chartUsuarios.data.labels = labels;
+        chartUsuarios.data.datasets[0].data = values;
+        chartUsuarios.update();
+    } else {
+        chartUsuarios = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colores.slice(0, labels.length),
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { size: 12, family: "Poppins" },
+                            padding: 15,
+                            usePointStyle: true
+                        }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 12 },
+                        formatter: (value, ctx) => {
+                            const datapoints = ctx.chart.data.datasets[0].data;
+                            const total = datapoints.reduce((total, datapoint) => total + datapoint, 0);
+                            const percentage = (value * 100 / total).toFixed(0) + '%';
+                            return percentage;
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+    }
+
+    // Mostrar canvas, ocultar loading
+    document.getElementById('chartUsuariosLoading').style.display = 'none';
+    ctx.style.display = 'block';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GRÁFICA 2: VEHÍCULOS POR MARCA
+// ═══════════════════════════════════════════════════════════════
+
+function crearGraficaVehiculos(stats) {
+    const ctx = document.getElementById('chartVehiculosPorMarca');
+    if (!ctx) return;
+
+    const datos = stats.vehiculosPorMarca || {};
+    const labels = Object.keys(datos);
+    const values = Object.values(datos);
+
+    const colores = [
+        '#667eea', '#764ba2', '#f093fb', '#f5576c', '#43e97b', '#38f9d7', '#4facfe', '#00f2fe'
+    ];
+
+    if (chartVehiculos) {
+        chartVehiculos.data.labels = labels;
+        chartVehiculos.data.datasets[0].data = values;
+        chartVehiculos.update();
+    } else {
+        chartVehiculos = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Cantidad',
+                    data: values,
+                    backgroundColor: colores.slice(0, labels.length),
+                    borderColor: colores.slice(0, labels.length).map(c => c.replace(/[^,]+(?=\))/, '0.8')),
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            font: { size: 12, family: "Poppins" },
+                            padding: 15
+                        }
+                    },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'end',
+                        color: '#333',
+                        font: { weight: 'bold', size: 11 }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            font: { size: 11, family: "Poppins" }
+                        },
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            font: { size: 11, family: "Poppins" }
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+    }
+
+    // Mostrar canvas, ocultar loading
+    document.getElementById('chartVehiculosLoading').style.display = 'none';
+    ctx.style.display = 'block';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GRÁFICA 3: ESTADO DE VEHÍCULOS
+// ═══════════════════════════════════════════════════════════════
+
+function crearGraficaEstado(stats) {
+    const ctx = document.getElementById('chartEstadoVehiculos');
+    if (!ctx) return;
+
+    const activos = stats.vehiculosActivos || 0;
+    const inactivos = stats.vehiculosInactivos || 0;
+
+    if (chartEstado) {
+        chartEstado.data.datasets[0].data = [activos, inactivos];
+        chartEstado.update();
+    } else {
+        chartEstado = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Activos', 'Inactivos'],
+                datasets: [{
+                    data: [activos, inactivos],
+                    backgroundColor: ['#38f9d7', '#f5576c'],
+                    borderColor: '#fff',
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { size: 13, weight: 'bold', family: "Poppins" },
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 14 },
+                        formatter: (value) => value
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+    }
+
+    // Mostrar canvas, ocultar loading
+    document.getElementById('chartEstadoLoading').style.display = 'none';
+    ctx.style.display = 'block';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FUNCIÓN PRINCIPAL: ACTUALIZAR ESTADÍSTICAS
+// ═══════════════════════════════════════════════════════════════
+
+async function actualizarEstadisticas() {
+    const btn = document.querySelector('.refresh-btn');
+    btn.classList.add('loading');
+
+    // Obtener datos del endpoint rápido
+    const generalResponse = await fetch('/api/estadisticas/general');
+    const stats = await generalResponse.json();
+    
+    // Obtener AlertasSeparadamente para no bloquear
+    const alertasResponse = await fetch('/api/estadisticas/alertas').catch(() => ({}));
+    const alertas = alertasResponse.json ? await alertasResponse.json() : {};
+    
+    if (stats) {
+        actualizarTarjetas(stats);
+        crearGraficaUsuarios(stats);
+        crearGraficaVehiculos(stats);
+        crearGraficaEstado(stats);
+        
+        // Mostrar alertas si se cargaron
+        if (Object.keys(alertas).length > 0) {
+            mostrarAlertas(alertas);
+        }
+    }
+
+    btn.classList.remove('loading');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MOSTRAR ALERTAS Y ADVERTENCIAS
+// ═══════════════════════════════════════════════════════════════
+
+function mostrarAlertas(alertas) {
+    const container = document.getElementById('alertasContainer');
+    container.innerHTML = '';
+    
+    // Función auxiliar para crear alertas
+    function createAlert(label, value, description, className = 'warning', isCritical = false) {
+        if (value === 0 || value === false) {
+            return `
+                <div class="alert-item success">
+                    <div class="alert-content">
+                        <div class="alert-label">✓ ${label}</div>
+                        <div class="alert-description">${description}</div>
+                    </div>
+                    <span class="alert-badge zero">0</span>
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="alert-item ${className}">
+                <div class="alert-content">
+                    <div class="alert-label">${isCritical ? '⚠️' : '!'} ${label}</div>
+                    <div class="alert-description">${description}</div>
+                </div>
+                <span class="alert-badge">${value}</span>
+            </div>
+        `;
+    }
+    
+    let html = '';
+    
+    // Generar alertas
+    html += createAlert(
+        'Vehículos sin Conductor',
+        alertas.vehiculosSinConductor,
+        'Hay vehículos sin asignar a conductores',
+        'warning',
+        alertas.vehiculosSinConductor > 2
+    );
+    
+    html += createAlert(
+        'Conductores sin Vehículo',
+        alertas.conductoresSinVehiculo,
+        'Hay conductores sin vehículo asignado',
+        'warning',
+        alertas.conductoresSinVehiculo > 2
+    );
+    
+    html += createAlert(
+        'Notificaciones no Leídas',
+        alertas.notificacionesNoLeidas,
+        'Tienes notificaciones pendientes de revisar',
+        'info'
+    );
+    
+    html += createAlert(
+        'Vehículos Inactivos',
+        alertas.vehiculosInactivos,
+        'Posibles vehículos en mantenimiento',
+        'warning'
+    );
+    
+    html += createAlert(
+        'Conductores sin Licencia',
+        alertas.conductoresSinLicencia,
+        'Conductores con datos incompletos',
+        'warning',
+        alertas.conductoresSinLicencia > 0
+    );
+    
+    if (alertas.inventarioBajo) {
+        html += `
+            <div class="alert-item warning">
+                <div class="alert-content">
+                    <div class="alert-label">⚠️ Inventario Bajo</div>
+                    <div class="alert-description">Menos de 5 vehículos disponibles en el sistema</div>
+                </div>
+                <span class="alert-badge">CRÍTICO</span>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html || '<p style="text-align: center; color: #999;">✓ Todas las alertas fueron resueltas</p>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INICIALIZACIÓN AL CARGAR LA PÁGINA
+// ═══════════════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Cargar estadísticas inmediatamente
+    actualizarEstadisticas();
+
+    // Actualizar cada 5 segundos
+    setInterval(actualizarEstadisticas, 5000);
+});
+
+</script>
+
+</body>
+</html>
+

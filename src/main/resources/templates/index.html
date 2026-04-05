@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>AutoCheckList | Importadora Premium</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+<header class="navbar">
+    <div class="logo">
+        <img th:src="@{/images/AUTOCHECKLIST (4).png}" alt="AutoCheckList">
+        <div class="logo-text">
+            <span>AUTO</span>
+            <strong>CHECKLIST</strong>
+        </div>
+    </div>
+
+    <nav>
+        <a href="#inicio">Inicio</a>
+        <a href="#marcas">Marcas</a>
+        <a href="#destacados">Destacados</a>
+        <a href="#vehiculos">Vehículos</a>
+        <a href="#contacto">Contacto</a>
+
+        <a th:if="${usuarioActual == null}" th:href="@{/login}" class="btn-login">
+            <i class="fas fa-user"></i> Iniciar sesión
+        </a>
+
+        <div th:if="${usuarioActual != null and esClientePortal}" class="profile-menu">
+            <button type="button" class="profile-trigger" onclick="toggleProfileMenu(event)">
+                <span class="profile-avatar" th:text="${#strings.substring(usuarioActual.nombre, 0, 1)}">A</span>
+                <span class="profile-name" th:text="${usuarioActual.nombre}">Mi perfil</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+
+            <div id="profileDropdown" class="profile-dropdown">
+                <a th:href="@{/cliente/compras}"><i class="fas fa-bag-shopping"></i> Mis compras</a>
+                <a th:href="@{/cliente/favoritos}"><i class="fas fa-heart"></i> Mis favoritos</a>
+                <a th:href="@{/cliente/perfil}"><i class="fas fa-user-gear"></i> Gestionar perfil</a>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="profile-logout"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+
+        <form th:if="${usuarioActual != null and !esClientePortal}" th:action="@{/logout}" method="post" class="nav-logout-form">
+            <button type="submit" class="btn-login">
+                <i class="fas fa-right-from-bracket"></i> Cerrar sesión
+            </button>
+        </form>
+    </nav>
+</header>
+
+<div class="office-flash" th:if="${param.registro != null or favoritoMensaje != null}">
+    <div class="office-flash-item" th:if="${param.registro != null}">
+        <i class="fas fa-circle-check"></i>
+        <span>Tu cuenta fue creada correctamente. Ya puedes guardar favoritos y gestionar tu perfil.</span>
+    </div>
+    <div class="office-flash-item" th:if="${favoritoMensaje != null}">
+        <i class="fas fa-heart"></i>
+        <span th:text="${favoritoMensaje}">Vehículo agregado a favoritos.</span>
+    </div>
+</div>
+
+<section id="inicio" class="hero-banner-image-stage">
+    <a href="#vehiculos" class="hero-banner-image-link" aria-label="Ir a la sección de vehículos">
+        <img th:src="@{/images/hero-inventario-banner.png}" class="hero-banner-image" alt="Conoce nuestro inventario">
+    </a>
+</section>
+
+<section class="kpi-strip">
+    <div class="kpi-item">
+        <span class="kpi-number" th:text="${vehiculos != null ? #lists.size(vehiculos) : 0}">0</span>
+        <span class="kpi-text">Vehículos Publicados</span>
+    </div>
+    <div class="kpi-item">
+        <span class="kpi-number" th:text="${marcas != null ? #lists.size(marcas) : 0}">0</span>
+        <span class="kpi-text">Marcas Disponibles</span>
+    </div>
+    <div class="kpi-item">
+        <span class="kpi-number" th:text="${destacados != null ? #lists.size(destacados) : 0}">0</span>
+        <span class="kpi-text">Vehículos Destacados</span>
+    </div>
+    <div class="kpi-item">
+        <span class="kpi-number">24/7</span>
+        <span class="kpi-text">Experiencia digital disponible</span>
+    </div>
+</section>
+
+<section id="promociones" class="campaign-billboard-section" th:if="${heroBannerInicial != null}">
+    <div class="campaign-billboard-shell" th:attr="data-banner-source=@{/home-banners.json}">
+        <div id="campaignBillboardViewport" class="campaign-billboard-viewport" aria-live="polite">
+            <article class="campaign-slide"
+                     th:classappend="${' theme-' + (heroBannerInicial.theme != null ? heroBannerInicial.theme : 'gold') + (heroBannerInicial.imageUrl != null ? ' has-image' : '') + (heroBannerInicialTieneTexto ? '' : ' image-only')}">
+                <div class="campaign-slide-media">
+                    <img th:if="${heroBannerInicial.imageUrl != null}"
+                         th:src="${heroBannerInicial.imageUrl}"
+                         th:alt="${heroBannerInicial.title != null and !#strings.isEmpty(heroBannerInicial.title) ? heroBannerInicial.title : 'Promoción destacada'}"
+                         class="campaign-slide-image">
+                    <div th:unless="${heroBannerInicial.imageUrl != null}" class="campaign-slide-fallback-icon">
+                        <i th:class="${heroBannerInicial.icon != null and !#strings.isEmpty(heroBannerInicial.icon) ? heroBannerInicial.icon : 'fas fa-bullhorn'}"></i>
+                    </div>
+                </div>
+                <div class="campaign-slide-shade"></div>
+                <div th:if="${heroBannerInicialTieneTexto}" class="campaign-slide-copy">
+                    <span th:if="${heroBannerInicial.eyebrow != null and !#strings.isEmpty(heroBannerInicial.eyebrow)}"
+                          class="campaign-slide-chip"
+                          th:text="${heroBannerInicial.eyebrow}">Campaña</span>
+                    <h3 th:if="${heroBannerInicial.title != null and !#strings.isEmpty(heroBannerInicial.title)}"
+                        th:text="${heroBannerInicial.title}">Promoción</h3>
+                    <p th:if="${heroBannerInicial.description != null and !#strings.isEmpty(heroBannerInicial.description)}"
+                       th:text="${heroBannerInicial.description}"></p>
+                    <div class="campaign-slide-actions"
+                         th:if="${(heroBannerInicial.ctaText != null and !#strings.isEmpty(heroBannerInicial.ctaText) and heroBannerInicial.ctaUrl != null and !#strings.isEmpty(heroBannerInicial.ctaUrl)) or (heroBannerInicial.metricValue != null and !#strings.isEmpty(heroBannerInicial.metricValue)) or (heroBannerInicial.metricLabel != null and !#strings.isEmpty(heroBannerInicial.metricLabel))}">
+                        <a th:if="${heroBannerInicial.ctaText != null and !#strings.isEmpty(heroBannerInicial.ctaText) and heroBannerInicial.ctaUrl != null and !#strings.isEmpty(heroBannerInicial.ctaUrl)}"
+                           th:href="${heroBannerInicial.ctaUrl}"
+                           class="campaign-slide-button">
+                            <span th:text="${heroBannerInicial.ctaText}">Explorar</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <div class="campaign-slide-metric"
+                             th:if="${(heroBannerInicial.metricValue != null and !#strings.isEmpty(heroBannerInicial.metricValue)) or (heroBannerInicial.metricLabel != null and !#strings.isEmpty(heroBannerInicial.metricLabel))}">
+                            <strong th:if="${heroBannerInicial.metricValue != null and !#strings.isEmpty(heroBannerInicial.metricValue)}"
+                                    th:text="${heroBannerInicial.metricValue}">24/7</strong>
+                            <span th:if="${heroBannerInicial.metricLabel != null and !#strings.isEmpty(heroBannerInicial.metricLabel)}"
+                                  th:text="${heroBannerInicial.metricLabel}">activo</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="campaign-billboard-footer">
+            <button type="button" class="campaign-billboard-arrow" data-home-campaign="prev" aria-label="Campaña anterior">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div id="campaignBillboardIndicators" class="campaign-billboard-indicators"></div>
+            <button type="button" class="campaign-billboard-arrow" data-home-campaign="next" aria-label="Campaña siguiente">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</section>
+
+<section id="destacados" class="destacados-carousel-section" th:if="${destacados != null and !#lists.isEmpty(destacados)}">
+    <div class="destacados-head">
+        <div>
+            <span class="section-tag">Destacados</span>
+            <h2>Explora modelos con más presencia</h2>
+        </div>
+        <div class="carousel-controls">
+            <button type="button" class="carousel-btn" onclick="moverCarrusel(-1)">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button type="button" class="carousel-btn" onclick="moverCarrusel(1)">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="destacadosTrack" class="destacados-track">
+        <article th:each="vehiculo : ${destacados}"
+                 class="destacado-card is-clickable"
+                 th:attr="data-url=@{/oficina/vehiculos/{id}(id=${vehiculo.idVehiculo})}"
+                 onclick="abrirDetalleVehiculo(event, this.dataset.url)">
+            <div class="destacado-card-media">
+                <img th:src="${vehiculo.imagenes[0]}" th:alt="${vehiculo.nombreCompleto}">
+
+                <form th:if="${esClientePortal}"
+                      th:action="@{'/cliente/favoritos/' + ${vehiculo.idVehiculo} + '/toggle'}"
+                      method="post"
+                      class="favorito-form favorito-form-hero">
+                    <button type="submit"
+                            class="favorito-btn"
+                            th:classappend="${favoritosIds.contains(vehiculo.idVehiculo)} ? ' activo' : ''">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div class="destacado-card-body">
+                <span class="destacado-marca" th:text="${vehiculo.marca}">Marca</span>
+                <h3 th:text="${vehiculo.nombreCompleto}">Vehículo</h3>
+                <p th:text="${vehiculo.descripcion != null and !#strings.isEmpty(vehiculo.descripcion) ? vehiculo.descripcion : 'Una unidad destacada por diseño, tecnología y presencia.'}"></p>
+
+                <div class="destacado-meta">
+                    <span th:if="${vehiculo.anio != null}" th:text="${vehiculo.anio}">2024</span>
+                    <span th:text="${vehiculo.textoStock}">Disponible</span>
+                </div>
+
+                                <div class="credit-teaser" th:if="${vehiculo.cuotaMensualDesde != null}">
+                                        <span>Desde</span>
+                                        <strong th:text="${'$ ' + #numbers.formatDecimal(vehiculo.cuotaMensualDesde, 1, 'COMMA', 0, 'POINT') + ' / mes'}">$ 0 / mes</strong>
+                                        <small th:text="${'Entrada sugerida desde ' + #numbers.formatDecimal(vehiculo.porcentajeCuotaInicialMinima, 1, 'COMMA', 0, 'POINT') + '%'}">Entrada</small>
+                                </div>
+
+                                <div class="card-action-stage">
+                                    <div class="card-action-stack">
+                                    <a th:href="@{/oficina/vehiculos/{id}(id=${vehiculo.idVehiculo})}"
+                                     class="btn-detail-inline">
+                                        <span class="cta-copy">
+                                            <strong>Ver vehículo</strong>
+                                        </span>
+                                        <span class="cta-icon"><i class="fas fa-arrow-right"></i></span>
+                                    </a>
+                                    <a th:if="${vehiculo.cuotaMensualDesde != null and vehiculo.precio != null}"
+                                         th:href="@{'/oficina/vehiculos/' + ${vehiculo.idVehiculo} + '#financiamiento'}"
+                                         class="btn-credit-inline"
+                                         aria-label="Ir al simulador de crédito">
+                                        <span class="cta-copy">
+                                            <strong>Calcular crédito</strong>
+                                        </span>
+                                        <span class="cta-icon"><i class="fas fa-calculator"></i></span>
+                                    </a>
+                                    </div>
+                                </div>
+            </div>
+        </article>
+    </div>
+</section>
+
+<section id="vehiculos" class="vehiculos-section">
+    <div class="vehiculos-shell">
+        <div class="vehiculos-header-simple">
+            <div class="vehiculos-header-copy">
+                <span class="section-tag">Catálogo</span>
+                <h2>Vehículos disponibles</h2>
+                <p>Un catálogo directo, limpio y con información real para consultar antes de tomar una decisión.</p>
+            </div>
+
+            <div id="marcas" class="vehiculos-filtros vehiculos-filtros-top">
+                <a th:href="@{/}"
+                   class="filtro-chip"
+                   th:classappend="${marcaSeleccionada == null or #strings.isEmpty(marcaSeleccionada)} ? ' activo' : ''">
+                    Todas
+                </a>
+                <a th:each="marca : ${marcas}"
+                   th:href="@{/(marca=${marca})}"
+                   class="filtro-chip"
+                   th:classappend="${marcaSeleccionada != null and #strings.equalsIgnoreCase(marcaSeleccionada, marca)} ? ' activo' : ''"
+                   th:text="${marca}">
+                    Marca
+                </a>
+            </div>
+        </div>
+
+        <div id="catalogPromoBand" class="catalog-promo-band"
+             th:attr="hidden=${catalogBannersIniciales == null or #lists.isEmpty(catalogBannersIniciales)} ? 'hidden' : null">
+            <div class="catalog-promo-header">
+                <div>
+                    <span class="section-tag">Promociones del home</span>
+                    <h3>Campañas secundarias dentro del recorrido</h3>
+                </div>
+                <p>Piezas más puntuales para reforzar ofertas, pruebas o beneficios sin quitarle foco al catálogo.</p>
+            </div>
+            <div id="catalogPromoGrid" class="catalog-promo-grid">
+                <article th:each="banner : ${catalogBannersIniciales}"
+                         class="catalog-promo-card"
+                         th:classappend="${' theme-' + (banner.theme != null ? banner.theme : 'gold')}">
+                    <div class="catalog-promo-top"
+                         th:if="${(banner.eyebrow != null and !#strings.isEmpty(banner.eyebrow)) or (banner.metricValue != null and !#strings.isEmpty(banner.metricValue)) or (banner.metricLabel != null and !#strings.isEmpty(banner.metricLabel))}">
+                        <span th:if="${banner.eyebrow != null and !#strings.isEmpty(banner.eyebrow)}"
+                              class="catalog-promo-kicker"
+                              th:text="${banner.eyebrow}">Promoción</span>
+                        <span th:if="${(banner.metricValue != null and !#strings.isEmpty(banner.metricValue)) or (banner.metricLabel != null and !#strings.isEmpty(banner.metricLabel))}"
+                              class="catalog-promo-metric"
+                              th:text="${(banner.metricValue != null ? banner.metricValue : '') + ((banner.metricValue != null and !#strings.isEmpty(banner.metricValue) and banner.metricLabel != null and !#strings.isEmpty(banner.metricLabel)) ? ' ' : '') + (banner.metricLabel != null ? banner.metricLabel : '')}">24/7</span>
+                    </div>
+                    <div class="catalog-promo-media" th:if="${banner.imageUrl != null}">
+                        <img th:src="${banner.imageUrl}"
+                             th:alt="${banner.title != null and !#strings.isEmpty(banner.title) ? banner.title : 'Promoción del home'}">
+                    </div>
+                    <div class="catalog-promo-media" th:unless="${banner.imageUrl != null}">
+                        <div class="catalog-promo-icon">
+                            <i th:class="${banner.icon != null and !#strings.isEmpty(banner.icon) ? banner.icon : 'fas fa-bullhorn'}"></i>
+                        </div>
+                    </div>
+                    <h3 th:if="${banner.title != null and !#strings.isEmpty(banner.title)}" th:text="${banner.title}">Promoción</h3>
+                    <p th:if="${banner.description != null and !#strings.isEmpty(banner.description)}" th:text="${banner.description}"></p>
+                    <a th:if="${banner.ctaText != null and !#strings.isEmpty(banner.ctaText) and banner.ctaUrl != null and !#strings.isEmpty(banner.ctaUrl)}"
+                       th:href="${banner.ctaUrl}"
+                       class="catalog-promo-link">
+                        <span th:text="${banner.ctaText}">Explorar</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </article>
+            </div>
+        </div>
+
+        <div class="vehiculos-grid vehiculos-grid-clean">
+            <div th:if="${vehiculos != null and !#lists.isEmpty(vehiculos)}"
+                 th:each="vehiculo : ${vehiculos}"
+                  class="vehiculo-card is-clickable"
+                  th:attr="data-url=@{/oficina/vehiculos/{id}(id=${vehiculo.idVehiculo})}"
+                  onclick="abrirDetalleVehiculo(event, this.dataset.url)">
+
+                <div class="vehiculo-img">
+                    <form th:if="${esClientePortal}"
+                          th:action="@{'/cliente/favoritos/' + ${vehiculo.idVehiculo} + '/toggle'}"
+                          method="post"
+                          class="favorito-form">
+                        <button type="submit"
+                                class="favorito-btn"
+                                th:classappend="${favoritosIds.contains(vehiculo.idVehiculo)} ? ' activo' : ''">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </form>
+
+                    <img th:src="${vehiculo.imagenes[0]}" th:alt="${vehiculo.nombreCompleto}">
+                </div>
+
+                <div class="vehiculo-content">
+                    <h3 th:text="${vehiculo.nombreCompleto}">Marca Modelo</h3>
+
+                    <p th:if="${vehiculo.anio != null}">
+                        Año: <span th:text="${vehiculo.anio}"></span>
+                    </p>
+
+                    <p th:if="${vehiculo.precio != null}">
+                        Precio:
+                        <span th:text="${'$ ' + #numbers.formatDecimal(vehiculo.precio, 1, 'COMMA', 0, 'POINT')}"></span>
+                    </p>
+
+                    <p th:if="${vehiculo.transmision != null and !#strings.isEmpty(vehiculo.transmision)}">
+                        Transmisión:
+                        <span th:text="${vehiculo.transmision}"></span>
+                    </p>
+
+                    <p class="stock-publico" th:text="${vehiculo.textoStock}">1 unidad disponible</p>
+
+                                        <div class="credit-teaser compact" th:if="${vehiculo.cuotaMensualDesde != null}">
+                                                <span>Desde</span>
+                                                <strong th:text="${'$ ' + #numbers.formatDecimal(vehiculo.cuotaMensualDesde, 1, 'COMMA', 0, 'POINT') + ' / mes'}">$ 0 / mes</strong>
+                                                <small th:text="${vehiculo.plazoFinanciamientoReferencia + ' meses referenciales'}">60 meses</small>
+                                        </div>
+
+                                        <div class="card-action-stage top-space">
+                                            <div class="card-action-stack">
+                                            <a th:href="@{/oficina/vehiculos/{id}(id=${vehiculo.idVehiculo})}"
+                                             class="btn-card">
+                                                <span class="cta-copy">
+                                                    <strong>Ver vehículo</strong>
+                                                </span>
+                                                <span class="cta-icon"><i class="fas fa-arrow-right"></i></span>
+                                            </a>
+                                             <a th:if="${vehiculo.cuotaMensualDesde != null and vehiculo.precio != null}"
+                                                 th:href="@{'/oficina/vehiculos/' + ${vehiculo.idVehiculo} + '#financiamiento'}"
+                                                 class="btn-card btn-card-secondary"
+                                                 aria-label="Ir al simulador de crédito">
+                                                <span class="cta-copy">
+                                                    <strong>Calcular crédito</strong>
+                                                </span>
+                                                <span class="cta-icon"><i class="fas fa-calculator"></i></span>
+                                            </a>
+                                            </div>
+                                        </div>
+                </div>
+            </div>
+
+            <div th:unless="${vehiculos != null and !#lists.isEmpty(vehiculos)}"
+                 class="no-vehiculos no-vehiculos-wide">
+                <p>No hay vehículos publicados para este filtro. Puedes cambiar la marca o volver más tarde para consultar nuevas unidades.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer id="contacto" class="footer">
+    <div class="contact-panel">
+        <div>
+            <span class="hero-badge hero-badge-light">Atención Comercial</span>
+            <h2>Selecciona un vehículo y conoce cada detalle.</h2>
+            <p>Explora el catálogo, abre cada ficha completa y calcula el crédito de forma inmediata desde el vehículo que te interese.</p>
+        </div>
+        <div class="contact-actions">
+            <a href="#vehiculos" class="btn-primary">Explorar vehículos</a>
+        </div>
+    </div>
+
+    <div class="footer-grid">
+        <div>
+            <strong>AutoCheckList</strong>
+            <p>Catálogo visual con fichas completas, imágenes reales, sugerencias y contacto comercial directo.</p>
+        </div>
+        <div>
+            <strong>Enlaces</strong>
+            <p><a href="#destacados">Destacados</a> · <a href="#vehiculos">Catálogo</a> · <a href="#contacto">Contacto</a></p>
+        </div>
+        <div>
+            <strong>Contacto</strong>
+            <p>Cuando registres tu interés por un vehículo, un asesor podrá continuar el contacto contigo.</p>
+            <p>Atención comercial disponible para acompañarte en la compra.</p>
+        </div>
+    </div>
+    <p class="footer-copy">© 2026 AutoCheckList · Todos los derechos reservados</p>
+</footer>
+
+<script>
+function abrirDetalleVehiculo(event, url) {
+    if (!url) {
+        return;
+    }
+
+    const target = event ? event.target : null;
+    if (target && target.closest('.favorito-form, button, a, form')) {
+        return;
+    }
+
+    document.body.classList.add('page-leaving');
+    window.setTimeout(function() {
+        window.location.href = url;
+    }, 180);
+}
+
+function toggleProfileMenu(event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById('profileDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('active');
+    }
+}
+
+function moverCarrusel(direction) {
+    const track = document.getElementById('destacadosTrack');
+    if (!track) {
+        return;
+    }
+
+    const amount = Math.max(track.clientWidth * 0.8, 280);
+    track.scrollBy({ left: amount * direction, behavior: 'smooth' });
+}
+
+document.addEventListener('click', function() {
+    const dropdown = document.getElementById('profileDropdown');
+    if (dropdown) {
+        dropdown.classList.remove('active');
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const track = document.getElementById('destacadosTrack');
+    if (!track) {
+        return;
+    }
+
+    let autoSlide = window.setInterval(function() {
+        const maxScroll = track.scrollWidth - track.clientWidth;
+        if (track.scrollLeft >= maxScroll - 10) {
+            track.scrollTo({ left: 0, behavior: 'smooth' });
+            return;
+        }
+        moverCarrusel(1);
+    }, 4500);
+
+    track.addEventListener('mouseenter', function() {
+        window.clearInterval(autoSlide);
+    });
+
+    track.addEventListener('mouseleave', function() {
+        autoSlide = window.setInterval(function() {
+            const maxScroll = track.scrollWidth - track.clientWidth;
+            if (track.scrollLeft >= maxScroll - 10) {
+                track.scrollTo({ left: 0, behavior: 'smooth' });
+                return;
+            }
+            moverCarrusel(1);
+        }, 4500);
+    });
+
+    window.setTimeout(function() {
+        document.querySelectorAll('.office-flash-item').forEach(function(item) {
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(-8px)';
+        });
+    }, 4200);
+});
+</script>
+
+<script th:src="@{/home-index.js}"></script>
+
+</body>
+</html>

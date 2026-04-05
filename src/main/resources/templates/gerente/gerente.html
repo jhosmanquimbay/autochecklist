@@ -1,0 +1,542 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Panel Gerente — Concesionario</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+  <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+
+  <main class="main gerente-dashboard">
+    <section class="hero-panel">
+      <div class="hero-copy">
+        <span class="eyebrow">Dirección comercial y financiera</span>
+        <h1><i class="fa-solid fa-gauge-high"></i> Panel del Gerente</h1>
+        <div class="hero-meta">
+          <span class="info-pill"><i class="fa-solid fa-clock"></i> Actualizado <strong th:text="${actualizadoEn}">--</strong></span>
+          <span class="info-pill"><i class="fa-solid fa-file-invoice-dollar"></i> Pendientes de liquidación <strong th:text="${pendientesLiquidacion}">0</strong></span>
+          <span class="info-pill"><i class="fa-solid fa-bullseye"></i> Operaciones liquidadas este mes <strong th:text="${operacionesLiquidadasMes}">0</strong></span>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a th:href="@{/gerente/contabilidad}" class="btn"><i class="fa-solid fa-chart-pie"></i> Abrir contabilidad</a>
+        <a th:href="@{/gerente/reportes/pdf}" class="btn ghost"><i class="fa-solid fa-file-pdf"></i> PDF ejecutivo</a>
+      </div>
+    </section>
+
+    <section class="dashboard-kpi-grid">
+      <article class="dashboard-kpi accent-blue">
+        <span class="dashboard-kpi-label">Vehículos activos</span>
+        <strong class="dashboard-kpi-value" th:text="${vehiculosActivos}">0</strong>
+      </article>
+      <article class="dashboard-kpi accent-gold">
+        <span class="dashboard-kpi-label">Pendientes de publicación</span>
+        <strong class="dashboard-kpi-value" th:text="${conteoPendientesPublicacion}">0</strong>
+      </article>
+      <article class="dashboard-kpi accent-emerald">
+        <span class="dashboard-kpi-label">Ventas históricas</span>
+        <strong class="dashboard-kpi-value" th:text="${ventasTotales}">0</strong>
+      </article>
+      <article class="dashboard-kpi accent-slate">
+        <span class="dashboard-kpi-label">Utilidad neta del mes</span>
+        <strong class="dashboard-kpi-value" th:text="${utilidadNetaMes}">$0</strong>
+      </article>
+      <article class="dashboard-kpi accent-gold">
+        <span class="dashboard-kpi-label">Preaprobaciones</span>
+        <strong class="dashboard-kpi-value" th:text="${resumenFinanciamientoGeneral.preaprobadas}">0</strong>
+      </article>
+    </section>
+
+    <section class="metric-ribbon">
+      <article class="mini-metric">
+        <span>Clientes interesados</span>
+        <strong th:text="${clientesInteresados}">0</strong>
+      </article>
+      <article class="mini-metric">
+        <span>Interesados sin asignar</span>
+        <strong th:text="${interesadosSinAsignar}">0</strong>
+      </article>
+      <article class="mini-metric">
+        <span>Leads web activos</span>
+        <strong th:text="${leadsWebActivos}">0</strong>
+      </article>
+      <article class="mini-metric">
+        <span>Novedades pendientes</span>
+        <strong th:text="${novedadesPendientes}">0</strong>
+      </article>
+      <article class="mini-metric">
+        <span>Ticket promedio</span>
+        <strong th:text="${ticketPromedio}">$0</strong>
+      </article>
+      <article class="mini-metric">
+        <span>Comisiones del mes</span>
+        <strong th:text="${comisionesMes}">$0</strong>
+      </article>
+      <article class="mini-metric">
+        <span>Reinversión sugerida</span>
+        <strong th:text="${reinversionMes}">$0</strong>
+      </article>
+      <article class="mini-metric">
+        <span>Total inventario</span>
+        <strong th:text="${totalInventario}">0</strong>
+      </article>
+    </section>
+
+    <section class="dashboard-columns top-space">
+      <article class="card dashboard-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-clipboard-check"></i> Flujo de publicación</h2>
+        </div>
+        <div class="status-inline-group">
+          <span class="status-pill bg-warning-soft">Pendientes: <strong th:text="${conteoPendientesPublicacion}">0</strong></span>
+          <span class="status-pill bg-danger">Devueltos: <strong th:text="${conteoDevueltosPublicacion}">0</strong></span>
+          <span class="status-pill bg-success">Publicados: <strong th:text="${conteoPublicadosPublicacion}">0</strong></span>
+        </div>
+
+        <div class="table-shell compact-table top-space" th:if="${vehiculosSeguimiento != null and !#lists.isEmpty(vehiculosSeguimiento)}">
+          <table>
+            <thead>
+              <tr>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="vehiculo : ${vehiculosSeguimiento}">
+                <td th:text="${vehiculo.marca}">—</td>
+                <td th:text="${vehiculo.modelo}">—</td>
+                <td>
+                  <span class="status-pill"
+                        th:classappend="${vehiculo.estadoPublicacion == 'PUBLICADO'} ? ' bg-success' : (${vehiculo.estadoPublicacion == 'PENDIENTE'} ? ' bg-warning-soft' : (${vehiculo.estadoPublicacion == 'DEVUELTO'} ? ' bg-danger' : ' bg-neutral-soft'))"
+                        th:text="${vehiculo.estadoPublicacionEtiqueta}">Pendiente</span>
+                </td>
+                <td>
+                  <a th:href="@{'/gerente/vehiculos/editar/' + ${vehiculo.idVehiculo}}" class="btn ghost btn-xs">
+                    <i class="fa-solid fa-pen"></i> Abrir
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="notice-block top-space" th:if="${vehiculosSeguimiento == null or #lists.isEmpty(vehiculosSeguimiento)}">
+          No hay vehículos en seguimiento reciente.
+        </div>
+      </article>
+
+      <article class="card dashboard-card finance-spotlight">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-coins"></i> Pulso financiero</h2>
+        </div>
+
+        <div class="kpi-grid compact">
+          <div class="kpi-card">
+            <span class="kpi-label">Ingresos del mes</span>
+            <strong class="kpi-value" th:text="${ingresosMes}">$0</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Ingresos acumulados</span>
+            <strong class="kpi-value" th:text="${ingresosTotales}">$0</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Pendientes de liquidación</span>
+            <strong class="kpi-value" th:text="${pendientesLiquidacion}">0</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Reinversión sugerida</span>
+            <strong class="kpi-value" th:text="${reinversionMes}">$0</strong>
+          </div>
+        </div>
+
+        <div class="action-stack top-space">
+          <a th:href="@{/gerente/contabilidad}" class="btn"><i class="fa-solid fa-chart-line"></i> Gestionar contabilidad</a>
+          <a th:href="@{/gerente/contabilidad/reporte.pdf}" class="btn ghost"><i class="fa-solid fa-file-arrow-down"></i> PDF contable</a>
+        </div>
+      </article>
+    </section>
+
+    <section id="financiamiento" class="dashboard-columns top-space">
+      <article class="card dashboard-card finance-spotlight">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-building-columns"></i> Finanzas comerciales</h2>
+        </div>
+        <div class="finance-preview-grid">
+          <div class="preview-metric">
+            <span>Solicitudes</span>
+            <strong th:text="${resumenFinanciamientoGeneral.totalSolicitudes}">0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Preaprobadas</span>
+            <strong th:text="${resumenFinanciamientoGeneral.preaprobadas}">0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>En estudio</span>
+            <strong th:text="${resumenFinanciamientoGeneral.enEstudio}">0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>No viables</span>
+            <strong th:text="${resumenFinanciamientoGeneral.noViables}">0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Monto potencial</span>
+            <strong th:text="${'$ ' + #numbers.formatDecimal(resumenFinanciamientoGeneral.montoPotencialFinanciado, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Aprobación</span>
+            <strong th:text="${#numbers.formatDecimal(resumenFinanciamientoGeneral.porcentajeAprobacion, 1, 'COMMA', 1, 'POINT') + '%'}">0%</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Negocios originados</span>
+            <strong th:text="${resumenFinanciamientoGeneral.negociosOriginados}">0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Docs completas</span>
+            <strong th:text="${resumenFinanciamientoGeneral.documentacionCompleta}">0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Listas desembolso</span>
+            <strong th:text="${resumenFinanciamientoGeneral.listasDesembolso}">0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Desembolsadas</span>
+            <strong th:text="${resumenFinanciamientoGeneral.desembolsadas}">0</strong>
+          </div>
+        </div>
+        <div class="finance-help-block top-space tracking-note">
+          <strong><i class="fa-solid fa-circle-info"></i> Conversión comercial</strong>
+        </div>
+      </article>
+
+      <article class="card dashboard-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-list"></i> Simulaciones recientes</h2>
+        </div>
+        <div class="table-shell compact-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Canal</th>
+                <th>Cliente</th>
+                <th>Vehículo</th>
+                <th>Documentos</th>
+                <th>Etapa</th>
+                <th>Negocio</th>
+                <th>Cuota</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="sim : ${financiamientosRecientes}">
+                <td th:text="${sim.canalOrigen}">CLIENTE_WEB</td>
+                <td th:text="${sim.solicitanteNombre}">Cliente</td>
+				<td>
+				  <strong th:text="${sim.vehiculo != null ? sim.vehiculo.marca + ' ' + sim.vehiculo.modelo : 'Sin vehículo'}">Vehículo</strong>
+				</td>
+                <td>
+                  <span class="status-pill"
+                        th:classappend="${sim.estadoDocumental == 'COMPLETO'} ? ' bg-success' : (${sim.estadoDocumental == 'VALIDANDO'} ? ' bg-info-soft' : (${sim.estadoDocumental == 'OBSERVADO'} ? ' bg-danger' : ' bg-warning-soft'))"
+                        th:text="${sim.estadoDocumentalEtiqueta}">Documentos</span>
+                </td>
+                <td>
+                  <span class="status-pill"
+                        th:classappend="${sim.etapaProceso == 'DESEMBOLSADO'} ? ' bg-success' : (${sim.etapaProceso == 'APROBADO_ENTIDAD' or sim.etapaProceso == 'DESEMBOLSO_PROGRAMADO'} ? ' bg-info-soft' : (${sim.etapaProceso == 'DESCARTADO'} ? ' bg-danger' : ' bg-warning-soft'))"
+                        th:text="${sim.etapaProcesoEtiqueta}">Etapa</span>
+                </td>
+                <td>
+                  <span class="status-pill"
+                        th:classappend="${sim.negocioCreado} ? ' bg-success' : ' bg-neutral-soft'"
+                        th:text="${sim.negocioCreadoEtiqueta}">Negocio</span>
+                </td>
+                <td th:text="${'$ ' + #numbers.formatDecimal(sim.cuotaMensualTotal, 1, 'COMMA', 0, 'POINT')}">$0</td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(financiamientosRecientes)}">
+                <td colspan="7" class="empty-row">Todavía no hay simulaciones financieras registradas.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="dashboard-columns top-space">
+      <article class="card dashboard-card action-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-bolt"></i> Acciones prioritarias</h2>
+        </div>
+        <div class="action-clusters">
+          <a th:href="@{/gerente/vehiculos/crear}" class="action-tile">
+            <i class="fa-solid fa-plus"></i>
+            <span>Nuevo vehículo</span>
+          </a>
+          <a th:href="@{/gerente/inventario/crear}" class="action-tile">
+            <i class="fa-solid fa-boxes-packing"></i>
+            <span>Nuevo inventario</span>
+          </a>
+          <a th:href="@{/gerente/clientes/interesados}" class="action-tile">
+            <i class="fa-solid fa-users-viewfinder"></i>
+            <span>Interesados</span>
+          </a>
+          <a th:href="@{/gerente/novedades}" class="action-tile">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>Novedades</span>
+          </a>
+          <a th:href="@{/correo/inbox}" class="action-tile">
+            <i class="fa-solid fa-envelope-open-text"></i>
+            <span>Correo</span>
+          </a>
+          <a th:href="@{/gerente/reportes/excel}" class="action-tile">
+            <i class="fa-solid fa-file-excel"></i>
+            <span>Exportar Excel</span>
+          </a>
+        </div>
+      </article>
+
+      <article class="card dashboard-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-calendar-check"></i> Resumen mensual comercial</h2>
+        </div>
+        <div class="table-shell compact-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Mes</th>
+                <th>Interesados</th>
+                <th>Ventas</th>
+                <th>Ingresos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="fila : ${resumenMensual}">
+                <td th:text="${fila.mes}">--</td>
+                <td th:text="${fila.interesados}">0</td>
+                <td th:text="${fila.ventas}">0</td>
+                <td th:text="${fila.ingresosTexto}">$0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="dashboard-columns top-space">
+      <article class="card chart-box dashboard-card">
+        <div class="chart-title"><i class="fa-solid fa-chart-column"></i> Ventas por mes</div>
+        <div class="chart-canvas-shell">
+          <canvas id="ventasMensualesChart"></canvas>
+        </div>
+      </article>
+      <article class="card chart-box dashboard-card">
+        <div class="chart-title"><i class="fa-solid fa-money-bill-trend-up"></i> Ingresos por mes</div>
+        <div class="chart-canvas-shell">
+          <canvas id="ingresosMensualesChart"></canvas>
+        </div>
+      </article>
+    </section>
+
+    <section class="dashboard-columns top-space">
+      <article class="card dashboard-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-star"></i> Vehículos más solicitados</h2>
+        </div>
+        <div class="table-shell compact-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Modelo / Marca</th>
+                <th>Solicitudes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="entry : ${vehiculosMasSolicitados}">
+                <td th:text="${entry.key}">—</td>
+                <td th:text="${entry.value}">0</td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(vehiculosMasSolicitados)}">
+                <td colspan="2" class="empty-row">Sin solicitudes registradas</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card dashboard-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-trophy"></i> Rendimiento de vendedores</h2>
+        </div>
+        <div class="table-shell compact-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Vendedor</th>
+                <th>Ventas</th>
+                <th>Conversión</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="entry : ${rendimientoVendedores}">
+                <td th:text="${entry.vendedor}">—</td>
+                <td th:text="${entry.ventas}">0</td>
+                <td th:text="${#numbers.formatDecimal(entry.conversion, 1, 'COMMA', 1, 'POINT') + '%'}">0%</td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(rendimientoVendedores)}">
+                <td colspan="3" class="empty-row">Sin ventas registradas</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script th:inline="javascript">
+    const etiquetas = Array.isArray(/*[[${mesesLabels}]]*/ []) ? /*[[${mesesLabels}]]*/ [] : [];
+    const ventasMensuales = (Array.isArray(/*[[${ventasMensuales}]]*/ []) ? /*[[${ventasMensuales}]]*/ [] : []).map(value => Number(value) || 0);
+    const ingresosMensuales = (Array.isArray(/*[[${ingresosMensuales}]]*/ []) ? /*[[${ingresosMensuales}]]*/ [] : []).map(value => Number(value) || 0);
+
+    const ventasCtx = document.getElementById('ventasMensualesChart');
+    const ingresosCtx = document.getElementById('ingresosMensualesChart');
+
+    const formatoMoneda = new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+    function renderizarFallbackGrafica(canvasId, labels, values, color, formatter) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas || !canvas.parentElement) {
+        return;
+      }
+
+      const shell = canvas.parentElement;
+      shell.innerHTML = '';
+      shell.classList.add('chart-fallback');
+
+      if (!labels.length) {
+        shell.innerHTML = '<div class="chart-fallback-empty">Sin datos disponibles</div>';
+        return;
+      }
+
+      const maxValue = Math.max(...values, 0);
+
+      labels.forEach((label, index) => {
+        const value = values[index] || 0;
+        const row = document.createElement('div');
+        row.className = 'chart-fallback-row';
+
+        const labelNode = document.createElement('span');
+        labelNode.className = 'chart-fallback-label';
+        labelNode.textContent = label;
+
+        const track = document.createElement('div');
+        track.className = 'chart-fallback-track';
+
+        const fill = document.createElement('span');
+        fill.className = 'chart-fallback-fill';
+        fill.style.background = color;
+        fill.style.width = maxValue === 0 ? '0%' : `${Math.max((value / maxValue) * 100, value > 0 ? 6 : 0)}%`;
+        track.appendChild(fill);
+
+        const valueNode = document.createElement('span');
+        valueNode.className = 'chart-fallback-value';
+        valueNode.textContent = formatter(value);
+
+        row.appendChild(labelNode);
+        row.appendChild(track);
+        row.appendChild(valueNode);
+        shell.appendChild(row);
+      });
+    }
+
+    function crearGraficaSegura(canvas, config, onFallback) {
+      if (!canvas) {
+        return;
+      }
+
+      if (typeof window.Chart !== 'function') {
+        onFallback();
+        return;
+      }
+
+      try {
+        new Chart(canvas, config);
+      } catch (error) {
+        console.error('No fue posible renderizar la gráfica.', error);
+        onFallback();
+      }
+    }
+
+    if (ventasCtx) {
+      crearGraficaSegura(ventasCtx, {
+        type: 'bar',
+        data: {
+          labels: etiquetas,
+          datasets: [{
+            label: 'Ventas',
+            data: ventasMensuales,
+            backgroundColor: '#1f4f86',
+            borderRadius: 10,
+            maxBarThickness: 38
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false } },
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+          }
+        }
+      }, function () {
+        renderizarFallbackGrafica('ventasMensualesChart', etiquetas, ventasMensuales, 'linear-gradient(90deg, #1f4f86, #4e84c4)', value => `${value}`);
+      });
+    }
+
+    if (ingresosCtx) {
+      crearGraficaSegura(ingresosCtx, {
+        type: 'line',
+        data: {
+          labels: etiquetas,
+          datasets: [{
+            label: 'Ingresos',
+            data: ingresosMensuales,
+            borderColor: '#f5a623',
+            backgroundColor: 'rgba(245, 166, 35, 0.15)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4,
+            pointBackgroundColor: '#f5a623'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false } },
+            y: { beginAtZero: true }
+          }
+        }
+      }, function () {
+        renderizarFallbackGrafica('ingresosMensualesChart', etiquetas, ingresosMensuales, 'linear-gradient(90deg, #f5a623, #ffd27a)', value => formatoMoneda.format(value));
+      });
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+

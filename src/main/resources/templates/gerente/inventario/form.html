@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Formulario Inventario — Gerente</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+
+  <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+
+  <main class="main inventory-modern">
+    <div class="content-header modern-header">
+      <h1><i class="fa-solid fa-boxes-packing"></i>
+        <span th:text="${inventario.idInventario != null ? 'Editar Registro' : 'Nuevo Registro'}">Inventario</span>
+      </h1>
+      <p>Completa los datos del vehículo en inventario</p>
+      <div class="info-pills">
+        <span class="info-pill"><i class="fa-solid fa-shield"></i> Registro seguro</span>
+        <span class="info-pill"><i class="fa-solid fa-bolt"></i> Sincroniza catálogo</span>
+      </div>
+    </div>
+
+    <div class="card card-narrow centered-panel elevated-form-card">
+      <div th:if="${error != null}" style="margin-bottom:1rem;padding:.9rem 1rem;border-radius:12px;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;font-weight:600;" th:text="${error}">
+        No se pudo guardar el inventario.
+      </div>
+
+      <form th:action="${inventario.idInventario != null
+            ? (esAdmin ? '/admin/inventario/editar/' + inventario.idInventario : '/gerente/inventario/editar/' + inventario.idInventario)
+            : (esAdmin ? '/admin/inventario/crear' : '/gerente/inventario/crear')}"
+            th:object="${inventario}" method="post">
+
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-clipboard-list"></i> Datos del vehículo</h2>
+        </div>
+
+        <div class="form-grid">
+
+          <div>
+            <label for="chasis">Chasis</label>
+            <input id="chasis" th:field="*{chasis}" type="text" placeholder="Número de chasis" required pattern="^\S+$" title="El chasis no puede contener espacios"
+                   class="field-control"/>
+          </div>
+          <div>
+            <label for="marca">Marca</label>
+            <input id="marca" th:field="*{marca}" type="text" placeholder="Ej: Toyota" required
+                   class="field-control"/>
+          </div>
+          <div>
+            <label for="modelo">Modelo</label>
+            <input id="modelo" th:field="*{modelo}" type="text" placeholder="Ej: Corolla" required
+                   class="field-control"/>
+          </div>
+          <div>
+            <label for="anio">Año</label>
+            <input id="anio" th:field="*{anio}" type="number" placeholder="Ej: 2024" min="1990" max="2030"
+                   class="field-control"/>
+          </div>
+          <div>
+            <label for="color">Color</label>
+            <input id="color" th:field="*{color}" type="text" placeholder="Ej: Blanco"
+                   class="field-control"/>
+          </div>
+          <div>
+            <label for="motor">Motor</label>
+            <input id="motor" th:field="*{motor}" type="text" placeholder="Ej: 2.0L"
+                   class="field-control"/>
+          </div>
+          <div>
+            <label for="ubicacionActual">Ubicación</label>
+            <input id="ubicacionActual" th:field="*{ubicacionActual}" type="text" placeholder="Ej: Bodega Central"
+                   class="field-control"/>
+          </div>
+          <div>
+            <label for="estadoLogistico">Estado Logístico</label>
+            <select id="estadoLogistico" th:field="*{estadoLogistico}"
+                    class="field-control">
+              <option value="">-- Seleccionar --</option>
+              <option value="En bodega">En bodega</option>
+              <option value="En tránsito">En tránsito</option>
+              <option value="En exhibición">En exhibición</option>
+              <option value="Vendido">Vendido</option>
+              <option value="En mantenimiento">En mantenimiento</option>
+            </select>
+          </div>
+          <div>
+            <label for="cantidadDisponible">Cantidad disponible</label>
+            <input id="cantidadDisponible" th:field="*{cantidadDisponible}" type="number" min="1" placeholder="Ej: 3"
+                   class="field-control"/>
+          </div>
+
+        </div>
+
+        <div class="action-buttons top-space centered-actions premium-actions">
+          <button type="submit" class="btn">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar
+          </button>
+          <a th:href="${esAdmin ? '/admin/inventario' : '/gerente/inventario'}" class="btn ghost">
+            <i class="fa-solid fa-arrow-left"></i> Cancelar
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const form = document.querySelector('form');
+      const chasis = document.getElementById('chasis');
+      const marca = document.getElementById('marca');
+      const modelo = document.getElementById('modelo');
+
+      if (!form || !chasis || !marca || !modelo) {
+        return;
+      }
+
+      form.addEventListener('submit', function (event) {
+        form.querySelectorAll('input[type="text"], textarea').forEach(function (field) {
+          field.value = field.value.trim();
+        });
+
+        if (!chasis.value || !marca.value || !modelo.value) {
+          event.preventDefault();
+          window.alert('Chasis, marca y modelo son obligatorios.');
+          return;
+        }
+
+        if (/\s/.test(chasis.value)) {
+          event.preventDefault();
+          window.alert('El chasis no puede contener espacios en blanco.');
+          chasis.focus();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
+
+
+
+
+
+

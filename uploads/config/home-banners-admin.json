@@ -1,0 +1,16 @@
+[ {
+  "id" : "69d37d92-9216-4f50-ad9f-a9c5d3e93e90",
+  "eyebrow" : null,
+  "title" : null,
+  "description" : null,
+  "placement" : "hero",
+  "ctaText" : null,
+  "ctaUrl" : null,
+  "metricValue" : null,
+  "metricLabel" : null,
+  "theme" : "gold",
+  "icon" : "fas fa-bullhorn",
+  "imageUrl" : "/uploads/home-banners/57650f0c-211c-4350-9089-fe8d2a3f3191.png",
+  "active" : true,
+  "displayOrder" : 1
+} ]

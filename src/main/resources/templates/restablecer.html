@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Restablecer Contraseña | AutoCheckList</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/cliente-auth.css}">
+    <style>
+      .recovery-timer {
+        margin: 18px 0;
+        padding: 16px 18px;
+        border-radius: 16px;
+        background: #f6f9fc;
+        border: 1px solid #dde7f1;
+      }
+
+      .recovery-timer strong {
+        display: block;
+        margin-bottom: 6px;
+        color: #0a1d37;
+      }
+
+      .recovery-clock {
+        font-size: 30px;
+        font-weight: 700;
+        color: #10243e;
+        letter-spacing: 2px;
+      }
+
+      .recovery-helper {
+        margin: 10px 0 0;
+        color: #5f6f82;
+        line-height: 1.5;
+      }
+
+      .recovery-inline-form {
+        margin-top: 16px;
+      }
+
+      .recovery-inline-form button,
+      .recovery-inline-form a {
+        width: 100%;
+      }
+    </style>
+</head>
+<body class="auth-body">
+  <div class="auth-shell auth-shell-compact">
+    <section class="auth-side">
+      <span class="auth-badge">Actualización Segura</span>
+      <h1>Define una nueva contraseña para tu cuenta.</h1>
+      <p>El proceso se hace por pasos: primero validas el código que llega al correo y solo después se habilita el cambio de contraseña.</p>
+
+      <div class="auth-side-points">
+        <div><i class="fas fa-clock"></i> Vigencia del código: 10 minutos</div>
+        <div><i class="fas fa-envelope-open-text"></i> Revisa el código en tu correo</div>
+        <div><i class="fas fa-key"></i> Usa mínimo 8 caracteres con letras y números</div>
+      </div>
+    </section>
+
+    <section class="auth-card">
+      <div class="auth-brand">
+        <img th:src="@{/images/AUTOCHECKLIST (5).png}" alt="Logo empresa">
+      </div>
+
+      <div th:if="${pasoActual == 'codigo'}">
+        <h2>Validar código</h2>
+        <p class="auth-subtitle">Te enviamos un código a <strong th:text="${correoDestino}">tu correo</strong>. Debes validarlo antes de continuar.</p>
+
+        <div th:if="${codigoEnviado != null}" class="alert-box alert-success">
+          Si el correo existe en nuestro sistema, enviamos un código y ya puedes ingresarlo aquí.
+        </div>
+
+        <div th:if="${codigoReenviado != null}" class="alert-box alert-success">
+          Enviamos un nuevo código. Revisa tu bandeja y, si hace falta, también spam.
+        </div>
+
+        <div th:if="${errorCodigo != null}" class="alert-box alert-error" th:text="${errorCodigo}">
+          El código es inválido o expiró.
+        </div>
+
+        <div class="recovery-timer">
+          <strong>Tiempo disponible</strong>
+          <div id="recoveryCountdown" class="recovery-clock" th:attr="data-seconds=${segundosRestantes}">10:00</div>
+          <p class="recovery-helper">Cuando el contador llegue a cero, pide uno nuevo.</p>
+        </div>
+
+        <div th:if="${codigoExpirado}" id="codigoExpiradoMsg" class="alert-box alert-error">
+          El código actual ya expiró. Solicita uno nuevo para continuar.
+        </div>
+
+        <form th:action="@{/restablecer/validar-codigo}" th:object="${codigoForm}" method="post" class="auth-form">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <input type="hidden" th:field="*{correo}">
+
+          <div class="form-field">
+            <label for="codigo">Código de verificación</label>
+            <div class="input-group">
+              <i class="fa-solid fa-keyboard"></i>
+              <input type="text" id="codigo" th:field="*{codigo}" placeholder="123456" inputmode="numeric" maxlength="6" autocomplete="one-time-code" required>
+            </div>
+            <small class="field-error" th:if="${#fields.hasErrors('codigo')}" th:errors="*{codigo}">Código inválido</small>
+          </div>
+
+          <button type="submit" id="validarCodigoBtn" class="btn-auth-primary" th:disabled="${codigoExpirado}">Validar código</button>
+        </form>
+
+        <form th:action="@{/restablecer/reenviar-codigo}" method="post" class="recovery-inline-form">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <input type="hidden" name="correo" th:value="${codigoForm.correo}">
+          <button type="submit" class="btn-auth-secondary">No llegó el código, volver a pedir</button>
+        </form>
+      </div>
+
+      <div th:if="${pasoActual == 'contrasena'}">
+        <h2>Cambiar contraseña</h2>
+        <p class="auth-subtitle">Código confirmado para <strong th:text="${correoDestino}">tu correo</strong>. Ahora sí puedes definir una nueva contraseña.</p>
+
+        <div th:if="${codigoValidado != null}" class="alert-box alert-success">
+          El código coincide. Ya puedes establecer la nueva contraseña.
+        </div>
+
+        <div th:if="${#fields.hasGlobalErrors()}" class="alert-box alert-error" th:each="error : ${#fields.globalErrors()}" th:text="${error}">
+          Error de restablecimiento.
+        </div>
+
+        <form th:action="@{/restablecer}" th:object="${restablecerForm}" method="post" class="auth-form">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+          <div class="form-field">
+            <label for="nuevaContrasena">Nueva contraseña</label>
+            <div class="input-group">
+              <i class="fa-solid fa-lock"></i>
+              <input type="password" id="nuevaContrasena" th:field="*{nuevaContrasena}" placeholder="Nueva contraseña" autocomplete="new-password" required>
+            </div>
+            <small class="field-error" th:if="${#fields.hasErrors('nuevaContrasena')}" th:errors="*{nuevaContrasena}">Contraseña inválida</small>
+          </div>
+
+          <div class="form-field">
+            <label for="confirmacionContrasena">Confirmar contraseña</label>
+            <div class="input-group">
+              <i class="fa-solid fa-check-double"></i>
+              <input type="password" id="confirmacionContrasena" th:field="*{confirmacionContrasena}" placeholder="Repite la contraseña" autocomplete="new-password" required>
+            </div>
+            <small class="field-error" th:if="${#fields.hasErrors('confirmacionContrasena')}" th:errors="*{confirmacionContrasena}">Las contraseñas no coinciden</small>
+          </div>
+
+          <button type="submit" class="btn-auth-primary">Actualizar contraseña</button>
+        </form>
+      </div>
+
+      <div class="inline-links inline-links-center">
+        <a th:href="@{/login}">Volver al inicio de sesión</a>
+        <a th:href="@{/recuperar}">Cambiar correo</a>
+      </div>
+
+      <div class="auth-footer">
+        © 2026 AutoCheckList.<br>Restablecimiento controlado con código temporal de un solo uso.
+      </div>
+
+      <a th:href="@{/}" class="btn-auth-secondary">Volver al inicio</a>
+    </section>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var clock = document.getElementById('recoveryCountdown');
+      if (!clock) {
+        return;
+      }
+
+      var remaining = Number(clock.getAttribute('data-seconds') || '0');
+      var expiredMessage = document.getElementById('codigoExpiradoMsg');
+      var validateButton = document.getElementById('validarCodigoBtn');
+
+      function formatTime(totalSeconds) {
+        var minutes = Math.floor(totalSeconds / 60);
+        var seconds = totalSeconds % 60;
+        return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+      }
+
+      function renderTimer() {
+        clock.textContent = formatTime(Math.max(remaining, 0));
+
+        if (remaining <= 0) {
+          if (validateButton) {
+            validateButton.disabled = true;
+          }
+          if (expiredMessage) {
+            expiredMessage.style.display = 'block';
+          }
+          return;
+        }
+
+        remaining -= 1;
+        window.setTimeout(renderTimer, 1000);
+      }
+
+      renderTimer();
+    });
+  </script>
+</body>
+</html>

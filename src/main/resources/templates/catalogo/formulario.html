@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${titulo}">Formulario de Vehículo</title>
+
+    <!-- Íconos y Fuente -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 2rem;
+        }
+
+        /* ALERTAS */
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* FORMULARIO */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* UPLOAD DE IMAGEN */
+        .image-upload {
+            border: 2px dashed #667eea;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            background: #f8f9ff;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .image-upload:hover {
+            background: #f0f2ff;
+            border-color: #5a67d8;
+        }
+
+        .image-upload input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* PREVIEW DE IMAGEN */
+        .image-preview {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .preview-img {
+            max-width: 300px;
+            max-height: 200px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* BOTONES */
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-back {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-back:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    
+    <!-- HEADER -->
+    <div class="header">
+        <h1>
+            <i class="fas fa-car"></i>
+            <span th:text="${titulo}">Agregar Vehículo</span>
+        </h1>
+        <p>Complete la información del vehículo para el catálogo</p>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="form-container">
+        
+        <!-- ALERTAS -->
+        <div th:if="${success}" class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${success}"></span>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- FORMULARIO -->
+        <form th:action="${esEdicion ? '/catalogo/actualizar/' + vehiculo.id : '/catalogo/guardar'}" 
+              method="post" 
+              enctype="multipart/form-data"
+              th:object="${vehiculo}">
+
+            <div class="form-grid">
+                
+                <!-- MARCA -->
+                <div class="form-group">
+                    <label for="marca">
+                        <i class="fas fa-tag"></i>
+                        Marca *
+                    </label>
+                    <input type="text" id="marca" th:field="*{marca}" 
+                           placeholder="Ej: Toyota, Honda, Mercedes" required>
+                </div>
+
+                <!-- MODELO -->
+                <div class="form-group">
+                    <label for="modelo">
+                        <i class="fas fa-car-side"></i>
+                        Modelo *
+                    </label>
+                    <input type="text" id="modelo" th:field="*{modelo}" 
+                           placeholder="Ej: Corolla, Civic, C-Class" required>
+                </div>
+
+                <!-- CATEGORÍA -->
+                <div class="form-group">
+                    <label for="categoria">
+                        <i class="fas fa-list"></i>
+                        Tipo de Vehículo *
+                    </label>
+                    <select id="categoria" th:field="*{categoria}" required>
+                        <option value="">Seleccionar tipo</option>
+                        <option value="Sedán">Sedán</option>
+                        <option value="4x4">4x4</option>
+                        <option value="Van">Van</option>
+                        <option value="Pasajeros">Pasajeros</option>
+                        <option value="Deportivo">Deportivo</option>
+                        <option value="Compacto">Compacto</option>
+                    </select>
+                </div>
+
+                <!-- PRECIO -->
+                <div class="form-group">
+                    <label for="precio">
+                        <i class="fas fa-dollar-sign"></i>
+                        Precio (USD) *
+                    </label>
+                    <input type="number" id="precio" th:field="*{precio}" 
+                           step="0.01" min="0" placeholder="25000.00" required>
+                </div>
+
+                <!-- DESCRIPCIÓN -->
+                <div class="form-group full-width">
+                    <label for="descripcion">
+                        <i class="fas fa-align-left"></i>
+                        Descripción *
+                    </label>
+                    <textarea id="descripcion" th:field="*{descripcion}" 
+                              placeholder="Describa las características principales del vehículo..." required></textarea>
+                </div>
+
+                <!-- IMAGEN -->
+                <div class="form-group full-width">
+                    <label>
+                        <i class="fas fa-image"></i>
+                        Imagen del Vehículo
+                    </label>
+                    
+                    <!-- Opción 1: URL de imagen -->
+                    <div style="margin-bottom: 1rem;">
+                        <label for="imagenUrl" style="font-weight: normal; font-size: 0.9rem;">
+                            URL de imagen (opcional):
+                        </label>
+                        <input type="url" id="imagenUrl" th:field="*{imagenUrl}" 
+                               placeholder="https://ejemplo.com/imagen.jpg"
+                               onchange="previewImageUrl(this.value)">
+                    </div>
+                    
+                    <!-- Opción 2: Subir archivo -->
+                    <div class="image-upload" onclick="document.getElementById('imagenFile').click()">
+                        <input type="file" id="imagenFile" name="imagenFile" 
+                               accept="image/*" onchange="previewImageFile(this)">
+                        
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">
+                            O haga clic para subir una imagen
+                        </div>
+                        <div class="upload-hint">
+                            Formatos: JPG, PNG, GIF (máx. 5MB)
+                        </div>
+                    </div>
+                    
+                    <!-- Preview de imagen existente -->
+                    <div class="image-preview" th:if="${vehiculo.imagenUrl != null and !vehiculo.imagenUrl.isEmpty()}">
+                        <p>Imagen actual:</p>
+                        <img th:src="${vehiculo.imagenUrl}" alt="Imagen actual" class="preview-img">
+                    </div>
+                    
+                    <!-- Preview de nueva imagen -->
+                    <div id="imagePreview" class="image-preview" style="display: none;">
+                        <p>Vista previa:</p>
+                        <img id="previewImg" src="" alt="Vista previa" class="preview-img">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- BOTONES -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    <span th:text="${esEdicion ? 'Actualizar Vehículo' : 'Guardar Vehículo'}">
+                        Guardar Vehículo
+                    </span>
+                </button>
+                
+                <a th:href="@{/catalogo/gestion}" class="btn btn-back">
+                    <i class="fas fa-arrow-left"></i>
+                    Volver a Gestión
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    function previewImageFile(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('imagePreview').style.display = 'block';
+                // Limpiar URL si se sube archivo
+                document.getElementById('imagenUrl').value = '';
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    function previewImageUrl(url) {
+        if (url && url.trim() !== '') {
+            document.getElementById('previewImg').src = url;
+            document.getElementById('imagePreview').style.display = 'block';
+            // Limpiar archivo si se usa URL
+            document.getElementById('imagenFile').value = '';
+        } else {
+            document.getElementById('imagePreview').style.display = 'none';
+        }
+    }
+    
+    // Auto-hide alerts after 5 seconds
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 300);
+        });
+    }, 5000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Favoritos | AutoCheckList</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/cliente-area.css}">
+</head>
+<body class="client-page">
+<header class="client-homebar">
+    <a th:href="@{/}" class="client-logo">
+        <img th:src="@{/images/AUTOCHECKLIST (4).png}" alt="AutoCheckList">
+        <div class="client-logo-text">
+            <span>AUTO</span>
+            <strong>CHECKLIST</strong>
+        </div>
+    </a>
+
+    <nav>
+        <a th:href="@{/#inicio}">Inicio</a>
+        <a th:href="@{/#marcas}">Marcas</a>
+        <a th:href="@{/#destacados}">Destacados</a>
+        <a th:href="@{/#vehiculos}">Vehículos</a>
+        <a th:href="@{/#contacto}">Contacto</a>
+
+        <div class="client-profile-menu">
+            <button type="button" class="client-profile-trigger" onclick="toggleClientProfileMenu(event)">
+                <span class="client-profile-avatar" th:text="${#strings.substring(usuarioActual.nombre, 0, 1)}">A</span>
+                <span class="client-profile-name" th:text="${usuarioActual.nombre}">Mi perfil</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+
+            <div id="clientProfileDropdown" class="client-profile-dropdown">
+                <a th:href="@{/cliente/compras}"><i class="fas fa-bag-shopping"></i> Mis compras</a>
+                <a th:href="@{/cliente/favoritos}"><i class="fas fa-heart"></i> Mis favoritos</a>
+                <a th:href="@{/cliente/perfil}"><i class="fas fa-user-gear"></i> Gestionar perfil</a>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="client-profile-logout"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="client-shell">
+    <section class="client-hero-card">
+        <div>
+            <span class="client-badge">Mis Favoritos</span>
+            <h1>Vehículos guardados</h1>
+            <p>Guarda tus modelos preferidos y compáralos cuando quieras.</p>
+        </div>
+    </section>
+
+    <section class="client-panel">
+        <div class="panel-header">
+            <h2>Tu selección</h2>
+            <p th:text="${#lists.size(favoritos) + ' vehículo(s) guardados.'}">0 guardados</p>
+        </div>
+
+        <div class="client-empty" th:if="${favoritos == null or #lists.isEmpty(favoritos)}">
+            <i class="fas fa-heart-circle-xmark"></i>
+            <h3>Aún no has guardado favoritos</h3>
+            <p>Desde la oficina puedes marcar vehículos y se verán aquí automáticamente.</p>
+            <a th:href="@{/}" class="btn-client-primary">Ir a la oficina</a>
+        </div>
+
+        <div class="favorite-grid" th:if="${favoritos != null and !#lists.isEmpty(favoritos)}">
+            <article th:each="vehiculo : ${favoritos}" class="favorite-card">
+                <div class="favorite-card-media">
+                    <img th:src="${vehiculo.imagenes[0]}" th:alt="${vehiculo.nombreCompleto}">
+                </div>
+                <div class="favorite-card-body">
+                    <span class="favorite-brand" th:text="${vehiculo.marca}">Marca</span>
+                    <h3 th:text="${vehiculo.nombreCompleto}">Vehículo</h3>
+                    <p th:text="${vehiculo.descripcion != null and !#strings.isEmpty(vehiculo.descripcion) ? vehiculo.descripcion : 'Vehículo guardado para consultar más tarde.'}"></p>
+
+                    <div class="favorite-meta">
+                        <span th:if="${vehiculo.anio != null}" th:text="${vehiculo.anio}">2024</span>
+                        <span th:text="${vehiculo.textoStock}">Disponible</span>
+                    </div>
+
+                    <div class="favorite-actions">
+                        <a th:href="@{/(marca=${vehiculo.marca}) + '#vehiculos'}" class="btn-client-secondary">Ver en oficina</a>
+                        <form th:action="@{'/cliente/favoritos/' + ${vehiculo.idVehiculo} + '/toggle'}" method="post">
+                            <button type="submit" class="btn-client-primary btn-danger-soft">Quitar</button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+</main>
+<script th:src="@{/client-profile-nav.js}"></script>
+</body>
+</html>

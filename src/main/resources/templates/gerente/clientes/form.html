@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Formulario de Cliente</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+    <style>
+        .form-container { max-width: 700px; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin: 0 auto; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; font-size: 14px; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #2196F3; box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2); }
+        textarea { resize: vertical; min-height: 100px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .button-group { display: flex; gap: 15px; margin-top: 30px; }
+        .btn { padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+        .btn-primary { background-color: #2196F3; color: white; flex: 1; justify-content: center; }
+        .btn-secondary { background-color: #757575; color: white; flex: 1; justify-content: center; }
+    </style>
+</head>
+<body>
+    <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+    <main class="main">
+        <div class="content-header">
+            <h1><i class="fa-solid fa-user-plus"></i> <span th:if="${cliente.idCliente != null}">Editar</span><span th:unless="${cliente.idCliente != null}">Nuevo</span> Cliente</h1>
+        </div>
+        <div class="form-container">
+            <form th:if="${cliente.idCliente != null}" th:action="@{/gerente/clientes/editar/{id}(id=${cliente.idCliente})}" method="post">
+                <input type="hidden" name="idCliente" th:value="${cliente.idCliente}"/>
+                <input type="hidden" name="fechaRegistro" th:value="${cliente.fechaRegistro}"/>
+                <div class="form-row">
+                    <div class="form-group"><label for="nombre">Nombre Completo *</label><input type="text" id="nombre" name="nombre" th:value="${cliente.nombre}" required/></div>
+                    <div class="form-group"><label for="cedula">Cédula/ID *</label><input type="text" id="cedula" name="cedula" th:value="${cliente.cedula}" required/></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="correo">Correo Electrónico *</label><input type="email" id="correo" name="correo" th:value="${cliente.correo}" required/></div>
+                    <div class="form-group"><label for="telefono">Teléfono</label><input type="text" id="telefono" name="telefono" th:value="${cliente.telefono}"/></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="ciudad">Ciudad</label><input type="text" id="ciudad" name="ciudad" th:value="${cliente.ciudad}"/></div>
+                    <div class="form-group"><label for="presupuesto">Presupuesto ($)</label><input type="number" id="presupuesto" name="presupuesto" th:value="${cliente.presupuesto}"/></div>
+                </div>
+                <div class="form-group"><label for="direccion">Dirección</label><input type="text" id="direccion" name="direccion" th:value="${cliente.direccion}"/></div>
+                <div class="form-row">
+                    <div class="form-group"><label for="interesVehiculo">Vehículo de Interés</label><input type="text" id="interesVehiculo" name="interesVehiculo" th:value="${cliente.interesVehiculo}"/></div>
+                    <div class="form-group"><label for="estado">Estado *</label><select id="estado" name="estado" required>
+                        <option value="Nuevo" th:selected="${cliente.estado == 'Nuevo'}">Nuevo</option>
+                        <option value="Interesado" th:selected="${cliente.estado == 'Interesado'}">Interesado</option>
+                        <option value="Contactado" th:selected="${cliente.estado == 'Contactado'}">Contactado</option>
+                        <option value="Negociando" th:selected="${cliente.estado == 'Negociando'}">Negociando</option>
+                        <option value="Comprador" th:selected="${cliente.estado == 'Comprador'}">Comprador</option>
+                        <option value="Perdido" th:selected="${cliente.estado == 'Perdido'}">Perdido</option>
+                    </select></div>
+                </div>
+                <div class="form-group"><label for="notas">Notas</label><textarea id="notas" name="notas" th:text="${cliente.notas}"></textarea></div>
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar</button>
+                    <a th:href="@{/gerente/clientes}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Cancelar</a>
+                </div>
+            </form>
+            <form th:unless="${cliente.idCliente != null}" th:action="@{/gerente/clientes/guardar}" method="post">
+                <div class="form-row">
+                    <div class="form-group"><label for="nombre">Nombre Completo *</label><input type="text" id="nombre" name="nombre" required/></div>
+                    <div class="form-group"><label for="cedula">Cédula/ID *</label><input type="text" id="cedula" name="cedula" required/></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="correo">Correo Electrónico *</label><input type="email" id="correo" name="correo" required/></div>
+                    <div class="form-group"><label for="telefono">Teléfono</label><input type="text" id="telefono" name="telefono"/></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="ciudad">Ciudad</label><input type="text" id="ciudad" name="ciudad"/></div>
+                    <div class="form-group"><label for="presupuesto">Presupuesto ($)</label><input type="number" id="presupuesto" name="presupuesto"/></div>
+                </div>
+                <div class="form-group"><label for="direccion">Dirección</label><input type="text" id="direccion" name="direccion"/></div>
+                <div class="form-row">
+                    <div class="form-group"><label for="interesVehiculo">Vehículo de Interés</label><input type="text" id="interesVehiculo" name="interesVehiculo"/></div>
+                    <div class="form-group"><label for="estado">Estado *</label><select id="estado" name="estado" required>
+                        <option value="Nuevo">Nuevo</option>
+                        <option value="Interesado">Interesado</option>
+                        <option value="Contactado">Contactado</option>
+                        <option value="Negociando">Negociando</option>
+                        <option value="Comprador">Comprador</option>
+                        <option value="Perdido">Perdido</option>
+                    </select></div>
+                </div>
+                <div class="form-group"><label for="notas">Notas</label><textarea id="notas" name="notas"></textarea></div>
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Crear</button>
+                    <a th:href="@{/gerente/clientes}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

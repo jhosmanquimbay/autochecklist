@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Información de Usuarios y Roles</title>
+    <style>
+        body {
+            background: #0d0d0d;
+            color: #FFD600;
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+        }
+        .info-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            padding: 2rem;
+            border-radius: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: #333;
+        }
+        th, td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid #555;
+        }
+        th {
+            background: #000;
+            color: #FFD600;
+        }
+        .section {
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-container">
+        <h1>Información del Sistema</h1>
+        
+        <div class="section">
+            <h2>Roles Disponibles</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="rol : ${roles}">
+                        <td th:text="${rol.idRol}"></td>
+                        <td th:text="${rol.nombre}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>Usuarios Registrados</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Rol ID</th>
+                        <th>Rol Nombre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="usuario : ${usuarios}">
+                        <td th:text="${usuario.idUsuario}"></td>
+                        <td th:text="${usuario.nombre}"></td>
+                        <td th:text="${usuario.correo}"></td>
+                        <td th:text="${usuario.rol != null ? usuario.rol.idRol : 'Sin rol'}"></td>
+                        <td th:text="${usuario.rol != null ? usuario.rol.nombre : 'Sin rol'}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            <a href="/dashboard" style="color: #FFD600;">Volver al Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>

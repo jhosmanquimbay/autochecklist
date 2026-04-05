@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${modoEdicion} ? 'Editar promoción' : 'Nueva promoción'">Promoción</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/admin-theme.css}">
+    <style>
+        .promo-form-shell {
+            max-width: 860px;
+            display: grid;
+            gap: 1.2rem;
+        }
+
+        .promo-form-card,
+        .promo-help-card {
+            background: #fff;
+            border-radius: 18px;
+            border: 1px solid rgba(10, 29, 55, 0.08);
+            box-shadow: 0 12px 30px rgba(10, 29, 55, 0.08);
+            padding: 1.5rem;
+        }
+
+        .promo-form-card h1,
+        .promo-help-card h2 {
+            margin-top: 0;
+            color: var(--blue-dark);
+        }
+
+        .promo-form-card p,
+        .promo-help-card p,
+        .promo-help-card li {
+            color: var(--gray);
+        }
+
+        .promo-form-intro {
+            display: grid;
+            gap: 0.4rem;
+            margin-bottom: 1.15rem;
+        }
+
+        .promo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .field {
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        .field label {
+            font-weight: 700;
+            color: var(--blue-dark);
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            border: 1px solid rgba(10, 29, 55, 0.12);
+            border-radius: 12px;
+            padding: 0.85rem 0.95rem;
+            font: inherit;
+            background: #fff;
+        }
+
+        .field textarea {
+            min-height: 112px;
+            resize: vertical;
+        }
+
+        .field-error {
+            color: #b42318;
+            font-size: 0.84rem;
+            font-weight: 600;
+        }
+
+        .field-hint {
+            color: var(--gray);
+            font-size: 0.82rem;
+        }
+
+        .form-flash-error {
+            margin: 0 0 1rem 0;
+            padding: 0.9rem 1rem;
+            border-radius: 12px;
+            background: rgba(217, 45, 32, 0.1);
+            color: #b42318;
+            font-weight: 700;
+        }
+
+        .image-preview-card {
+            display: grid;
+            gap: 0.8rem;
+            padding: 1rem;
+            border-radius: 16px;
+            background: rgba(10, 29, 55, 0.04);
+            border: 1px solid rgba(10, 29, 55, 0.08);
+        }
+
+        .image-preview-card img {
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            border-radius: 14px;
+            background: #f4f6f9;
+        }
+
+        .image-preview-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            color: var(--gray);
+            font-size: 0.86rem;
+        }
+
+        .inline-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding-top: 0.25rem;
+        }
+
+        .inline-toggle input {
+            width: auto;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .actions a,
+        .actions button {
+            border: none;
+            border-radius: 12px;
+            padding: 0.9rem 1.15rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-family: inherit;
+        }
+
+        .actions .primary {
+            background: var(--gold);
+            color: var(--blue-dark);
+        }
+
+        .actions .secondary {
+            background: rgba(10, 29, 55, 0.08);
+            color: var(--blue-dark);
+        }
+
+        .placement-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 0.9rem;
+        }
+
+        .placement-preview {
+            border-radius: 16px;
+            border: 1px solid rgba(10, 29, 55, 0.08);
+            background: rgba(10, 29, 55, 0.03);
+            padding: 1rem;
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .placement-preview span {
+            color: #b7791f;
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08rem;
+            font-weight: 800;
+        }
+
+        .placement-preview strong {
+            color: var(--blue-dark);
+        }
+
+        .placement-preview p {
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        @media (max-width: 768px) {
+            .promo-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions a,
+            .actions button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .inline-toggle {
+                padding-top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+<aside class="sidebar">
+    <div>
+        <div class="sidebar-header">
+            <i class="fas fa-shield-halved" style="color:var(--gold);"></i>
+            <span class="logo-text">Admin Panel</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a th:href="@{/admin}"><i class="fa-solid fa-house"></i><span>Inicio</span></a></li>
+                <li><a th:href="@{/vehiculos}"><i class="fa-solid fa-car"></i><span>Vehículos</span></a></li>
+                <li><a th:href="@{/admin/promociones}" style="background:var(--blue-secondary);color:var(--gold);"><i class="fa-solid fa-bullhorn"></i><span>Promociones</span></a></li>
+            </ul>
+        </nav>
+    </div>
+    <form th:action="@{/logout}" method="post" class="logout">
+        <button type="submit"><i class="fas fa-sign-out-alt"></i><span>Cerrar sesión</span></button>
+    </form>
+</aside>
+
+<main class="main">
+    <div class="promo-form-shell">
+        <section class="promo-form-card">
+            <h1 th:text="${modoEdicion} ? 'Editar promoción' : 'Nueva promoción'">Promoción</h1>
+            <div class="promo-form-intro">
+                <p>Sube una imagen y elige dónde quieres mostrarla.</p>
+                <p>Los textos son opcionales. Si dejas campos vacíos, no se completarán solos y el carrusel mostrará solo lo que sí hayas escrito.</p>
+            </div>
+
+            <div th:if="${uploadError}" class="form-flash-error" th:text="${uploadError}">No fue posible guardar la imagen.</div>
+
+            <form th:action="${modoEdicion} ? @{/admin/promociones/{id}(id=${bannerId})} : @{/admin/promociones}" th:object="${bannerForm}" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:field="*{imageUrl}">
+                <div class="promo-grid">
+                    <div class="field">
+                        <label for="title">Título</label>
+                        <input id="title" th:field="*{title}" type="text" placeholder="Opcional">
+                        <div class="field-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+                        <span class="field-hint">Opcional. Si lo dejas vacío, no se mostrará un título encima de la imagen.</span>
+                    </div>
+
+                    <div class="field">
+                        <label for="placement">Ubicación</label>
+                        <select id="placement" th:field="*{placement}">
+                            <option value="hero">Carrusel principal del inicio</option>
+                            <option value="catalog">Promociones dentro del inicio</option>
+                            <option value="client">Carrusel del portal cliente</option>
+                        </select>
+                        <div class="field-error" th:if="${#fields.hasErrors('placement')}" th:errors="*{placement}"></div>
+                    </div>
+
+                    <div class="field full">
+                        <label for="description">Texto breve</label>
+                        <textarea id="description" th:field="*{description}" rows="4" placeholder="Opcional"></textarea>
+                        <div class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                        <span class="field-hint">Opcional. Úsalo solo si quieres una línea de apoyo sobre la imagen.</span>
+                    </div>
+
+                    <div class="field">
+                        <label for="ctaText">Botón</label>
+                        <input id="ctaText" th:field="*{ctaText}" type="text" placeholder="Opcional">
+                        <div class="field-error" th:if="${#fields.hasErrors('ctaText')}" th:errors="*{ctaText}"></div>
+                        <span class="field-hint">Opcional. Si no escribes botón, no se mostrará llamada a la acción.</span>
+                    </div>
+
+                    <div class="field">
+                        <label for="ctaUrl">Enlace</label>
+                        <input id="ctaUrl" th:field="*{ctaUrl}" type="text" placeholder="Opcional">
+                        <div class="field-error" th:if="${#fields.hasErrors('ctaUrl')}" th:errors="*{ctaUrl}"></div>
+                        <span class="field-hint">Opcional. Solo se usa si también escribes texto de botón.</span>
+                    </div>
+
+                    <div class="field">
+                        <label for="eyebrow">Etiqueta pequeña</label>
+                        <input id="eyebrow" th:field="*{eyebrow}" type="text" placeholder="Opcional: Lanzamiento, Financiación, Oferta...">
+                        <div class="field-error" th:if="${#fields.hasErrors('eyebrow')}" th:errors="*{eyebrow}"></div>
+                        <span class="field-hint">Opcional. Si la dejas vacía, no aparecerá etiqueta superior.</span>
+                    </div>
+
+                    <div class="field">
+                        <label for="displayOrder">Orden</label>
+                        <input id="displayOrder" th:field="*{displayOrder}" type="number" min="1" max="99">
+                        <div class="field-error" th:if="${#fields.hasErrors('displayOrder')}" th:errors="*{displayOrder}"></div>
+                        <span class="field-hint">Opcional. Si lo dejas vacío al crear, se asigna el siguiente orden disponible.</span>
+                    </div>
+
+                    <div class="field full">
+                        <label for="imageFile">Foto del banner</label>
+                        <input id="imageFile" name="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+                        <span class="field-hint">Sube JPG, PNG, WEBP o GIF. Tamaño máximo: 5 MB. Recomendado: imagen horizontal amplia.</span>
+                    </div>
+
+                    <div class="field full" th:if="${bannerForm.imageUrl != null and !#strings.isEmpty(bannerForm.imageUrl)}">
+                        <label>Foto actual</label>
+                        <div class="image-preview-card">
+                            <img th:src="${bannerForm.imageUrl}" th:alt="${bannerForm.title}">
+                            <div class="image-preview-meta">
+                                <span>La portada mostrará esta imagen en lugar del icono.</span>
+                                <label class="inline-toggle" for="removeImage" style="padding-top:0;">
+                                    <input id="removeImage" th:field="*{removeImage}" type="checkbox">
+                                    <span>Quitar foto actual</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="inline-toggle">
+                        <input id="active" th:field="*{active}" type="checkbox">
+                        <label for="active">Mostrar esta campaña</label>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="primary">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span th:text="${modoEdicion} ? 'Guardar cambios' : 'Crear promoción'">Guardar</span>
+                    </button>
+                    <a th:href="@{/admin/promociones}" class="secondary">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Volver
+                    </a>
+                </div>
+            </form>
+        </section>
+
+        <section class="promo-help-card">
+            <h2>¿Dónde aparece cada campaña?</h2>
+            <div class="placement-preview-grid">
+                <article class="placement-preview">
+                    <span>Ubicación 1</span>
+                    <strong>Carrusel principal del inicio</strong>
+                    <p>Es la pieza grande, tipo banner, pensada para campañas de alto impacto visual.</p>
+                </article>
+                <article class="placement-preview">
+                    <span>Ubicación 2</span>
+                    <strong>Promociones dentro del inicio</strong>
+                    <p>Tarjetas secundarias para resaltar ofertas o llamados de acción antes del catálogo.</p>
+                </article>
+                <article class="placement-preview">
+                    <span>Ubicación 3</span>
+                    <strong>Portal cliente</strong>
+                    <p>Un carrusel más compacto para compras, favoritos y perfil del cliente autenticado.</p>
+                </article>
+            </div>
+        </section>
+    </div>
+</main>
+</body>
+</html>

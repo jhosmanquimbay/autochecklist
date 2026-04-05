@@ -1,0 +1,225 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>NotificaciÃ³n - Gerente</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --blue-dark: #0A1D37;
+      --blue-secondary: #1C3B5A;
+      --gold: #F5A623;
+      --gray: #4A4A4A;
+      --white: #FFFFFF;
+      --bg: #f4f6f9;
+      --color-danger: #ef4444;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--blue-dark);
+      margin: 0;
+      display: flex;
+      min-height: 100vh;
+      margin-left: 260px;
+    }
+    /* Sidebar */
+    .sidebar {
+      width: 260px; 
+      height: 100vh;
+      background: var(--blue-dark);
+      color: var(--white);
+      padding: 1.5rem; 
+      display: flex; 
+      flex-direction: column;
+      justify-content: space-between; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      position: fixed;
+      left: 0;
+      top: 0;
+    }
+    .sidebar h3 { 
+      color: var(--gold); 
+      margin-bottom: 1.5rem; 
+      text-align: center;
+      font-size: 1.1rem;
+    }
+    .sidebar nav ul { list-style: none; padding: 0; margin: 0; }
+    .sidebar nav ul li { margin: .8rem 0; }
+    .sidebar nav ul li a {
+      text-decoration: none; 
+      color: #dcdcdc;
+      display: flex; 
+      align-items: center; 
+      gap: .6rem;
+      padding: 1rem 1.5rem; 
+      border-radius: 8px;
+      transition: 0.3s;
+    }
+    .sidebar nav ul li a:hover { 
+      background: var(--blue-secondary); 
+      color: var(--gold); 
+    }
+    .logout-btn {
+      margin-top: 2rem; 
+      background: var(--color-danger); 
+      color: #fff;
+      padding: .8rem 1rem; 
+      border: none; 
+      border-radius: 8px;
+      font-weight: 600; 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center;
+      justify-content: center; 
+      gap: .5rem;
+      transition: background 0.3s;
+    }
+    .logout-btn:hover { background: #d32f2f; }
+
+    /* Main */
+    .main { 
+      flex: 1; 
+      padding: 2rem; 
+    }
+    .main h1 { 
+      color: var(--blue-dark); 
+      text-align: center; 
+      margin-bottom: 2rem;
+      font-weight: 700;
+    }
+
+    /* Card form */
+    .card {
+      background: var(--white); 
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+      padding: 2.5rem; 
+      max-width: 600px; 
+      margin: auto;
+    }
+    .form-group { 
+      margin-bottom: 1.2rem; 
+      display: flex; 
+      flex-direction: column; 
+    }
+    .form-group label { 
+      font-weight: 600; 
+      margin-bottom: .5rem; 
+      color: var(--blue-dark); 
+    }
+    .form-group input, 
+    .form-group textarea, 
+    .form-group select {
+      padding: .9rem 1rem; 
+      border: 1px solid #ddd; 
+      border-radius: 8px;
+      background: var(--white); 
+      color: var(--blue-dark); 
+      font-size: 1rem;
+      font-family: 'Poppins', sans-serif;
+      transition: 0.3s;
+    }
+    textarea { 
+      resize: vertical; 
+      min-height: 120px; 
+    }
+    .form-group input:focus, 
+    .form-group textarea:focus, 
+    .form-group select:focus {
+      outline: none; 
+      border-color: var(--gold); 
+      box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.1);
+      background: var(--white);
+    }
+
+    /* Botones */
+    .actions { 
+      display: flex; 
+      gap: 1rem; 
+      justify-content: flex-end; 
+      margin-top: 1.5rem; 
+    }
+    .btn {
+      background: var(--gold); 
+      color: var(--blue-dark); 
+      font-weight: 600;
+      padding: .9rem 1.5rem; 
+      border: none; 
+      border-radius: 8px;
+      cursor: pointer; 
+      transition: background 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .btn:hover { background: #e2b03f; }
+    .btn.cancel {
+      background: var(--color-danger); 
+      color: #fff; 
+      text-decoration: none; 
+      text-align: center;
+      display: inline-flex;
+    }
+    .btn.cancel:hover { background: #d32f2f; }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <h3>Panel de Control</h3>
+      <nav>
+        <ul>
+          <li><a th:href="@{/gerente}"><i class="fa-solid fa-house"></i> Inicio</a></li>
+          <li><a th:href="@{/gerente/vehiculos}"><i class="fa-solid fa-car"></i> VehÃ­culos</a></li>
+          <li><a th:href="@{/gerente/inventario}"><i class="fa-solid fa-warehouse"></i> Inventario</a></li>
+          <li><a th:href="@{/gerente/novedades}"><i class="fa-solid fa-bullhorn"></i> Novedades</a></li>
+          <li><a th:href="@{/gerente/notificaciones}"><i class="fa-solid fa-bell"></i> Notificaciones</a></li>
+        </ul>
+      </nav>
+    </div>
+    <form th:action="@{/logout}" method="post">
+      <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar sesiÃ³n</button>
+    </form>
+  </aside>
+
+  <!-- Contenido -->
+  <main class="main">
+    <h1><i class="fa-solid fa-bell"></i> Crear NotificaciÃ³n</h1>
+    <section class="card">
+      <form th:action="@{/gerente/notificaciones/guardar}" th:object="${notificacion}" method="post">
+        <input type="hidden" th:field="*{idNotificacion}" />
+
+        <div class="form-group">
+          <label for="titulo">TÃ­tulo</label>
+          <input type="text" id="titulo" th:field="*{titulo}" placeholder="Ej: Aviso de reuniÃ³n" required />
+        </div>
+
+        <div class="form-group">
+          <label for="mensaje">Mensaje</label>
+          <textarea id="mensaje" th:field="*{mensaje}" placeholder="Escribe aquÃ­ el contenido..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="conductor">Conductor</label>
+          <select id="conductor" th:field="*{conductor.idConductor}" required>
+            <option value="">-- Selecciona un Conductor --</option>
+            <option th:each="c : ${conductores}" 
+                    th:value="${c.idConductor}" 
+                    th:text="${c.nombre}"></option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button class="btn" type="submit"><i class="fa-solid fa-paper-plane"></i> Enviar</button>
+          <a th:href="@{/gerente/notificaciones}" class="btn cancel"><i class="fa-solid fa-xmark"></i> Cancelar</a>
+        </div>
+      </form>
+    </section>
+  </main>
+</body>
+</html>
+
+
+

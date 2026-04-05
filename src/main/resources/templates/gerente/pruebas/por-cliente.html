@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Pruebas del Cliente</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+</head>
+<body>
+    <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+    <main class="main">
+        <div class="content-header">
+            <h1><i class="fa-solid fa-hourglass-end"></i> Pruebas de <span th:text="${cliente.nombre}"></span></h1>
+        </div>
+        <div class="card">
+            <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 10px 0;">Información del Cliente</h3>
+                <p style="margin: 0; font-size: 14px;">
+                    <strong>Email:</strong> [[${cliente.correo}]] | <strong>Tel:</strong> [[${cliente.telefono}]]
+                </p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <a th:href="@{/gerente/pruebas}" class="btn" style="background-color: #757575; color: white; text-decoration: none;">
+                    <i class="fa-solid fa-arrow-left"></i> Volver
+                </a>
+            </div>
+            <h2 style="margin-top: 0;"><i class="fa-solid fa-list"></i> Solicitudes</h2>
+            <div th:if="${pruebas != null and pruebas.size() > 0}">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f0f0f0;">
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Vehículo</th>
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Solicitud</th>
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Estado</th>
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Resultado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="prueba : ${pruebas}" style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 12px;">[[${prueba.vehiculo.marca}]] [[${prueba.vehiculo.modelo}]]</td>
+                            <td style="padding: 12px;">[[${#temporals.format(prueba.fechaSolicitada, 'dd/MM/yyyy')}]]</td>
+                            <td style="padding: 12px;"><span style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;" th:class="'estado-badge estado-' + ${prueba.estado.toLowerCase()}">[[${prueba.estado}]]</span></td>
+                            <td style="padding: 12px;">[[${prueba.resultadoPrueba ?: '---'}]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div th:if="${pruebas == null or pruebas.size() == 0}" style="padding: 30px; text-align: center; color: #999;">
+                <i class="fa-solid fa-inbox"></i> No hay pruebas
+            </div>
+        </div>
+    </main>
+    <style>
+        .estado-badge { display: inline-block; }
+        .estado-pendiente { background-color: #FFE0B2; color: #E65100; }
+        .estado-aprobada { background-color: #C8E6C9; color: #1B5E20; }
+        .estado-realizada { background-color: #B3E5FC; color: #01579B; }
+        .estado-rechazada { background-color: #FFCDD2; color: #B71C1C; }
+    </style>
+</body>
+</html>

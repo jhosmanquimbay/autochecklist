@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AUTO CHECK LIST - Clima</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --color-bg: #111;
+      --color-card: #1a1a1a;
+      --color-primary: #FFD600;
+      --color-text: #f5f5f5;
+      --color-muted: #aaa;
+      --color-danger: #e53935;
+      --color-success: #4caf50;
+      --color-warning: #ff9800;
+      --color-info: #2196f3;
+      --radius: 12px;
+      --shadow: 0 6px 18px rgba(17, 17, 17, 0.6);
+    }
+    
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      margin: 0;
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    .sidebar {
+      width: 260px; 
+      background: #000; 
+      padding: 1.5rem;
+      display: flex; 
+      flex-direction: column; 
+      justify-content: space-between;
+      box-shadow: var(--shadow);
+    }
+    
+    .sidebar h3 { 
+      color: var(--color-primary); 
+      margin-bottom: 1.2rem; 
+      text-align: center; 
+    }
+    
+    .sidebar nav ul { 
+      list-style: none; 
+      padding: 0; 
+      margin: 0; 
+    }
+    
+    .sidebar nav ul li { 
+      margin: .6rem 0; 
+    }
+    
+    .sidebar nav ul li a {
+      text-decoration: none; 
+      color: var(--color-muted);
+      display: flex; 
+      align-items: center; 
+      gap: .8rem;
+      padding: .7rem 1rem; 
+      border-radius: var(--radius);
+      transition: background 0.3s, color 0.3s;
+    }
+    
+    .sidebar nav ul li a:hover { 
+      background: var(--color-primary); 
+      color: #000; 
+    }
+
+    /* Dropdown menu styles */
+    .dropdown-menu-item {
+      position: relative;
+    }
+    
+    .dropdown-submenu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      position: absolute;
+      left: 100%;
+      top: 0;
+      background: linear-gradient(145deg, #1c1c1c, #111);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      min-width: 200px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-10px);
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    
+    .dropdown-menu-item:hover .dropdown-submenu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0);
+    }
+    
+    .dropdown-submenu li {
+      margin: 0;
+    }
+    
+    .dropdown-submenu li a {
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      margin: 0.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      color: var(--color-muted);
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .dropdown-submenu li a:hover {
+      background: var(--color-primary);
+      color: #000;
+    }
+    
+    .dropdown-toggle::after {
+      content: '▶';
+      margin-left: auto;
+      font-size: 0.8rem;
+      transition: transform 0.3s ease;
+    }
+    
+    .dropdown-menu-item:hover .dropdown-toggle::after {
+      transform: rotate(90deg);
+    }
+
+    .notification-badge {
+      background: var(--color-danger);
+      color: white;
+      border-radius: 50%;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.7rem;
+      margin-left: auto;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--color-card);
+    }
+
+    .header h1 {
+      color: var(--color-primary);
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: var(--color-muted);
+    }
+
+    .weather-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .weather-card {
+      background: var(--color-card);
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s ease;
+    }
+
+    .weather-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .weather-card h3 {
+      color: var(--color-primary);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .weather-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .temperature {
+      font-size: 3rem;
+      font-weight: bold;
+      color: var(--color-text);
+    }
+
+    .weather-icon {
+      font-size: 4rem;
+      color: var(--color-primary);
+    }
+
+    .weather-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #333;
+    }
+
+    .forecast-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .forecast-item {
+      background: #222;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .forecast-day {
+      font-weight: bold;
+      color: var(--color-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .forecast-temp {
+      font-size: 1.2rem;
+      margin: 0.5rem 0;
+    }
+
+    .forecast-icon {
+      font-size: 2rem;
+      color: var(--color-info);
+    }
+
+    .btn {
+      background: var(--color-primary);
+      color: #000;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn:hover {
+      background: #e6c200;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--color-card);
+      color: var(--color-text);
+      border: 1px solid var(--color-muted);
+    }
+
+    .btn-secondary:hover {
+      background: var(--color-muted);
+      color: #000;
+    }
+
+    .location-selector {
+      margin-bottom: 2rem;
+    }
+
+    .location-selector input {
+      background: var(--color-card);
+      color: var(--color-text);
+      border: 1px solid var(--color-muted);
+      padding: 0.8rem;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .location-selector input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px rgba(255, 214, 0, 0.2);
+    }
+
+    .location-selector input::placeholder {
+      color: var(--color-muted);
+      opacity: 0.7;
+    }
+
+    .alert {
+      background: var(--color-warning);
+      color: #000;
+      padding: 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--color-muted);
+    }
+
+    .spinner {
+      border: 3px solid #333;
+      border-top: 3px solid var(--color-primary);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div>
+      <h3>AUTO CHECK LIST</h3>
+      <nav>
+        <ul>
+          <!-- ADMIN -->
+          <div th:if="${usuarioRol != null and (#strings.toLowerCase(usuarioRol) == 'admin' or usuarioRol == 'Admin' or usuarioRol == 'ADMIN')}">
+            <li><a href="/dashboard"><i class="fas fa-house"></i> Dashboard</a></li>
+            <li><a href="/usuarios"><i class="fas fa-users"></i> Usuarios</a></li>
+            <li><a href="/vehiculos"><i class="fas fa-car"></i> Vehículos</a></li>
+            <li><a href="/inventario"><i class="fas fa-warehouse"></i> Inventario</a></li>
+            <li><a href="/transporte"><i class="fas fa-truck-fast"></i> Transporte</a></li>
+            <li><a href="/novedades"><i class="fas fa-bullhorn"></i> Novedades</a></li>
+            <li><a href="/clima"><i class="fas fa-cloud-sun"></i> Clima</a></li>
+            <li class="dropdown-menu-item">
+              <a th:href="@{/correo/inbox/{id}(id=${usuarioId})}" class="dropdown-toggle">
+                <i class="fas fa-envelope"></i> Correo
+              </a>
+              <ul class="dropdown-submenu">
+                <li><a th:href="@{/correo/inbox/{id}(id=${usuarioId})}">
+                  <i class="fas fa-inbox"></i> Bandeja de entrada
+                </a></li>
+                <li><a th:href="@{/correo/enviados/{id}(id=${usuarioId})}"><i class="fas fa-paper-plane"></i> Enviados</a></li>
+                <li><a th:href="@{/correo/papelera/{id}(id=${usuarioId})}"><i class="fas fa-trash"></i> Papelera</a></li>
+                <li><a th:href="@{/correo/masivos/{id}(id=${usuarioId})}"><i class="fas fa-users"></i> Correos Masivos</a></li>
+              </ul>
+            </li>
+          </div>
+
+          <!-- GERENTE -->
+          <div th:if="${usuarioRol != null and (#strings.toLowerCase(usuarioRol) == 'gerente' or usuarioRol == 'Gerente' or usuarioRol == 'GERENTE')}">
+            <li><a href="/gerente"><i class="fas fa-house"></i> Inicio</a></li>
+            <li><a href="/gerente/vehiculos"><i class="fas fa-car"></i> Vehículos</a></li>
+            <li><a href="/gerente/inventario"><i class="fas fa-warehouse"></i> Inventario</a></li>
+            <li><a href="/transporte"><i class="fas fa-truck-fast"></i> Transporte</a></li>
+            <li><a href="/novedades"><i class="fas fa-bullhorn"></i> Novedades</a></li>
+            <li><a href="/clima"><i class="fas fa-cloud-sun"></i> Clima</a></li>
+            <li class="dropdown-menu-item">
+              <a th:href="@{/correo/inbox/{id}(id=${usuarioId})}" class="dropdown-toggle">
+                <i class="fas fa-envelope"></i> Correo
+              </a>
+              <ul class="dropdown-submenu">
+                <li><a th:href="@{/correo/inbox/{id}(id=${usuarioId})}">
+                  <i class="fas fa-inbox"></i> Bandeja de entrada
+                </a></li>
+                <li><a th:href="@{/correo/enviados/{id}(id=${usuarioId})}"><i class="fas fa-paper-plane"></i> Enviados</a></li>
+                <li><a th:href="@{/correo/papelera/{id}(id=${usuarioId})}"><i class="fas fa-trash"></i> Papelera</a></li>
+                <li><a th:href="@{/correo/masivos/{id}(id=${usuarioId})}"><i class="fas fa-users"></i> Correos Masivos</a></li>
+              </ul>
+            </li>
+          </div>
+
+          <!-- CONDUCTOR -->
+          <div th:if="${usuarioRol != null and (#strings.toLowerCase(usuarioRol) == 'conductor' or usuarioRol == 'Conductor' or usuarioRol == 'CONDUCTOR')}">
+            <li><a href="/conductor/panel"><i class="fas fa-gauge"></i> Dashboard</a></li>
+            <li><a href="/conductor/panel/notificaciones"><i class="fas fa-bell"></i> Notificaciones</a></li>
+            <li><a href="/conductor/novedades"><i class="fas fa-bullhorn"></i> Reportar Novedad</a></li>
+            <li><a href="/clima"><i class="fas fa-cloud-sun"></i> Clima</a></li>
+            <li class="dropdown-menu-item">
+              <a th:href="@{/correo/inbox/{id}(id=${usuarioId})}" class="dropdown-toggle">
+                <i class="fas fa-envelope"></i> Correo
+              </a>
+              <ul class="dropdown-submenu">
+                <li><a th:href="@{/correo/inbox/{id}(id=${usuarioId})}">
+                  <i class="fas fa-inbox"></i> Bandeja de entrada
+                </a></li>
+                <li><a th:href="@{/correo/enviados/{id}(id=${usuarioId})}"><i class="fas fa-paper-plane"></i> Enviados</a></li>
+                <li><a th:href="@{/correo/papelera/{id}(id=${usuarioId})}"><i class="fas fa-trash"></i> Papelera</a></li>
+              </ul>
+            </li>
+          </div>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Botón de Cerrar Sesión -->
+    <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #333;">
+      <form th:action="@{/logout}" method="post" style="margin: 0;">
+        <button type="submit" style="width: 100%; padding: 0.8rem; background: var(--color-danger); color: white; border: none; border-radius: var(--radius); font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+          <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <div class="header">
+      <h1><i class="fas fa-cloud-sun"></i> Información del Clima</h1>
+      <div class="user-info">
+        <span th:text="${usuarioNombre != null ? usuarioNombre : 'Usuario'}">Usuario</span>
+        <span th:text="${usuarioRol != null ? '(' + usuarioRol + ')' : ''}"></span>
+      </div>
+    </div>
+
+    <!-- Location Input -->
+    <div class="location-selector">
+      <label for="cityInput" style="color: var(--color-primary); font-weight: bold; margin-right: 1rem;">Escribir Ciudad:</label>
+      <input type="text" id="cityInput" placeholder="Ej: Bogotá, Colombia" 
+             style="background: var(--color-card); color: var(--color-text); border: 1px solid var(--color-muted); padding: 0.8rem; border-radius: var(--radius); font-size: 1rem; min-width: 250px; margin-right: 1rem;"
+             onkeypress="if(event.key==='Enter') loadWeather()">
+      <button class="btn" onclick="loadWeather()">
+        <i class="fas fa-search"></i> Buscar Clima
+      </button>
+      <button class="btn btn-secondary" onclick="getCurrentLocation()" style="margin-left: 0.5rem;">
+        <i class="fas fa-location-dot"></i> Mi Ubicación
+      </button>
+    </div>
+
+    <!-- Weather Alert -->
+    <div id="weatherAlert" class="alert" style="display: none;">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span id="alertMessage">Alerta meteorológica</span>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Cargando información del clima...</p>
+    </div>
+
+    <!-- Weather Grid -->
+    <div id="weatherContent" class="weather-grid" style="display: none;">
+      <!-- Current Weather -->
+      <div class="weather-card">
+        <h3><i class="fas fa-thermometer-half"></i> Clima Actual</h3>
+        <div class="weather-main">
+          <div class="temperature" id="currentTemp">25°C</div>
+          <div class="weather-icon" id="currentIcon">
+            <i class="fas fa-sun"></i>
+          </div>
+        </div>
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <span id="currentDescription" style="color: var(--color-muted); font-size: 1.1rem;">Soleado</span>
+        </div>
+        <div class="weather-details">
+          <div class="detail-item">
+            <span><i class="fas fa-eye"></i> Sensación térmica</span>
+            <span id="feelsLike">27°C</span>
+          </div>
+          <div class="detail-item">
+            <span><i class="fas fa-tint"></i> Humedad</span>
+            <span id="humidity">65%</span>
+          </div>
+          <div class="detail-item">
+            <span><i class="fas fa-wind"></i> Viento</span>
+            <span id="windSpeed">15 km/h</span>
+          </div>
+          <div class="detail-item">
+            <span><i class="fas fa-compress-arrows-alt"></i> Presión</span>
+            <span id="pressure">1013 hPa</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Air Quality -->
+      <div class="weather-card">
+        <h3><i class="fas fa-lungs"></i> Calidad del Aire</h3>
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <div id="airQualityIndex" style="font-size: 2rem; font-weight: bold; color: var(--color-success);">Buena</div>
+          <div id="airQualityValue" style="color: var(--color-muted);">ICA: 45</div>
+        </div>
+        <div class="weather-details">
+          <div class="detail-item">
+            <span>PM2.5</span>
+            <span id="pm25">12 μg/m³</span>
+          </div>
+          <div class="detail-item">
+            <span>PM10</span>
+            <span id="pm10">25 μg/m³</span>
+          </div>
+          <div class="detail-item">
+            <span>O₃</span>
+            <span id="ozone">85 μg/m³</span>
+          </div>
+          <div class="detail-item">
+            <span>NO₂</span>
+            <span id="no2">35 μg/m³</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- UV Index -->
+      <div class="weather-card">
+        <h3><i class="fas fa-sun"></i> Índice UV</h3>
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <div id="uvIndex" style="font-size: 3rem; font-weight: bold; color: var(--color-warning);">6</div>
+          <div id="uvLevel" style="color: var(--color-muted);">Alto</div>
+        </div>
+        <div style="background: #333; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+          <p style="margin: 0; color: var(--color-muted); font-size: 0.9rem;">
+            <i class="fas fa-info-circle"></i> 
+            Se recomienda usar protector solar y evitar la exposición prolongada al sol.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5-Day Forecast -->
+    <div id="forecastSection" style="display: none;">
+      <div class="weather-card" style="grid-column: 1 / -1;">
+        <h3><i class="fas fa-calendar-alt"></i> Pronóstico de 5 Días</h3>
+        <div class="forecast-grid" id="forecastGrid">
+          <!-- Forecast items will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simulated weather data for different cities
+    const weatherDatabase = {
+      // Colombia
+      'bogota': { temp: 18, description: "Nublado", icon: "fas fa-cloud", feelsLike: 20, humidity: 75, wind: 12, pressure: 1015 },
+      'medellin': { temp: 24, description: "Soleado", icon: "fas fa-sun", feelsLike: 26, humidity: 60, wind: 8, pressure: 1012 },
+      'cali': { temp: 28, description: "Muy soleado", icon: "fas fa-sun", feelsLike: 32, humidity: 55, wind: 10, pressure: 1010 },
+      'barranquilla': { temp: 32, description: "Caluroso", icon: "fas fa-sun", feelsLike: 36, humidity: 70, wind: 15, pressure: 1008 },
+      'cartagena': { temp: 30, description: "Tropical", icon: "fas fa-cloud-sun", feelsLike: 34, humidity: 78, wind: 18, pressure: 1009 },
+      'bucaramanga': { temp: 26, description: "Agradable", icon: "fas fa-cloud-sun", feelsLike: 28, humidity: 65, wind: 10, pressure: 1013 },
+      
+      // Otras ciudades del mundo
+      'madrid': { temp: 15, description: "Fresco", icon: "fas fa-cloud", feelsLike: 13, humidity: 60, wind: 8, pressure: 1020 },
+      'barcelona': { temp: 22, description: "Mediterráneo", icon: "fas fa-sun", feelsLike: 24, humidity: 55, wind: 12, pressure: 1018 },
+      'paris': { temp: 12, description: "Lluvioso", icon: "fas fa-cloud-rain", feelsLike: 10, humidity: 80, wind: 15, pressure: 1015 },
+      'london': { temp: 8, description: "Nublado", icon: "fas fa-cloud", feelsLike: 6, humidity: 85, wind: 20, pressure: 1012 },
+      'new york': { temp: 5, description: "Frío", icon: "fas fa-snowflake", feelsLike: 2, humidity: 45, wind: 25, pressure: 1025 },
+      'miami': { temp: 28, description: "Húmedo", icon: "fas fa-sun", feelsLike: 32, humidity: 75, wind: 14, pressure: 1010 },
+      'mexico city': { temp: 20, description: "Templado", icon: "fas fa-cloud-sun", feelsLike: 22, humidity: 50, wind: 8, pressure: 1016 },
+      'buenos aires': { temp: 25, description: "Primaveral", icon: "fas fa-sun", feelsLike: 27, humidity: 60, wind: 12, pressure: 1014 },
+      'lima': { temp: 19, description: "Garúa", icon: "fas fa-cloud", feelsLike: 21, humidity: 85, wind: 10, pressure: 1013 },
+      'quito': { temp: 16, description: "Montañoso", icon: "fas fa-cloud-sun", feelsLike: 18, humidity: 70, wind: 8, pressure: 1018 }
+    };
+
+    // Generate forecast based on current weather
+    function generateForecast(currentWeather) {
+      const days = ['Hoy', 'Mañana', 'Viernes', 'Sábado', 'Domingo'];
+      const forecast = [];
+      
+      for (let i = 0; i < 5; i++) {
+        const tempVariation = Math.floor(Math.random() * 6) - 3; // -3 to +3
+        const minTemp = currentWeather.temp - 5 + tempVariation;
+        const maxTemp = currentWeather.temp + 2 + tempVariation;
+        
+        const icons = ['fas fa-sun', 'fas fa-cloud-sun', 'fas fa-cloud', 'fas fa-cloud-rain'];
+        const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+        
+        forecast.push({
+          day: days[i],
+          temp: `${maxTemp}°/${minTemp}°`,
+          icon: i === 0 ? currentWeather.icon : randomIcon
+        });
+      }
+      
+      return forecast;
+    }
+
+    function loadWeather() {
+      const loading = document.getElementById('loading');
+      const content = document.getElementById('weatherContent');
+      const forecast = document.getElementById('forecastSection');
+      const cityInput = document.getElementById('cityInput');
+      const alert = document.getElementById('weatherAlert');
+      
+      // Get city name from input
+      let cityName = cityInput.value.trim().toLowerCase();
+      
+      if (!cityName) {
+        showAlert('Por favor, ingresa el nombre de una ciudad', 'warning');
+        return;
+      }
+      
+      // Show loading
+      loading.style.display = 'block';
+      content.style.display = 'none';
+      forecast.style.display = 'none';
+      alert.style.display = 'none';
+      
+      // Simulate API call delay
+      setTimeout(() => {
+        // Try to find city in database (remove accents and normalize)
+        const normalizedCity = cityName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z\s]/g, '').replace(/\s+/g, ' ').trim();
+        
+        let weatherData = null;
+        
+        // Search for city in database
+        for (const [key, value] of Object.entries(weatherDatabase)) {
+          if (key.includes(normalizedCity) || normalizedCity.includes(key)) {
+            weatherData = value;
+            break;
+          }
+        }
+        
+        // If not found, generate random weather data
+        if (!weatherData) {
+          weatherData = generateRandomWeather(cityName);
+        }
+        
+        // Generate forecast
+        const forecastData = generateForecast(weatherData);
+        
+        // Update current weather
+        document.getElementById('currentTemp').textContent = weatherData.temp + '°C';
+        document.getElementById('currentDescription').textContent = weatherData.description;
+        document.getElementById('currentIcon').innerHTML = `<i class="${weatherData.icon}"></i>`;
+        document.getElementById('feelsLike').textContent = weatherData.feelsLike + '°C';
+        document.getElementById('humidity').textContent = weatherData.humidity + '%';
+        document.getElementById('windSpeed').textContent = weatherData.wind + ' km/h';
+        document.getElementById('pressure').textContent = weatherData.pressure + ' hPa';
+        
+        // Update forecast
+        const forecastGrid = document.getElementById('forecastGrid');
+        forecastGrid.innerHTML = '';
+        forecastData.forEach(item => {
+          const forecastItem = document.createElement('div');
+          forecastItem.className = 'forecast-item';
+          forecastItem.innerHTML = `
+            <div class="forecast-day">${item.day}</div>
+            <div class="forecast-icon"><i class="${item.icon}"></i></div>
+            <div class="forecast-temp">${item.temp}</div>
+          `;
+          forecastGrid.appendChild(forecastItem);
+        });
+        
+        // Hide loading and show content
+        loading.style.display = 'none';
+        content.style.display = 'grid';
+        forecast.style.display = 'block';
+        
+        // Show alert for extreme weather
+        if (weatherData.temp > 30 || weatherData.temp < 10) {
+          const message = weatherData.temp > 30 ? 
+            'Temperatura alta: Se recomienda mantenerse hidratado y usar protector solar' : 
+            'Temperatura baja: Se recomienda abrigarse bien y tomar bebidas calientes';
+          showAlert(message, 'warning');
+        } else {
+          showAlert(`Clima cargado para ${cityInput.value}`, 'success');
+        }
+      }, 1500);
+    }
+
+    function generateRandomWeather(cityName) {
+      // Generate realistic weather data for unknown cities
+      const baseTemp = Math.floor(Math.random() * 35) + 5; // 5-40°C
+      const descriptions = ['Soleado', 'Nublado', 'Parcialmente nublado', 'Lluvioso', 'Despejado', 'Brumoso'];
+      const icons = ['fas fa-sun', 'fas fa-cloud', 'fas fa-cloud-sun', 'fas fa-cloud-rain', 'fas fa-sun', 'fas fa-smog'];
+      
+      const randomIndex = Math.floor(Math.random() * descriptions.length);
+      
+      return {
+        temp: baseTemp,
+        description: descriptions[randomIndex],
+        icon: icons[randomIndex],
+        feelsLike: baseTemp + Math.floor(Math.random() * 6) - 3,
+        humidity: Math.floor(Math.random() * 40) + 40, // 40-80%
+        wind: Math.floor(Math.random() * 20) + 5, // 5-25 km/h
+        pressure: Math.floor(Math.random() * 30) + 1000 // 1000-1030 hPa
+      };
+    }
+
+    function showAlert(message, type) {
+      const alert = document.getElementById('weatherAlert');
+      const alertMessage = document.getElementById('alertMessage');
+      
+      alertMessage.textContent = message;
+      alert.className = 'alert';
+      
+      if (type === 'success') {
+        alert.style.background = 'var(--color-success)';
+        alert.style.color = '#fff';
+      } else if (type === 'warning') {
+        alert.style.background = 'var(--color-warning)';
+        alert.style.color = '#000';
+      }
+      
+      alert.style.display = 'flex';
+      
+      // Hide alert after 5 seconds
+      setTimeout(() => {
+        alert.style.display = 'none';
+      }, 5000);
+    }
+
+    function getCurrentLocation() {
+      if (navigator.geolocation) {
+        const loading = document.getElementById('loading');
+        loading.style.display = 'block';
+        
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            // Simulate reverse geocoding
+            const cities = ['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena'];
+            const randomCity = cities[Math.floor(Math.random() * cities.length)];
+            
+            document.getElementById('cityInput').value = randomCity;
+            loadWeather();
+          },
+          function(error) {
+            loading.style.display = 'none';
+            showAlert('No se pudo obtener la ubicación. Intenta escribir tu ciudad manualmente.', 'warning');
+          }
+        );
+      } else {
+        showAlert('La geolocalización no está disponible en este navegador.', 'warning');
+      }
+    }
+
+    // Load weather on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set default city
+      document.getElementById('cityInput').value = 'Bogotá, Colombia';
+      loadWeather();
+    });
+  </script>
+</body>
+</html>

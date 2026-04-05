@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width,initial-scale=1"/>
+	<title>Vehículos Disponibles - Vendedor</title>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+	<link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+	<link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+	<aside th:replace="~{fragments/vendedor-sidebar :: sidebar}"></aside>
+
+	<main class="main">
+		<div class="content-header">
+			<h1><i class="fa-solid fa-car-side"></i> Vehículos Disponibles</h1>
+			<p>Consulta el inventario activo para presentar opciones al cliente.</p>
+		</div>
+
+		<div class="card card-medium">
+			<form method="get" th:action="@{/vendedor/vehiculos}" class="form-grid">
+				<div>
+					<label>Marca</label>
+					<input type="text" name="marca" th:value="${marca}" class="field-control" placeholder="Toyota, Mazda..."/>
+				</div>
+				<div>
+					<label>Modelo</label>
+					<input type="text" name="modelo" th:value="${modelo}" class="field-control" placeholder="Corolla, CX-5..."/>
+				</div>
+				<div>
+					<label>Color</label>
+					<input type="text" name="color" th:value="${color}" class="field-control" placeholder="Blanco, negro..."/>
+				</div>
+				<div class="action-buttons top-space">
+					<button class="btn" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Filtrar</button>
+					<a class="btn ghost" th:href="@{/vendedor/vehiculos}"><i class="fa-solid fa-rotate-left"></i> Limpiar</a>
+				</div>
+			</form>
+		</div>
+
+		<div class="card">
+			<div class="section-title">
+				<h2><i class="fa-solid fa-list"></i> Inventario Comercial</h2>
+			</div>
+
+			<table>
+				<thead>
+					<tr>
+						<th>Chasis</th>
+						<th>Marca</th>
+						<th>Modelo</th>
+						<th>Año</th>
+						<th>Color</th>
+						<th>Ubicación</th>
+						<th>Estado</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="inv : ${inventarios}">
+						<td th:text="${inv.chasis}">-</td>
+						<td th:text="${inv.marca}">-</td>
+						<td th:text="${inv.modelo}">-</td>
+						<td th:text="${inv.anio}">-</td>
+						<td th:text="${inv.color}">-</td>
+						<td th:text="${inv.ubicacionActual}">-</td>
+						<td>
+							<span class="status-pill bg-success" th:text="${inv.estadoLogistico != null ? inv.estadoLogistico : 'Disponible'}">Disponible</span>
+						</td>
+					</tr>
+					<tr th:if="${#lists.isEmpty(inventarios)}">
+						<td colspan="7" class="empty-row">No hay vehículos disponibles con esos filtros.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</main>
+</body>
+</html>

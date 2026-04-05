@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width,initial-scale=1"/>
+	<title>Interesados y Ventas - Gerencia</title>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+	<link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+	<link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+	<style>
+		.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .8rem; margin-bottom: 1rem; }
+		.kpi { background: #fff; border-radius: 10px; padding: .9rem; box-shadow: 0 8px 22px rgba(0,0,0,.08); }
+		.kpi .label { color: #64748b; font-size: .85rem; }
+		.kpi .value { color: #0A1D37; font-weight: 700; font-size: 1.15rem; }
+		.kpi .value.web { color: #0f766e; }
+		.estado-pill { padding: .28rem .7rem; border-radius: 999px; font-size: .78rem; font-weight: 600; text-transform: capitalize; }
+		.origen-pill { display: inline-flex; align-items: center; padding: .28rem .7rem; border-radius: 999px; font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+		.origen-web { background: #ecfeff; color: #0f766e; }
+		.origen-interno { background: #f1f5f9; color: #334155; }
+		.estado-pendiente { background: #fff7ed; color: #9a3412; }
+		.estado-contactado { background: #eff6ff; color: #1d4ed8; }
+		.estado-negociando { background: #f5f3ff; color: #6d28d9; }
+		.estado-vendido { background: #ecfdf5; color: #047857; }
+		.estado-entregado { background: #ecfeff; color: #0e7490; }
+		.estado-perdido { background: #fef2f2; color: #b91c1c; }
+		.estado-default { background: #f1f5f9; color: #334155; }
+		.small-list { margin: 0; padding-left: 1rem; }
+		.small-list li { margin: .25rem 0; color: #334155; }
+		.inline-form { display: flex; gap: .45rem; align-items: center; flex-wrap: wrap; }
+		.inline-form select { min-width: 150px; }
+		.contact-card { display: grid; gap: .2rem; min-width: 230px; }
+		.contact-card strong { color: #0f172a; }
+		.contact-card small { color: #64748b; line-height: 1.35; }
+		.flash-success { margin-bottom: 1rem; padding: .9rem 1rem; border-radius: 12px; background: #ecfdf5; color: #166534; border: 1px solid #bbf7d0; }
+	</style>
+</head>
+<body>
+	<aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+
+	<main class="main">
+		<div class="content-header">
+			<h1><i class="fa-solid fa-handshake"></i> Interesados y Embudo Comercial</h1>
+			<p>Seguimiento de oportunidades desde primer contacto hasta cierre de venta.</p>
+		</div>
+
+		<div class="flash-success" th:if="${success != null}" th:text="${success}">La oportunidad se actualizó correctamente.</div>
+
+		<div class="kpi-grid">
+			<div class="kpi">
+				<span class="label">Pendientes</span>
+				<span class="value" th:text="${resumenEstados != null and #maps.containsKey(resumenEstados, 'pendiente') ? resumenEstados['pendiente'] : 0}">0</span>
+			</div>
+			<div class="kpi">
+				<span class="label">Contactados</span>
+				<span class="value" th:text="${resumenEstados != null and #maps.containsKey(resumenEstados, 'contactado') ? resumenEstados['contactado'] : 0}">0</span>
+			</div>
+			<div class="kpi">
+				<span class="label">Negociando</span>
+				<span class="value" th:text="${resumenEstados != null and #maps.containsKey(resumenEstados, 'negociando') ? resumenEstados['negociando'] : 0}">0</span>
+			</div>
+			<div class="kpi">
+				<span class="label">Vendidos</span>
+				<span class="value" th:text="${resumenEstados != null and #maps.containsKey(resumenEstados, 'vendido') ? resumenEstados['vendido'] : 0}">0</span>
+			</div>
+			<div class="kpi">
+				<span class="label">Entregados</span>
+				<span class="value" th:text="${resumenEstados != null and #maps.containsKey(resumenEstados, 'entregado') ? resumenEstados['entregado'] : 0}">0</span>
+			</div>
+			<div class="kpi">
+				<span class="label">Perdidos</span>
+				<span class="value" th:text="${resumenEstados != null and #maps.containsKey(resumenEstados, 'perdido') ? resumenEstados['perdido'] : 0}">0</span>
+			</div>
+			<div class="kpi">
+				<span class="label">Sin asignar</span>
+				<span class="value" th:text="${interesadosSinAsignar} ?: 0">0</span>
+			</div>
+			<div class="kpi">
+				<span class="label">Leads web activos</span>
+				<span class="value web" th:text="${leadsWebActivos} ?: 0">0</span>
+			</div>
+		</div>
+
+		<div class="charts-container">
+			<div class="chart-box">
+				<div class="chart-title"><i class="fa-solid fa-fire"></i> Vehículos más solicitados</div>
+				<ul class="small-list" th:if="${vehiculosMasSolicitados != null and !#lists.isEmpty(vehiculosMasSolicitados)}">
+					<li th:each="item : ${vehiculosMasSolicitados}">
+						<strong th:text="${item.key}">Modelo</strong>
+						<span th:text="${' - ' + item.value + ' solicitudes'}"> - 0 solicitudes</span>
+					</li>
+				</ul>
+				<p th:if="${vehiculosMasSolicitados == null or #lists.isEmpty(vehiculosMasSolicitados)}" class="muted-note">Sin datos todavía.</p>
+			</div>
+
+			<div class="chart-box">
+				<div class="chart-title"><i class="fa-solid fa-user-tie"></i> Rendimiento comercial</div>
+				<table>
+					<thead>
+						<tr>
+							<th>Vendedor</th>
+							<th>Oportunidades</th>
+							<th>Ventas</th>
+							<th>Conversión</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="v : ${rendimientoVendedores}">
+							<td th:text="${v['vendedor']}">Sin vendedor</td>
+							<td th:text="${v['interesados']}">0</td>
+							<td th:text="${v['ventas']}">0</td>
+							<td th:text="${#numbers.formatDecimal(v['conversion'], 1, 'POINT', 1, 'POINT') + '%'}">0.0%</td>
+						</tr>
+						<tr th:if="${rendimientoVendedores == null or #lists.isEmpty(rendimientoVendedores)}">
+							<td colspan="4" class="empty-row">Sin rendimiento registrado.</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<div class="card">
+			<div class="section-title">
+				<h2><i class="fa-solid fa-address-book"></i> Oportunidades registradas</h2>
+			</div>
+
+			<table>
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Origen</th>
+						<th>Cliente / Contacto</th>
+						<th>Vehículo</th>
+						<th>Vendedor</th>
+						<th>Fecha</th>
+						<th>Estado</th>
+						<th>Actualizar</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="i : ${interesados}">
+						<td th:text="${i['idPedido']}">1</td>
+						<td>
+							<span class="origen-pill"
+								  th:classappend="${i['origen'] == 'Web'} ? ' origen-web' : ' origen-interno'"
+								  th:text="${i['origen']}">Web</span>
+						</td>
+						<td>
+							<div class="contact-card">
+								<strong th:text="${i['nombreCliente']}">Cliente</strong>
+								<small th:if="${i['correoCliente'] != null and !#strings.isEmpty(i['correoCliente'])}" th:text="${i['correoCliente']}">correo@ejemplo.com</small>
+								<small th:if="${i['telefonoCliente'] != null and !#strings.isEmpty(i['telefonoCliente'])}" th:text="${i['telefonoCliente']}">3001234567</small>
+								<small th:if="${i['mensajeCliente'] != null and !#strings.isEmpty(i['mensajeCliente'])}" th:text="${'Nota: ' + i['mensajeCliente']}">Nota del lead</small>
+							</div>
+						</td>
+						<td th:text="${i['vehiculo']}">Sin vehículo</td>
+						<td th:text="${i['vendedor']}">Sin vendedor</td>
+						<td th:text="${i['fechaCreacion'] != null ? #temporals.format(i['fechaCreacion'], 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+						<td>
+							<span class="estado-pill"
+								  th:classappend="${
+									  i['estado'] == 'pendiente' ? ' estado-pendiente' :
+									  i['estado'] == 'contactado' ? ' estado-contactado' :
+									  i['estado'] == 'negociando' ? ' estado-negociando' :
+									  i['estado'] == 'vendido' ? ' estado-vendido' :
+									  i['estado'] == 'entregado' ? ' estado-entregado' :
+									  i['estado'] == 'perdido' ? ' estado-perdido' :
+									  ' estado-default'
+								  }"
+								  th:text="${i['estado']}">pendiente</span>
+						</td>
+						<td>
+							<form th:action="@{/gerente/clientes/interesados/{id}/estado(id=${i['idPedido']})}" method="post" class="inline-form">
+								<select name="conductorId">
+									<option value="">Sin vendedor</option>
+									<option th:each="vendedor : ${vendedoresDisponibles}"
+											th:value="${vendedor.idConductor}"
+											th:selected="${i['conductorId'] != null and i['conductorId'] == vendedor.idConductor}"
+											th:text="${vendedor.nombre}">Vendedor</option>
+								</select>
+								<select name="estado" required>
+									<option value="pendiente" th:selected="${i['estado'] == 'pendiente'}">Pendiente</option>
+									<option value="contactado" th:selected="${i['estado'] == 'contactado'}">Contactado</option>
+									<option value="negociando" th:selected="${i['estado'] == 'negociando'}">Negociando</option>
+									<option value="vendido" th:selected="${i['estado'] == 'vendido'}">Vendido</option>
+									<option value="entregado" th:selected="${i['estado'] == 'entregado'}">Entregado</option>
+									<option value="perdido" th:selected="${i['estado'] == 'perdido'}">Perdido</option>
+								</select>
+								<button type="submit" class="btn ghost"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+							</form>
+						</td>
+					</tr>
+					<tr th:if="${interesados == null or #lists.isEmpty(interesados)}">
+						<td colspan="8" class="empty-row">No hay interesados registrados todavía.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</main>
+</body>
+</html>

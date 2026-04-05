@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Conexión de Correo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .status-card {
+            border-left: 4px solid #28a745;
+            background: #f8f9fa;
+        }
+        .status-error {
+            border-left-color: #dc3545;
+        }
+        .loading {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🔧 Test de Conexión de Correo</h3>
+                    </div>
+                    <div class="card-body">
+                        <button id="testBtn" class="btn btn-primary mb-3" onclick="testConnection()">
+                            Probar Conexión SMTP
+                        </button>
+                        
+                        <button id="testInboxBtn" class="btn btn-success mb-3 ms-2" onclick="testInbox()">
+                            Probar Correos Entrantes (IMAP)
+                        </button>
+                        
+                        <div id="loading" class="loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Probando...</span>
+                            </div>
+                            <span class="ms-2">Probando conexión...</span>
+                        </div>
+                        
+                        <div id="result" class="mt-3"></div>
+                        
+                        <div class="mt-4">
+                            <h5>📋 Instrucciones para solucionar problemas:</h5>
+                            <ol>
+                                <li>Ve a <a href="https://myaccount.google.com/security" target="_blank">Google Account Security</a></li>
+                                <li>Activa la <strong>Verificación en 2 pasos</strong></li>
+                                <li>Ve a <strong>Contraseñas de aplicaciones</strong></li>
+                                <li>Genera una nueva contraseña para "Correo"</li>
+                                <li>Copia la contraseña (16 caracteres sin espacios)</li>
+                                <li>Actualiza <code>application.properties</code>:
+                                    <pre class="bg-light p-2 mt-2">
+spring.mail.password=TU_NUEVA_CONTRASEÑA
+mail.inbound.password=TU_NUEVA_CONTRASEÑA</pre>
+                                </li>
+                                <li>Reinicia la aplicación</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function testConnection() {
+            const testBtn = document.getElementById('testBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            
+            testBtn.disabled = true;
+            loading.style.display = 'block';
+            result.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/test/email-config');
+                const data = await response.json();
+                
+                let cardClass = data.success ? 'status-card' : 'status-card status-error';
+                let iconClass = data.success ? '✅' : '❌';
+                
+                result.innerHTML = `
+                    <div class="card ${cardClass}">
+                        <div class="card-body">
+                            <h5>${iconClass} ${data.message}</h5>
+                            <p><strong>Estado SMTP:</strong> ${data.smtp_status}</p>
+                            <p><strong>Recomendación:</strong> ${data.recommendation}</p>
+                            ${data.help_url ? `<p><a href="${data.help_url}" target="_blank" class="btn btn-sm btn-outline-primary">Ir a configuración de Gmail</a></p>` : ''}
+                            ${data.error_details ? `<p><small class="text-muted">Error técnico: ${data.error_details}</small></p>` : ''}
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5>❌ Error de conexión</h5>
+                        <p>No se pudo conectar al servidor: ${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                testBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        async function testInbox() {
+            const testInboxBtn = document.getElementById('testInboxBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            
+            testInboxBtn.disabled = true;
+            loading.style.display = 'block';
+            result.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/test/force-inbox-check');
+                const data = await response.json();
+                
+                let cardClass = data.success ? 'status-card' : 'status-card status-error';
+                let iconClass = data.success ? '✅' : '❌';
+                
+                result.innerHTML = `
+                    <div class="card ${cardClass}">
+                        <div class="card-body">
+                            <h5>${iconClass} ${data.message}</h5>
+                            <p><strong>Recomendación:</strong> ${data.recommendation}</p>
+                            ${data.help_url ? `<p><a href="${data.help_url}" target="_blank" class="btn btn-sm btn-outline-primary">Ir a configuración de Gmail</a></p>` : ''}
+                            ${data.error_details ? `<p><small class="text-muted">Error técnico: ${data.error_details}</small></p>` : ''}
+                            <p><small class="text-info">💡 Revisa los logs de la consola para más detalles</small></p>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5>❌ Error de conexión</h5>
+                        <p>No se pudo conectar al servidor: ${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                testInboxBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

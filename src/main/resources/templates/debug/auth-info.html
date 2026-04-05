@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug - Autenticación</title>
+    <style>
+        body {
+            background: #0d0d0d;
+            color: #FFD600;
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+        }
+        .debug-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            padding: 2rem;
+            border-radius: 10px;
+        }
+        .info-item {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #333;
+            border-radius: 5px;
+        }
+        .label {
+            font-weight: bold;
+            color: #FFD600;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .value {
+            color: #ccc;
+            font-family: monospace;
+            background: #222;
+            padding: 0.5rem;
+            border-radius: 3px;
+        }
+        .error {
+            background: #e53935;
+            color: white;
+            padding: 1rem;
+            border-radius: 5px;
+        }
+        .success {
+            background: #4CAF50;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 3px;
+        }
+        .fail {
+            background: #e53935;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>Debug de Autenticación</h1>
+        
+        <div th:if="${error}" class="error" th:text="${error}"></div>
+        
+        <div th:unless="${error}">
+            <div class="info-item">
+                <span class="label">Usuario:</span>
+                <div class="value" th:text="${username}">No disponible</div>
+            </div>
+            
+            <div class="info-item">
+                <span class="label">Autenticado:</span>
+                <div class="value" th:text="${authenticated}">No disponible</div>
+            </div>
+            
+            <div class="info-item">
+                <span class="label">Autoridades Spring Security:</span>
+                <div class="value" th:text="${authorities}">No disponible</div>
+            </div>
+            
+            <div class="info-item">
+                <span class="label">Autoridades UserDetails:</span>
+                <div class="value" th:text="${userDetailsAuthorities}">No disponible</div>
+            </div>
+            
+            <div class="info-item">
+                <span class="label">¿Tiene ROLE_ADMIN?</span>
+                <div th:class="${hasRoleAdmin} ? 'success' : 'fail'" th:text="${hasRoleAdmin} ? 'SÍ' : 'NO'">No disponible</div>
+            </div>
+            
+            <div class="info-item">
+                <span class="label">¿Tiene ROLE_GERENTE?</span>
+                <div th:class="${hasRoleGerente} ? 'success' : 'fail'" th:text="${hasRoleGerente} ? 'SÍ' : 'NO'">No disponible</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            <a href="/dashboard" style="color: #FFD600;">Volver al Dashboard</a> |
+            <a href="/usuarios" style="color: #FFD600;">Probar /usuarios</a>
+        </div>
+    </div>
+</body>
+</html>

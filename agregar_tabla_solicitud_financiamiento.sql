@@ -1,0 +1,51 @@
+CREATE TABLE IF NOT EXISTS solicitud_financiamiento (
+    id_solicitud_financiamiento INT AUTO_INCREMENT PRIMARY KEY,
+    vehiculo_id INT NOT NULL,
+    cliente_usuario_id INT NULL,
+    canal_origen VARCHAR(30) NOT NULL,
+    solicitante_nombre VARCHAR(150) NOT NULL,
+    solicitante_correo VARCHAR(150) NOT NULL,
+    solicitante_telefono VARCHAR(30) NOT NULL,
+    asesor_correo VARCHAR(150) NULL,
+    asesor_nombre VARCHAR(120) NULL,
+    precio_vehiculo_snapshot DOUBLE NOT NULL,
+    cuota_inicial DOUBLE NOT NULL,
+    porcentaje_cuota_inicial DOUBLE NOT NULL,
+    plazo_meses INT NOT NULL,
+    ingreso_mensual DOUBLE NOT NULL,
+    otras_obligaciones DOUBLE NOT NULL,
+    monto_financiar DOUBLE NOT NULL,
+    monto_maximo_sugerido DOUBLE NOT NULL,
+    tasa_efectiva_anual DOUBLE NOT NULL,
+    tasa_mes_vencida DOUBLE NOT NULL,
+    cuota_capital_interes DOUBLE NOT NULL,
+    seguros_mensuales DOUBLE NOT NULL,
+    cargos_mensuales DOUBLE NOT NULL,
+    cuota_mensual_total DOUBLE NOT NULL,
+    capacidad_pago_disponible DOUBLE NOT NULL,
+    relacion_cuota_ingreso DOUBLE NOT NULL,
+    relacion_endeudamiento_total DOUBLE NOT NULL,
+    aprobado_preliminar BIT NOT NULL DEFAULT b'0',
+    estado_analisis VARCHAR(30) NOT NULL,
+    estado_documental VARCHAR(30) NOT NULL DEFAULT 'PENDIENTE',
+    etapa_proceso VARCHAR(40) NOT NULL DEFAULT 'RADICACION_PENDIENTE',
+    negocio_creado BIT NOT NULL DEFAULT b'0',
+    fecha_negocio_creado DATETIME NULL,
+    entidad_financiera VARCHAR(120) NULL,
+    observaciones_seguimiento TEXT NULL,
+    fecha_ultima_gestion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_desembolso_programada DATE NULL,
+    fecha_desembolso_real DATE NULL,
+    monto_desembolsado DOUBLE NULL,
+    mensaje_decision TEXT NULL,
+    observaciones VARCHAR(255) NULL,
+    fecha_simulacion DATETIME NOT NULL,
+    CONSTRAINT fk_solicitud_financiamiento_vehiculo FOREIGN KEY (vehiculo_id) REFERENCES vehiculo(idVehiculo),
+    CONSTRAINT fk_solicitud_financiamiento_usuario FOREIGN KEY (cliente_usuario_id) REFERENCES usuario(id_usuario)
+);
+
+CREATE INDEX idx_solicitud_financiamiento_fecha ON solicitud_financiamiento(fecha_simulacion);
+CREATE INDEX idx_solicitud_financiamiento_fecha_gestion ON solicitud_financiamiento(fecha_ultima_gestion);
+CREATE INDEX idx_solicitud_financiamiento_estado ON solicitud_financiamiento(estado_analisis);
+CREATE INDEX idx_solicitud_financiamiento_canal ON solicitud_financiamiento(canal_origen);
+CREATE INDEX idx_solicitud_financiamiento_asesor ON solicitud_financiamiento(asesor_correo);

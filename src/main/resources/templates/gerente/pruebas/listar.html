@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Solicitudes de Prueba</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+    <style>
+        .prueba-card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #2196F3; }
+        .prueba-card.pendiente { border-left-color: #FF9800; }
+        .prueba-card.aprobada { border-left-color: #4CAF50; }
+        .prueba-card.realizada { border-left-color: #01579B; }
+        .prueba-card.rechazada { border-left-color: #f44336; }
+        .prueba-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .prueba-titulo { font-weight: 700; font-size: 16px; color: #333; }
+        .estado-badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .estado-pendiente { background-color: #FFE0B2; color: #E65100; }
+        .estado-aprobada { background-color: #C8E6C9; color: #1B5E20; }
+        .estado-realizada { background-color: #B3E5FC; color: #01579B; }
+        .estado-rechazada { background-color: #FFCDD2; color: #B71C1C; }
+        .btn-action { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+        .btn-aprobar { background-color: #4CAF50; color: white; }
+        .btn-rechazar { background-color: #f44336; color: white; }
+        .btn-realizada { background-color: #01579B; color: white; }
+    </style>
+</head>
+<body>
+    <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+    <main class="main">
+        <div class="content-header">
+            <h1><i class="fa-solid fa-hourglass-end"></i> Solicitudes de Prueba de Manejo</h1>
+        </div>
+        <div class="card">
+            <h2 style="margin-top: 0;"><i class="fa-solid fa-list"></i> Pruebas</h2>
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <a th:href="@{/gerente/pruebas}" class="btn" style="background-color: #757575; color: white; padding: 8px 16px; text-decoration: none;">Todas</a>
+                <a th:each="est : ${estadosDisponibles}" th:href="@{/gerente/pruebas(estado=${est})}" class="btn" style="background-color: #2196F3; color: white; padding: 8px 16px; text-decoration: none;" th:text="${est}">Estado</a>
+            </div>
+            <div th:if="${pruebas != null and pruebas.size() > 0}">
+                <div th:each="prueba : ${pruebas}" th:class="'prueba-card ' + ${prueba.estado.toLowerCase()}">
+                    <div class="prueba-header">
+                        <div>
+                            <div class="prueba-titulo">
+                                <i class="fa-solid fa-car"></i> [[${prueba.cliente.nombre}]] - [[${prueba.vehiculo.marca}]] [[${prueba.vehiculo.modelo}]]
+                            </div>
+                        </div>
+                        <span th:class="'estado-badge estado-' + ${prueba.estado.toLowerCase()}">[[${prueba.estado}]]</span>
+                    </div>
+                    <div style="font-size: 13px; margin-bottom: 15px;">
+                        <strong>Cliente:</strong> [[${prueba.cliente.correo}]] | <strong>Tel:</strong> [[${prueba.cliente.telefono}]]
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <span th:if="${prueba.estado == 'Pendiente'}">
+                            <form th:action="@{/gerente/pruebas/{id}/aprobar(id=${prueba.idSolicitud})}" method="post" style="display: inline;">
+                                <button class="btn-action btn-aprobar">
+                                    <i class="fa-solid fa-circle-check"></i> Aprobar
+                                </button>
+                            </form>
+                            <form th:action="@{/gerente/pruebas/{id}/rechazar(id=${prueba.idSolicitud})}" method="post" style="display: inline;">
+                                <button class="btn-action btn-rechazar">
+                                    <i class="fa-solid fa-circle-xmark"></i> Rechazar
+                                </button>
+                            </form>
+                        </span>
+                        <span th:if="${prueba.estado == 'Aprobada'}">
+                            <button class="btn-action btn-realizada" onclick="mostrarFormularioResultado([[${prueba.idSolicitud}]])">
+                                <i class="fa-solid fa-flag-checkered"></i> Marcar Realizada
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${pruebas == null or pruebas.size() == 0}" style="padding: 30px; text-align: center; color: #999;">
+                <i class="fa-solid fa-inbox"></i> No hay solicitudes
+            </div>
+        </div>
+    </main>
+    <div id="modalResultado" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 400px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
+            <h3><i class="fa-solid fa-check-double"></i> Resultado de Prueba</h3>
+            <form id="formResultado" method="post" style="margin-top: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Resultado:</label>
+                    <select name="resultado" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="">Selecciona...</option>
+                        <option value="Negativo">Negativo</option>
+                        <option value="Interesado">Interesado</option>
+                        <option value="Muy Interesado">Muy Interesado</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn" style="background-color: #4CAF50; color: white; flex: 1; justify-content: center;">Guardar</button>
+                    <button type="button" onclick="document.getElementById('modalResultado').style.display = 'none';" class="btn" style="background-color: #757575; color: white; flex: 1; justify-content: center;">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        function mostrarFormularioResultado(id) {
+            document.getElementById('formResultado').action = '/gerente/pruebas/' + id + '/marcar-realizada';
+            document.getElementById('modalResultado').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>

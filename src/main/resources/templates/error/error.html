@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Error</title>
+    <style>
+        body {
+            background: #0d0d0d;
+            color: #FFD600;
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+        }
+        .error-container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .error-message {
+            background: #e53935;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>Error en la aplicación</h1>
+        <div class="error-message" th:if="${error}" th:text="${error}">Error desconocido</div>
+        <a href="/dashboard">Volver al Dashboard</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,545 @@
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Control Center</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/admin-theme.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar collapsed" id="sidebar"
+       onmouseenter="openSidebar()"
+       onmouseleave="closeSidebar()">
+    <div>
+        <div class="sidebar-header">
+            <button class="toggle-btn" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span class="logo-text">Admin Panel</span>
+        </div>
+        <nav>
+            <ul>
+                <li>
+                    <a th:href="@{/dashboard}">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/usuarios}">
+                        <i class="fas fa-users"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/vehiculos}">
+                        <i class="fas fa-car"></i>
+                        <span>Vehículos</span>
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/inventario}">
+                        <i class="fas fa-warehouse"></i>
+                        <span>Inventario</span>
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/roles}">
+                        <i class="fas fa-id-badge"></i>
+                        <span>Roles</span>
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/promociones}">
+                        <i class="fas fa-bullhorn"></i>
+                        <span>Promociones</span>
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/correo/inbox}">
+                        <i class="fas fa-envelope"></i>
+                        <span>Correo</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="logout">
+        <form th:action="@{/logout}" method="post">
+            <button type="submit">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Cerrar sesión</span>
+            </button>
+        </form>
+    </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+    <div class="topbar">
+        <div>
+            <h1>Centro de Control</h1>
+            <span>Administrador del sistema</span>
+        </div>
+    </div>
+
+    <section class="control-block">
+        <!-- HEADER -->
+        <div class="dashboard-header">
+            <div>
+                <h2>📊 Estadísticas en Tiempo Real</h2>
+                <p class="update-info">Última actualización: <span id="lastUpdate">cargando...</span></p>
+            </div>
+            <button class="refresh-btn" onclick="actualizarEstadisticas()">
+                <i class="fas fa-sync-alt"></i>
+                Actualizar
+            </button>
+        </div>
+
+        <!-- STATS CARDS -->
+        <div class="stats-container">
+            <div class="stat-card usuarios">
+                <i class="stat-card-icon fas fa-users"></i>
+                <span class="stat-card-label">Usuarios Activos</span>
+                <span class="stat-card-value" id="totalUsuarios">0</span>
+            </div>
+            <div class="stat-card vehiculos">
+                <i class="stat-card-icon fas fa-car"></i>
+                <span class="stat-card-label">Total Vehículos</span>
+                <span class="stat-card-value" id="totalVehiculos">0</span>
+            </div>
+            <div class="stat-card activos">
+                <i class="stat-card-icon fas fa-check-circle"></i>
+                <span class="stat-card-label">Vehículos Activos</span>
+                <span class="stat-card-value" id="vehiculosActivos">0</span>
+            </div>
+            <div class="stat-card roles">
+                <i class="stat-card-icon fas fa-id-badge"></i>
+                <span class="stat-card-label">Tipos de Roles</span>
+                <span class="stat-card-value" id="tiposRoles">0</span>
+            </div>
+        </div>
+
+        <!-- ALERTAS -->
+        <div class="alerts-container">
+            <div class="alerts-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Alertas & Advertencias
+            </div>
+            <div id="alertasContainer" style="min-height: 50px;">
+                <p style="text-align: center; color: #999;">Cargando alertas...</p>
+            </div>
+        </div>
+
+        <!-- ACCIONES RÁPIDAS -->
+        <div class="quick-actions">
+            <div class="quick-actions-title">
+                <i class="fas fa-lightning-bolt"></i>
+                Acciones Rápidas
+            </div>
+            <div class="actions-grid">
+                <a href="/admin/promociones" class="action-btn promociones">
+                    <i class="fas fa-bullhorn"></i>
+                    <span class="action-btn-label">Promociones Inicio</span>
+                </a>
+                <a href="/usuarios/nuevo" class="action-btn usuarios">
+                    <i class="fas fa-user"></i>
+                    <span class="action-btn-label">Nuevo Usuario</span>
+                </a>
+                <a href="/vehiculos/crear" class="action-btn vehiculos">
+                    <i class="fas fa-car"></i>
+                    <span class="action-btn-label">Nuevo Vehículo</span>
+                </a>
+                <a href="/usuarios" class="action-btn roles">
+                    <i class="fas fa-users"></i>
+                    <span class="action-btn-label">Usuarios</span>
+                </a>
+                <a href="/inventario" class="action-btn inventario">
+                    <i class="fas fa-warehouse"></i>
+                    <span class="action-btn-label">Inventario</span>
+                </a>
+              
+                
+            </div>
+        </div>
+
+        <!-- GRÁFICAS -->
+        <div class="charts-container">
+            <div class="chart-box">
+                <div class="chart-title">
+                    <i class="fas fa-chart-pie"></i>
+                    Distribución de Usuarios por Rol
+                </div>
+                <div class="chart-wrapper">
+                    <div id="chartUsuariosLoading" class="loading">
+                        <span>Cargando...</span>
+                    </div>
+                    <canvas id="chartUsuariosPorRol" style="display: none;"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-box">
+                <div class="chart-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Vehículos por Marca
+                </div>
+                <div class="chart-wrapper">
+                    <div id="chartVehiculosLoading" class="loading">
+                        <span>Cargando...</span>
+                    </div>
+                    <canvas id="chartVehiculosPorMarca" style="display: none;"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-box">
+                <div class="chart-title">
+                    <i class="fas fa-chart-doughnut"></i>
+                    Estado de Vehículos
+                </div>
+                <div class="chart-wrapper">
+                    <div id="chartEstadoLoading" class="loading">
+                        <span>Cargando...</span>
+                    </div>
+                    <canvas id="chartEstadoVehiculos" style="display: none;"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+let chartUsuarios = null;
+let chartVehiculos = null;
+let chartEstado = null;
+
+function chartPlugins() {
+    return typeof window.ChartDataLabels !== 'undefined' ? [window.ChartDataLabels] : [];
+}
+
+function chartDisponible() {
+    return typeof window.Chart !== 'undefined';
+}
+
+function mostrarEstadoGrafica(loadingId, message, canvasId) {
+    const loading = document.getElementById(loadingId);
+    const canvas = document.getElementById(canvasId);
+    if (loading) {
+        loading.innerHTML = '<span>' + message + '</span>';
+        loading.style.display = 'flex';
+    }
+    if (canvas) {
+        canvas.style.display = 'none';
+    }
+}
+
+function mostrarErrorAlertas(message) {
+    const container = document.getElementById('alertasContainer');
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = '<p style="text-align: center; color: #999;">' + message + '</p>';
+}
+
+function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("collapsed");
+    document.body.classList.toggle("sidebar-collapsed");
+}
+
+function openSidebar() {
+    document.getElementById("sidebar").classList.remove("collapsed");
+    document.body.classList.remove("sidebar-collapsed");
+}
+
+function closeSidebar() {
+    document.getElementById("sidebar").classList.add("collapsed");
+    document.body.classList.add("sidebar-collapsed");
+}
+
+async function actualizarEstadisticas() {
+    const btn = document.querySelector('.refresh-btn');
+    if (btn) {
+        btn.classList.add('loading');
+    }
+
+    try {
+        const response = await fetch('/api/estadisticas/completo', {
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-store'
+        });
+
+        if (!response.ok) {
+            throw new Error('No se pudo obtener la información del dashboard');
+        }
+
+        const stats = await response.json();
+        const alertas = stats && stats.alertas ? stats.alertas : {};
+
+        if (stats) {
+            actualizarTarjetas(stats);
+
+            try {
+                crearGraficaUsuarios(stats);
+            } catch (errorGraficaUsuarios) {
+                console.error('Error en gráfica de usuarios:', errorGraficaUsuarios);
+                mostrarEstadoGrafica('chartUsuariosLoading', 'Gráfica no disponible', 'chartUsuariosPorRol');
+            }
+
+            try {
+                crearGraficaVehiculos(stats);
+            } catch (errorGraficaVehiculos) {
+                console.error('Error en gráfica de vehículos:', errorGraficaVehiculos);
+                mostrarEstadoGrafica('chartVehiculosLoading', 'Gráfica no disponible', 'chartVehiculosPorMarca');
+            }
+
+            try {
+                crearGraficaEstado(stats);
+            } catch (errorGraficaEstado) {
+                console.error('Error en gráfica de estado:', errorGraficaEstado);
+                mostrarEstadoGrafica('chartEstadoLoading', 'Gráfica no disponible', 'chartEstadoVehiculos');
+            }
+
+            mostrarAlertas(alertas);
+        } else {
+            mostrarErrorAlertas('No hay datos disponibles para el dashboard.');
+        }
+    } catch (error) {
+        console.error('Error actualizando dashboard:', error);
+        mostrarErrorAlertas('No se pudieron cargar las alertas del dashboard.');
+    } finally {
+        if (btn) {
+            btn.classList.remove('loading');
+        }
+    }
+}
+
+function actualizarTarjetas(stats) {
+    if (!stats) return;
+
+    document.getElementById('totalUsuarios').textContent = stats.totalUsuarios || 0;
+    document.getElementById('totalVehiculos').textContent = stats.totalVehiculos || 0;
+    document.getElementById('vehiculosActivos').textContent = stats.vehiculosActivos || 0;
+    document.getElementById('tiposRoles').textContent = Object.keys(stats.usuariosPorRol || {}).length || 0;
+
+    const now = new Date();
+    const hora = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('lastUpdate').textContent = hora;
+}
+
+function crearGraficaUsuarios(stats) {
+    const ctx = document.getElementById('chartUsuariosPorRol');
+    if (!ctx) return;
+
+    if (!chartDisponible()) {
+        mostrarEstadoGrafica('chartUsuariosLoading', 'Gráfica no disponible', 'chartUsuariosPorRol');
+        return;
+    }
+
+    const datos = stats.usuariosPorRol || {};
+    const labels = Object.keys(datos);
+    const values = Object.values(datos);
+
+    if (values.length === 0) {
+        document.getElementById('chartUsuariosLoading').innerHTML = '<span>Sin datos</span>';
+        return;
+    }
+
+    const colores = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#43e97b', '#38f9d7', '#4facfe', '#00f2fe'];
+
+    if (chartUsuarios) {
+        chartUsuarios.data.labels = labels;
+        chartUsuarios.data.datasets[0].data = values;
+        chartUsuarios.update();
+    } else {
+        chartUsuarios = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colores.slice(0, labels.length),
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 12, family: "Poppins" }, padding: 15 }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 12 },
+                        formatter: (value, ctx) => {
+                            const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            return ((value * 100 / total).toFixed(0)) + '%';
+                        }
+                    }
+                }
+            },
+            plugins: chartPlugins()
+        });
+    }
+
+    document.getElementById('chartUsuariosLoading').style.display = 'none';
+    ctx.style.display = 'block';
+}
+
+function crearGraficaVehiculos(stats) {
+    const ctx = document.getElementById('chartVehiculosPorMarca');
+    if (!ctx) return;
+
+    if (!chartDisponible()) {
+        mostrarEstadoGrafica('chartVehiculosLoading', 'Gráfica no disponible', 'chartVehiculosPorMarca');
+        return;
+    }
+
+    const datos = stats.vehiculosPorMarca || {};
+    const labels = Object.keys(datos);
+    const values = Object.values(datos);
+
+    if (values.length === 0) {
+        document.getElementById('chartVehiculosLoading').innerHTML = '<span>Sin datos</span>';
+        return;
+    }
+
+    const colores = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#43e97b', '#38f9d7', '#4facfe', '#00f2fe'];
+
+    if (chartVehiculos) {
+        chartVehiculos.data.labels = labels;
+        chartVehiculos.data.datasets[0].data = values;
+        chartVehiculos.update();
+    } else {
+        chartVehiculos = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Cantidad',
+                    data: values,
+                    backgroundColor: colores.slice(0, labels.length),
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, labels: { font: { size: 12 } } },
+                    datalabels: { anchor: 'end', align: 'end', color: '#333', font: { weight: 'bold' } }
+                }
+            },
+            plugins: chartPlugins()
+        });
+    }
+
+    document.getElementById('chartVehiculosLoading').style.display = 'none';
+    ctx.style.display = 'block';
+}
+
+function crearGraficaEstado(stats) {
+    const ctx = document.getElementById('chartEstadoVehiculos');
+    if (!ctx) return;
+
+    if (!chartDisponible()) {
+        mostrarEstadoGrafica('chartEstadoLoading', 'Gráfica no disponible', 'chartEstadoVehiculos');
+        return;
+    }
+
+    const activos = stats.vehiculosActivos || 0;
+    const inactivos = stats.vehiculosInactivos || 0;
+
+    if (activos + inactivos === 0) {
+        document.getElementById('chartEstadoLoading').innerHTML = '<span>Sin datos</span>';
+        return;
+    }
+
+    if (chartEstado) {
+        chartEstado.data.datasets[0].data = [activos, inactivos];
+        chartEstado.update();
+    } else {
+        chartEstado = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Activos', 'Inactivos'],
+                datasets: [{
+                    data: [activos, inactivos],
+                    backgroundColor: ['#38f9d7', '#f5576c'],
+                    borderColor: '#fff',
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 13, weight: 'bold' }, padding: 20 } },
+                    datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: (value) => value }
+                }
+            },
+            plugins: chartPlugins()
+        });
+    }
+
+    document.getElementById('chartEstadoLoading').style.display = 'none';
+    ctx.style.display = 'block';
+}
+
+function mostrarAlertas(alertas) {
+    const container = document.getElementById('alertasContainer');
+    if (!container) {
+        return;
+    }
+
+    if (!alertas || Object.keys(alertas).length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #999;">✓ Todas las alertas fueron resueltas</p>';
+        return;
+    }
+
+    let html = '';
+
+    // Notificaciones no leídas
+    if (alertas.notificacionesNoLeidas > 0) {
+        html += `<div class="alert-item info"><div class="alert-content"><div class="alert-label">Notificaciones no Leídas</div></div><span class="alert-badge">${alertas.notificacionesNoLeidas}</span></div>`;
+    }
+
+    // Vehículos inactivos
+    if (alertas.vehiculosInactivos > 0) {
+        html += `<div class="alert-item warning"><div class="alert-content"><div class="alert-label">Vehículos Inactivos</div></div><span class="alert-badge">${alertas.vehiculosInactivos}</span></div>`;
+    }
+
+    // Inventario bajo
+    if (alertas.inventarioBajo) {
+        html += `<div class="alert-item warning"><div class="alert-content"><div class="alert-label">⚠️ Inventario Bajo</div></div><span class="alert-badge">CRÍTICO</span></div>`;
+    }
+
+    container.innerHTML = html || '<p style="text-align: center; color: #999;">✓ Todas las alertas fueron resueltas</p>';
+}
+
+// Inicializar al cargar
+document.addEventListener('DOMContentLoaded', function() {
+    // Si el sidebar comienza colapsado, agregar clase al body
+    if (document.getElementById("sidebar").classList.contains("collapsed")) {
+        document.body.classList.add("sidebar-collapsed");
+    }
+    
+    actualizarEstadisticas();
+    setInterval(actualizarEstadisticas, 5000);
+});
+</script>
+
+</body>
+</html>

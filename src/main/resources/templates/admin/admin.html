@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <title>Panel Administrador</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <style>
+        :root {
+            --color-bg: #111;
+            --color-card: #1a1a1a;
+            --color-primary: #FFD600;
+            --color-text: #f5f5f5;
+            --color-muted: #aaa;
+            --color-danger: #e53935;
+            --radius: 12px;
+            --shadow: 0 6px 18px rgba(0,0,0,0.6);
+        }
+        body {
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 260px;
+            background: #000;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+        }
+        .sidebar h3 {
+            color: var(--color-primary);
+            margin-bottom: 1.2rem;
+            text-align: center;
+        }
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar nav ul li {
+            margin: .6rem 0;
+        }
+        .sidebar nav ul li a {
+            text-decoration: none;
+            color: var(--color-muted);
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            padding: .7rem 1rem;
+            border-radius: var(--radius);
+            transition: background 0.3s, color 0.3s;
+        }
+        .sidebar nav ul li a:hover {
+            background: var(--color-primary);
+            color: #000;
+        }
+        .main {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div>
+            <h3>Panel de Administrador</h3>
+            <nav>
+                <ul>
+                    <li><a th:href="@{/admin}"><i class="fa-solid fa-house"></i> Inicio</a></li>
+                    <li><a th:href="@{/dashboard}"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                    <li><a th:href="@{/roles}"><i class="fa-solid fa-users-gear"></i> Roles</a></li>
+                    <li><a th:href="@{/usuarios}"><i class="fa-solid fa-users"></i> Usuarios</a></li>
+                    <li><a th:href="@{/admin/inventario}"><i class="fa-solid fa-warehouse"></i> Inventario</a></li>
+                    <li><a th:href="@{/vehiculos}"><i class="fa-solid fa-car"></i> Vehículos</a></li>
+                    <li><a th:href="@{/admin/promociones}"><i class="fa-solid fa-bullhorn"></i> Promociones</a></li>
+                    <li><a th:href="@{/novedades}"><i class="fa-solid fa-exclamation-circle"></i> Novedades</a></li>
+                    <li><a th:href="@{/email}"><i class="fa-solid fa-envelope"></i> Correos</a></li>
+                </ul>
+            </nav>
+        </div>
+        <form th:action="@{/logout}" method="post" style="margin:0;">
+            <button type="submit" class="logout-btn" style="width: 100%; background: var(--color-danger); color: white; padding: 0.8rem; border-radius: var(--radius); border: none; cursor: pointer;">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+            </button>
+        </form>
+    </aside>
+
+    <main class="main">
+        <!-- Vista de Inventario -->
+        <div th:if="${inventarios}" class="content">
+            <div class="content-header">
+                <h1><i class="fa-solid fa-warehouse"></i> Gestión de Inventario</h1>
+                <p>Administración de vehículos y control de inventario</p>
+            </div>
+
+            <div class="nav-tabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <a th:href="@{/admin/inventario}" class="btn" 
+                   th:classappend="${inventarios[0]?.activo} ? 'btn-primary' : ''">
+                    <i class="fas fa-box"></i> Inventario Activo
+                </a>
+                <a th:href="@{/admin/inventario/inactivos}" class="btn"
+                   th:classappend="${!inventarios[0]?.activo} ? 'btn-primary' : ''">
+                    <i class="fas fa-archive"></i> Inventario Inactivo
+                </a>
+            </div>
+
+            <div class="action-buttons" style="margin-bottom: 20px;">
+                <a th:href="@{/admin/inventario/crear}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nuevo Vehículo
+                </a>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; background: var(--color-card); border-radius: var(--radius); overflow: hidden;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Chasis</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Año</th>
+                        <th>Color</th>
+                        <th>Cantidad</th>
+                        <th>Ubicación</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="inv : ${inventarios}">
+                        <td th:text="${inv.idInventario}">1</td>
+                        <td th:text="${inv.chasis}">---</td>
+                        <td th:text="${inv.marca}">---</td>
+                        <td th:text="${inv.modelo}">---</td>
+                        <td th:text="${inv.anio}">2025</td>
+                        <td th:text="${inv.color}">---</td>
+                        <td th:text="${inv.cantidadDisponible != null ? inv.cantidadDisponible : 1}">1</td>
+                        <td th:text="${inv.ubicacionActual}">Bodega</td>
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="${inv.activo ? 'badge-success' : 'badge-danger'}"
+                                  style="padding: 4px 8px; border-radius: 4px; font-size: 0.9em;">
+                                <i class="fas" th:classappend="${inv.activo ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                <span th:text="${inv.activo ? 'Activo' : 'Inactivo'}"></span>
+                            </span>
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <a th:href="@{/admin/inventario/editar/{id}(id=${inv.idInventario})}" 
+                                   class="btn ghost">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <form th:action="@{/admin/inventario/cambiar-estado/{id}(id=${inv.idInventario})}" 
+                                      method="post" style="display:inline;">
+                                    <button type="submit" class="btn ghost"
+                                            th:onclick="'return confirm(\\'¿Estás seguro de ' + (${inv.activo ? 'desactivar' : 'activar'}) + ' este vehículo?\\');'">
+                                        <i class="fas" th:classappend="${inv.activo ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
+                                        <span th:text="${inv.activo ? 'Desactivar' : 'Activar'}"></span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Vista Principal del Admin -->
+        <div th:unless="${inventarios}">
+            <div class="content-header">
+                <h1><i class="fa-solid fa-shield"></i> Administrador del Sistema</h1>
+                <p>Gestión de usuarios, roles y configuraciones del sistema.</p>
+            </div>
+
+            <div style="margin-top:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;">
+                <div style="background:var(--color-card);border-radius:16px;padding:22px;box-shadow:var(--shadow);">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                        <i class="fa-solid fa-bullhorn" style="color:var(--color-primary);font-size:1.4rem;"></i>
+                        <strong style="font-size:1.05rem;">Promociones del inicio</strong>
+                    </div>
+                    <p style="color:var(--color-muted);margin:0 0 18px 0;">Admin crea, publica y despublica los banners visibles en la portada pública.</p>
+                    <a th:href="@{/admin/promociones}" style="display:inline-flex;align-items:center;gap:8px;background:var(--color-primary);color:#000;padding:0.8rem 1rem;border-radius:12px;text-decoration:none;font-weight:700;">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        Gestionar promociones
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

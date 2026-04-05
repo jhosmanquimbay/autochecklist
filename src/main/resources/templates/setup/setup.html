@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Setup Inicial</title>
+    <style>
+        body {
+            background: #0d0d0d;
+            color: #FFD600;
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+        }
+        .setup-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .btn {
+            background: #FFD600;
+            color: #000;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 1rem;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .alert-success {
+            background: #4CAF50;
+            color: white;
+        }
+        .alert-error {
+            background: #e53935;
+            color: white;
+        }
+        .info {
+            background: #333;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <h1>Setup Inicial del Sistema</h1>
+        
+        <div class="info">
+            <p><strong>Usuarios en el sistema:</strong> <span th:text="${userCount}">0</span></p>
+        </div>
+        
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        
+        <form th:action="@{/setup/create-admin}" method="post">
+            <button type="submit" class="btn">Crear Usuario Administrador</button>
+        </form>
+        
+        <div style="margin-top: 2rem;">
+            <a href="/login" class="btn">Ir al Login</a>
+            <a href="/dashboard" class="btn">Ir al Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>

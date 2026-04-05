@@ -1,0 +1,266 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista de Notificaciones</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --blue-dark: #0A1D37;
+      --blue-secondary: #1C3B5A;
+      --gold: #F5A623;
+      --gray: #4A4A4A;
+      --white: #FFFFFF;
+      --bg: #f4f6f9;
+      --color-danger: #ef4444;
+    }
+    body { 
+      font-family: 'Poppins', sans-serif; 
+      background: var(--bg); 
+      color: var(--blue-dark); 
+      margin: 0; 
+      display: flex; 
+      min-height: 100vh;
+      margin-left: 260px;
+    }
+    .sidebar { 
+      width: 260px; 
+      height: 100vh;
+      background: var(--blue-dark); 
+      color: var(--white);
+      padding: 1.5rem; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: space-between; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      position: fixed;
+      left: 0;
+      top: 0;
+    }
+    .sidebar h3 { 
+      color: var(--gold); 
+      margin-bottom: 1.5rem; 
+      text-align: center;
+      font-size: 1.1rem;
+    }
+    .sidebar nav ul { list-style: none; padding: 0; margin: 0; }
+    .sidebar nav ul li { margin: .8rem 0; }
+    .sidebar nav ul li a { 
+      text-decoration: none; 
+      color: #dcdcdc; 
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+      padding: 1rem 1.5rem; 
+      border-radius: 8px; 
+      transition: 0.3s; 
+    }
+    .sidebar nav ul li a:hover { 
+      background: var(--blue-secondary); 
+      color: var(--gold); 
+    }
+    .logout-btn { 
+      margin-top: 2rem; 
+      background: var(--color-danger); 
+      color: #fff; 
+      padding: .8rem 1rem; 
+      border: none; 
+      border-radius: 8px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: .5rem;
+      transition: background 0.3s;
+    }
+    .logout-btn:hover { background: #d32f2f; }
+    .main { 
+      flex: 1; 
+      padding: 2rem; 
+    }
+    .main h1 { 
+      color: var(--blue-dark); 
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+    }
+    .card { 
+      background: var(--white); 
+      border-radius: 16px; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+      padding: 1.5rem; 
+      margin-bottom: 1.5rem; 
+    }
+    .btn { 
+      padding: .6rem 1.2rem; 
+      border-radius: 8px; 
+      font-weight: 600; 
+      border: none; 
+      cursor: pointer; 
+      text-decoration: none; 
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .btn-yellow { 
+      background: var(--gold); 
+      color: var(--blue-dark); 
+    }
+    .btn-yellow:hover { background: #e2b03f; }
+    .btn-red { 
+      background: var(--color-danger); 
+      color: #fff; 
+    }
+    .btn-red:hover { background: #d32f2f; }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: 1rem;
+      background: var(--white);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    th, td { 
+      padding: .8rem; 
+      text-align: left; 
+    }
+    th { 
+      background: var(--blue-secondary); 
+      color: var(--white);
+      font-weight: 600;
+    }
+    tr:nth-child(even) { 
+      background: #f9fafc; 
+    }
+    tr:hover { 
+      background: #f0f2f5; 
+    }
+    form.filter-form { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 1rem; 
+      align-items: flex-end; 
+    }
+    form.filter-form div { 
+      display: flex; 
+      flex-direction: column; 
+    }
+    label { 
+      font-size: 0.9rem; 
+      margin-bottom: 0.3rem; 
+      color: var(--blue-dark);
+      font-weight: 600;
+    }
+    select, input {
+      padding: .6rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: 'Poppins', sans-serif;
+      background: var(--white);
+      color: var(--blue-dark);
+    }
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div>
+      <h3>Panel de Control</h3>
+      <nav>
+        <ul>
+          <li><a th:href="@{/gerente}"><i class="fa-solid fa-house"></i> Inicio</a></li>
+          <li><a href="/gerente/vehiculos"><i class="fa-solid fa-car"></i> VehÃ­culos</a></li>
+          <li><a href="/gerente/inventario"><i class="fa-solid fa-warehouse"></i> Inventario</a></li>
+          <li><a href="/gerente/novedades"><i class="fa-solid fa-bullhorn"></i> Novedades</a></li>
+          <li><a href="/gerente/notificaciones"><i class="fa-solid fa-bell"></i> Notificaciones</a></li>
+        </ul>
+      </nav>
+    </div>
+    <form th:action="@{/logout}" method="post">
+      <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar sesiÃ³n</button>
+    </form>
+  </aside>
+
+  <main class="main">
+    <h1><i class="fa-solid fa-bell"></i> Lista de Notificaciones</h1>
+
+    <!-- ðŸ” Formulario de Filtros -->
+    <section class="card">
+      <form class="filter-form" method="get" th:action="@{/gerente/notificaciones}">
+        <div>
+          <label for="leida">Estado</label>
+          <select id="leida" name="leida">
+            <option value="">-- Todos --</option>
+            <option value="false">No leÃ­da</option>
+            <option value="true">LeÃ­da</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="conductorId">Conductor</label>
+          <select id="conductorId" name="conductorId">
+            <option value="">-- Todos --</option>
+            <option th:each="c : ${conductores}" th:value="${c.idConductor}" th:text="${c.nombre}"></option>
+          </select>
+        </div>
+
+        <div>
+          <label for="desde">Desde</label>
+          <input type="date" id="desde" name="desde">
+        </div>
+
+        <div>
+          <label for="hasta">Hasta</label>
+          <input type="date" id="hasta" name="hasta">
+        </div>
+
+        <button class="btn btn-yellow" type="submit"><i class="fa-solid fa-filter"></i> Filtrar</button>
+        <a class="btn btn-red" th:href="@{/gerente/notificaciones}"><i class="fa-solid fa-xmark"></i> Limpiar</a>
+      </form>
+    </section>
+
+    <!-- ðŸ“‹ Tabla de Notificaciones -->
+    <section class="card">
+      <a class="btn btn-yellow" th:href="@{/gerente/notificaciones/nuevo}"><i class="fa-solid fa-plus"></i> Nueva NotificaciÃ³n</a>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>TÃ­tulo</th>
+            <th>Mensaje</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Conductor</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="n : ${notificaciones}">
+            <td th:text="${n.idNotificacion}"></td>
+            <td th:text="${n.titulo}"></td>
+            <td th:text="${n.mensaje}"></td>
+            <td th:text="${#temporals.format(n.fecha,'dd/MM/yyyy HH:mm')}"></td>
+            <td><span th:text="${n.leida} ? 'LeÃ­da' : 'No leÃ­da'"></span></td>
+            <td th:text="${n.conductor != null ? n.conductor.nombre : 'Sin asignar'}"></td>
+            <td>
+              <a class="btn btn-yellow" th:href="@{/gerente/notificaciones/editar/{id}(id=${n.idNotificacion})}">
+                <i class="fa-solid fa-pen"></i> Editar
+              </a>
+              <form th:action="@{/gerente/notificaciones/eliminar/{id}(id=${n.idNotificacion})}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-red"><i class="fa-solid fa-trash"></i> Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
+
+
+

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mis Notificaciones</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --color-bg: #111;
+      --color-sidebar: #000;
+      --color-card: #1b1b1b;
+      --color-primary: #FFD600;
+      --color-text: #f5f5f5;
+      --color-muted: #bbb;
+      --color-danger: #e53935;
+      --color-danger-hover: #c62828;
+      --radius: 10px;
+      --shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    body {
+      margin: 0; display: flex; min-height: 100vh;
+      background: var(--color-bg); color: var(--color-text);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+    /* Header */
+    header {
+      position: fixed; top: 0; left: 240px; right: 0;
+      background: #000; padding: 1rem; font-size: 1.5rem;
+      font-weight: bold; color: var(--color-primary);
+      text-align: center; z-index: 100;
+    }
+    /* Sidebar */
+    nav {
+      width: 240px; background: var(--color-sidebar);
+      padding: 1.5rem; display: flex; flex-direction: column;
+      justify-content: space-between; box-shadow: var(--shadow);
+    }
+    nav h3 { color: var(--color-primary); text-align: center; margin-bottom: 1rem; }
+    nav ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .6rem; }
+    nav ul li a {
+      display: flex; align-items: center; gap: .6rem;
+      background: transparent; color: var(--color-muted);
+      padding: 0.7rem 1rem; border-radius: var(--radius);
+      text-decoration: none; font-weight: 600;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    nav ul li a:hover, nav ul li a.active {
+      background: var(--color-primary); color: #000;
+    }
+    nav ul li a i { width: 20px; }
+
+    /* Dropdown menu styles */
+    .dropdown-menu-item {
+      position: relative;
+    }
+    
+    .dropdown-submenu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      position: absolute;
+      left: 100%;
+      top: 0;
+      background: linear-gradient(145deg, #1c1c1c, #111);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      min-width: 200px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-10px);
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    
+    .dropdown-menu-item:hover .dropdown-submenu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0);
+    }
+    
+    .dropdown-submenu li {
+      margin: 0;
+    }
+    
+    .dropdown-submenu li a {
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      margin: 0.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      color: var(--color-muted);
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .dropdown-submenu li a:hover {
+      background: var(--color-primary);
+      color: #000;
+    }
+    
+    .dropdown-toggle::after {
+      content: '▶';
+      margin-left: auto;
+      font-size: 0.8rem;
+      transition: transform 0.3s ease;
+    }
+    
+    .dropdown-menu-item:hover .dropdown-toggle::after {
+      transform: rotate(90deg);
+    }
+
+    /* Notification badge */
+    .notification-badge {
+      background: #e53935;
+      color: white;
+      border-radius: 50%;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.7rem;
+      font-weight: bold;
+      margin-left: 0.5rem;
+      min-width: 1.2rem;
+      text-align: center;
+      display: inline-block;
+    }
+
+    .logout-btn {
+      display: flex; align-items: center; justify-content: center; gap: .6rem;
+      width: 100%; background: var(--color-danger); color: white;
+      padding: 0.8rem; border-radius: var(--radius); font-weight: bold;
+      margin-top: 1.5rem; border: none; cursor: pointer;
+      transition: background 0.3s;
+    }
+    .logout-btn:hover { background: var(--color-danger-hover); }
+    /* Main */
+    .content {
+      flex: 1; padding: 2rem; margin-top: 60px;
+    }
+    .card {
+      background: var(--color-card); padding: 1.5rem;
+      border-radius: var(--radius); margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .card h2 { margin-bottom: 1rem; color: var(--color-primary); }
+    /* Tabla */
+    table {
+      width: 100%; border-collapse: collapse; margin-top: 1rem;
+      background: var(--color-card); border-radius: var(--radius); overflow: hidden;
+    }
+    thead {
+      background: var(--color-primary); color: #000;
+    }
+    th, td {
+      padding: 0.9rem 1rem; text-align: left;
+    }
+    tbody tr:nth-child(even) { background: #222; }
+    tbody tr:hover { background: #333; }
+    .btn {
+      background: var(--color-primary); color: #000;
+      padding: 0.6rem 1rem; border-radius: var(--radius);
+      border: none; font-weight: bold; cursor: pointer;
+      transition: background 0.3s;
+    }
+    .btn:hover { background: #fcd800; }
+    .back-link {
+      display: inline-block; margin-top: 1.5rem; color: var(--color-primary);
+      text-decoration: none; font-weight: bold;
+    }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header>📩 Mis Notificaciones</header>
+  <div style="display:flex; width:100%;">
+    <!-- Sidebar -->
+    <nav>
+      <div>
+        <h3>Menú</h3>
+        <ul>
+          <li><a th:href="@{/conductor/panel}"><i class="fa-solid fa-gauge"></i> Dashboard</a></li>
+          <li><a th:href="@{/conductor/panel/notificaciones}" class="active"><i class="fa-solid fa-bell"></i> Notificaciones</a></li>
+          <li><a th:href="@{/conductor/novedades}"><i class="fa-solid fa-bullhorn"></i> Reportar Novedad</a></li>
+          <li class="dropdown-menu-item">
+            <a th:href="@{/correo/inbox}" class="dropdown-toggle">
+              <i class="fa-solid fa-envelope"></i> Correo
+              <span th:if="${unreadCount != null and unreadCount > 0}" class="notification-badge" th:text="${unreadCount}">0</span>
+            </a>
+            <ul class="dropdown-submenu">
+              <li><a th:href="@{/correo/inbox}">
+                <i class="fas fa-inbox"></i> Bandeja de entrada
+                <span th:if="${unreadCount != null and unreadCount > 0}" class="notification-badge" th:text="${unreadCount}">0</span>
+              </a></li>
+              <li><a th:href="@{/correo/enviados}"><i class="fas fa-paper-plane"></i> Enviados</a></li>
+              <li><a th:href="@{/correo/papelera}"><i class="fas fa-trash"></i> Papelera</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <form th:action="@{/logout}" method="post">
+        <button type="submit" class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+        </button>
+      </form>
+    </nav>
+
+    <!-- Main -->
+    <main class="content">
+      <section class="card">
+        <h2>📩 Tus Notificaciones</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Mensaje</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="notificacion : ${notificaciones}">
+              <td th:text="${notificacion.mensaje}"></td>
+              <td th:text="${#temporals.format(notificacion.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+              <td>
+                <span th:text="${notificacion.leida} ? 'Leída' : 'No leída'"></span>
+              </td>
+              <td>
+                <form th:if="${!notificacion.leida}"
+                      th:action="@{'/conductor/panel/notificaciones/leida/' + ${notificacion.idNotificacion}}"
+                      method="post">
+                  <button type="submit" class="btn">✅ Marcar como leída</button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

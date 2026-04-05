@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Vehículos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin-theme.css}">
+    <style>
+        /* Estilos específicos para tabla de vehículos */
+        .main {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            color: var(--blue-dark);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .content-header a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* TABLE */
+        .table-container {
+            background: var(--white);
+            border-radius: 16px;
+            overflow-x: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--blue-secondary);
+            color: var(--white);
+            padding: 1rem;
+            font-weight: 600;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        /* VEHICULA INFO */
+        .vehiculo-info {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .vehiculo-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #f5f5f5;
+        }
+
+        .vehiculo-details h4 {
+            margin: 0 0 0.3rem 0;
+            color: var(--blue-dark);
+        }
+
+        .vehiculo-details p {
+            margin: 0.2rem 0;
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        /* PRICE BADGE */
+        .price-badge {
+            background: rgba(245, 166, 35, 0.1);
+            color: var(--gold);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        /* STATUS BADGE */
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .status-activo {
+            background: rgba(46, 125, 50, 0.1);
+            color: #2e7d32;
+        }
+
+        .status-inactivo {
+            background: rgba(198, 40, 40, 0.1);
+            color: #c62828;
+        }
+
+        /* ACTION BUTTONS */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-action {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-edit {
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196f3;
+        }
+
+        .btn-edit:hover {
+            background: rgba(33, 150, 243, 0.2);
+        }
+
+        .btn-toggle {
+            background: rgba(255, 152, 0, 0.1);
+            color: #ff9800;
+        }
+
+        .btn-toggle:hover {
+            background: rgba(255, 152, 0, 0.2);
+        }
+
+        .btn-delete {
+            background: rgba(244, 67, 54, 0.1);
+            color: #f44336;
+        }
+
+        .btn-delete:hover {
+            background: rgba(244, 67, 54, 0.2);
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: var(--blue-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: var(--blue-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .modal-content h3 i {
+            color: #ff9800;
+            font-size: 1.3rem;
+        }
+
+        .modal-content p {
+            color: var(--gray);
+            margin: 1rem 0;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: flex-end;
+        }
+
+        .modal-actions form {
+            margin: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .main {
+                padding: 1rem;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .content-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .content-header a {
+                width: 100%;
+                justify-content: center;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            td {
+                padding: 0.7rem;
+            }
+
+            .vehiculo-img {
+                width: 60px;
+                height: 60px;
+            }
+
+            .btn-action {
+                width: 32px;
+                height: 32px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div style="display: flex;">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, var(--azul-oscuro) 0%, var(--azul-secundario) 100%);
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.3);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            color: var(--dorado);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar nav ul li {
+            margin: 0.8rem 0;
+        }
+
+        .sidebar nav ul li a {
+            text-decoration: none;
+            color: #ccc;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar nav ul li a:hover,
+        .sidebar nav ul li a.active {
+            background: var(--dorado);
+            color: var(--azul-oscuro);
+        }
+
+        .logout-btn {
+            background: var(--error);
+            color: white;
+            padding: 0.8rem;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c62828;
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            color: var(--azul-oscuro);
+        }
+
+        .page-header-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--dorado) 0%, #FFC400 100%);
+            color: var(--azul-oscuro);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 166, 35, 0.3);
+        }
+
+        .btn-secondary {
+            background: #666;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #555;
+        }
+
+        .btn-small {
+            padding: 0.5rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        /* FILTERS & STATUS */
+        .filter-bar {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-activo {
+            background: rgba(67, 160, 71, 0.1);
+            color: var(--success);
+        }
+
+        .status-inactivo {
+            background: rgba(242, 177, 52, 0.1);
+            color: #F2B134;
+        }
+
+        /* TABLE */
+        .table-wrapper {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-secundario) 100%);
+            color: white;
+            padding: 1.2rem;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .vehicle-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 6px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+
+        .vehicle-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .vehicle-details h4 {
+            margin: 0;
+            color: var(--azul-oscuro);
+            font-size: 0.95rem;
+        }
+
+        .vehicle-details p {
+            margin: 0.2rem 0 0 0;
+            color: #999;
+            font-size: 0.8rem;
+        }
+
+        .price-badge {
+            background: rgba(245, 166, 35, 0.1);
+            color: var(--dorado);
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-action {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-edit {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+
+        .btn-toggle {
+            background: #FF9800;
+            color: white;
+        }
+
+        .btn-toggle:hover {
+            background: #F57C00;
+            transform: translateY(-2px);
+        }
+
+        .btn-delete {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c62828;
+            transform: translateY(-2px);
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #ddd;
+            margin-bottom: 1rem;
+        }
+
+        /* ALERTS */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .alert-success {
+            background: rgba(67, 160, 71, 0.1);
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-error {
+            background: rgba(229, 57, 53, 0.1);
+            color: var(--error);
+            border-left: 4px solid var(--error);
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h3 {
+            margin-bottom: 1rem;
+            color: var(--azul-oscuro);
+        }
+
+        .modal-content p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 0.8rem;
+            }
+
+            .action-buttons {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div>
+            <h3><i class="fas fa-car"></i> AutoCheckList</h3>
+            <nav>
+                <ul>
+                    <li><a th:href="@{/dashboard}"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a th:href="@{/usuarios}"><i class="fas fa-users"></i> Usuarios</a></li>
+                    <li><a th:href="@{/vehiculos}" class="active"><i class="fas fa-car"></i> Vehículos</a></li>
+                    <li><a th:href="@{/inventario}"><i class="fas fa-warehouse"></i> Inventario</a></li>
+                    <li><a th:href="@{/roles}"><i class="fas fa-user-shield"></i> Roles</a></li>
+                    <li><a th:href="@{/novedades}"><i class="fas fa-exclamation-circle"></i> Novedades</a></li>
+                </ul>
+            </nav>
+        </div>
+        <form th:action="@{/logout}" method="post" style="margin:0;">
+            <button type="submit" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+            </button>
+        </form>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <h1><i class="fas fa-car"></i> Gestión de Vehículos</h1>
+            <div class="page-header-actions">
+                <a th:href="@{/vehiculos/crear}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Agregar Vehículo
+                </a>
+            </div>
+        </div>
+
+        <!-- ALERTS -->
+        <div th:if="${success}" class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${success}"></span>
+        </div>
+        <div th:if="${error}" class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div class="filter-bar">
+            <div>
+                <span style="font-weight: 600; margin-right: 1rem;">Total de Vehículos:</span>
+                <span style="background: var(--dorado); color: white; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: 600;" th:text="${vehiculos.size()}"></span>
+            </div>
+            <div>
+                <a th:href="@{/vehiculos}" class="btn btn-secondary btn-small">
+                    <i class="fas fa-eye"></i> Solo Activos
+                </a>
+                <a th:href="@{/vehiculos(mostrarInactivos=true)}" class="btn btn-secondary btn-small">
+                    <i class="fas fa-eye-slash"></i> Ver Todos
+                </a>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div th:if="${vehiculos.size() > 0}" class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Marca & Modelo</th>
+                        <th>Especificaciones</th>
+                        <th>Precio</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="vehiculo : ${vehiculos}">
+                        <!-- IMAGEN -->
+                        <td>
+                            <img th:if="${vehiculo.imagenUrl}" 
+                                 th:src="@{/uploads/{url}(url=${vehiculo.imagenUrl})}" 
+                                 alt="Vehicle" class="vehicle-img">
+                            <div th:unless="${vehiculo.imagenUrl}" 
+                                 class="vehicle-img" 
+                                 style="display: flex; align-items: center; justify-content: center; background: #f0f0f0;">
+                                <i class="fas fa-image" style="color: #ccc; font-size: 1.5rem;"></i>
+                            </div>
+                        </td>
+
+                        <!-- INFO -->
+                        <td>
+                            <div class="vehicle-info">
+                                <div class="vehicle-details">
+                                    <h4 th:text="${vehiculo.marca + ' ' + vehiculo.modelo}"></h4>
+                                    <p th:text="'Chasis: ' + ${vehiculo.chasis}"></p>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- ESPECIFICACIONES -->
+                        <td>
+                            <div style="font-size: 0.85rem; color: #666;">
+                                <p th:if="${vehiculo.anio}" th:text="'Año: ' + ${vehiculo.anio}" style="margin: 0.2rem 0;"></p>
+                                <p th:if="${vehiculo.cilindrada}" th:text="'Cilindrada: ' + ${vehiculo.cilindrada}" style="margin: 0.2rem 0;"></p>
+                                <p th:if="${vehiculo.tipoCombustible}" th:text="'Combustible: ' + ${vehiculo.tipoCombustible}" style="margin: 0.2rem 0;"></p>
+                            </div>
+                        </td>
+
+                        <!-- PRECIO -->
+                        <td>
+                            <span th:if="${vehiculo.precio}" class="price-badge" th:text="'$' + ${#numbers.formatDecimal(vehiculo.precio, 0, 'DEFAULT', 2, 'DEFAULT')}"></span>
+                            <span th:unless="${vehiculo.precio}" style="color: #999;">N/A</span>
+                        </td>
+
+                        <!-- ESTADO -->
+                        <td>
+                            <span th:if="${vehiculo.activo}" class="status-badge status-activo">
+                                <i class="fas fa-check-circle"></i> Activo
+                            </span>
+                            <span th:unless="${vehiculo.activo}" class="status-badge status-inactivo">
+                                <i class="fas fa-ban"></i> Inactivo
+                            </span>
+                        </td>
+
+                        <!-- ACCIONES -->
+                        <td>
+                            <div class="action-buttons">
+                                <a th:href="@{/vehiculos/editar/{id}(id=${vehiculo.idVehiculo})}" 
+                                   class="btn-action btn-edit" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form th:action="@{/vehiculos/cambiar-estado/{id}(id=${vehiculo.idVehiculo})}" 
+                                      method="post" style="display: inline;">
+                                    <button type="submit" class="btn-action btn-toggle" 
+                                            th:title="${vehiculo.activo ? 'Desactivar' : 'Activar'}">
+                                        <i th:class="${vehiculo.activo ? 'fas fa-eye-slash' : 'fas fa-eye'}"></i>
+                                    </button>
+                                </form>
+                                <button type="button" class="btn-action btn-delete" 
+                                        th:onclick="'abrirModalEliminar(&#39;' + ${vehiculo.idVehiculo} + '&#39;, &#39;' + ${vehiculo.marca} + ' ' + ${vehiculo.modelo} + '&#39;)'"
+                                        title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div th:unless="${vehiculos.size() > 0}" class="empty-state">
+            <i class="fas fa-car"></i>
+            <h3>No hay vehículos</h3>
+            <p>Comienza agregando un nuevo vehículo al catálogo</p>
+            <a th:href="@{/vehiculos/crear}" class="btn btn-primary" style="margin-top: 1rem;">
+                <i class="fas fa-plus"></i> Crear Vehículo
+            </a>
+        </div>
+    </main>
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN -->
+<div id="modalEliminar" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-exclamation-triangle"></i> Confirmar eliminación</h3>
+        <p>¿Estás seguro de que deseas eliminar <strong id="vehiculoNombre"></strong>?</p>
+        <p style="font-size: 0.85rem; color: #999;">Esta acción no se puede deshacer.</p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="cerrarModal()">
+                <i class="fas fa-times"></i> Cancelar
+            </button>
+            <form id="formEliminar" method="post" style="flex: 1;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function abrirModalEliminar(id, nombre) {
+        document.getElementById('vehiculoNombre').textContent = nombre;
+        document.getElementById('formEliminar').action = '/vehiculos/eliminar/' + id;
+        document.getElementById('modalEliminar').classList.add('active');
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalEliminar').classList.remove('active');
+    }
+
+    // Cerrar modal al hacer clic fuera
+    document.getElementById('modalEliminar').addEventListener('click', function(e) {
+        if (e.target === this) {
+            cerrarModal();
+        }
+    });
+</script>
+
+</body>
+</html>

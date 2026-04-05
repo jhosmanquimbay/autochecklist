@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Inventario — Gerente</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+
+  <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+
+  <main class="main">
+
+    <div class="content-header">
+      <h1><i class="fa-solid fa-warehouse"></i> Gestión de Inventario</h1>
+      <p>Control logístico, rendimiento comercial y actualización masiva del stock</p>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-label">Total en inventario</span>
+        <span class="kpi-value" th:text="${totalInventarioVista}">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Activos</span>
+        <span class="kpi-value" th:text="${totalActivosVista}">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Inactivos</span>
+        <span class="kpi-value" th:text="${totalInactivosVista}">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">En bodega</span>
+        <span class="kpi-value" th:text="${enBodegaVista}">0</span>
+      </div>
+    </div>
+
+    <!-- Acciones y filtros -->
+    <div class="card">
+      <div class="layout-between">
+        <div class="btn-group">
+          <a th:href="@{/gerente/inventario(estado='todos')}" class="btn"
+             th:classappend="${filtroEstado == 'todos' ? '' : ' ghost'}">
+            <i class="fa-solid fa-layer-group"></i> Todos
+          </a>
+          <a th:href="@{/gerente/inventario(estado='activos')}" class="btn"
+             th:classappend="${filtroEstado == 'activos' ? '' : ' ghost'}">
+            <i class="fa-solid fa-box"></i> Activos
+          </a>
+          <a th:href="@{/gerente/inventario(estado='inactivos')}" class="btn"
+             th:classappend="${filtroEstado == 'inactivos' ? '' : ' ghost'}">
+            <i class="fa-solid fa-box-archive"></i> Inactivos
+          </a>
+        </div>
+        <div class="btn-group">
+          <a th:href="@{/gerente/inventario/carga-masiva}" class="btn ghost">
+            <i class="fa-solid fa-file-arrow-up"></i> Carga Masiva
+          </a>
+          <a th:href="@{/gerente/inventario/crear}" class="btn">
+            <i class="fa-solid fa-plus"></i> Nuevo Registro
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de inventario -->
+    <div class="card">
+      <div class="section-title">
+        <h2>
+          <i class="fa-solid fa-list"></i>
+          <span th:text="${filtroEstado == 'inactivos' ? 'Inventario Inactivo' : (filtroEstado == 'activos' ? 'Inventario Activo' : 'Inventario General')}">
+            Inventario General
+          </span>
+        </h2>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Chasis</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Año</th>
+            <th>Color</th>
+            <th>Cantidad</th>
+            <th>Ubicación</th>
+            <th>Estado Logístico</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="inv : ${inventarios}">
+            <td th:text="${inv.idInventario}">1</td>
+            <td th:text="${inv.chasis}">—</td>
+            <td th:text="${inv.marca}">—</td>
+            <td th:text="${inv.modelo}">—</td>
+            <td th:text="${inv.anio}">—</td>
+            <td th:text="${inv.color}">—</td>
+            <td th:text="${inv.cantidadDisponible != null ? inv.cantidadDisponible : 1}">1</td>
+            <td th:text="${inv.ubicacionActual}">—</td>
+            <td th:text="${inv.estadoLogistico}">—</td>
+            <td>
+              <span th:classappend="${inv.activo ? 'bg-success' : 'bg-danger'}"
+                    class="status-pill">
+                <i class="fa-solid" th:classappend="${inv.activo ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                <span th:text="${inv.activo ? 'Activo' : 'Inactivo'}"></span>
+              </span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <a th:href="@{/gerente/vehiculos/crear(inventarioId=${inv.idInventario})}" class="btn ghost">
+                  <i class="fa-solid fa-camera"></i> Crear ficha
+                </a>
+                <a th:href="@{/gerente/inventario/editar/{id}(id=${inv.idInventario})}" class="btn ghost">
+                  <i class="fa-solid fa-pen"></i> Editar
+                </a>
+                <form th:action="@{/gerente/inventario/cambiar-estado/{id}(id=${inv.idInventario})}" method="post">
+                  <input type="hidden" name="estado" th:value="${filtroEstado}" />
+                  <button type="submit" class="btn ghost"
+                          onclick="return confirm('Cambiar estado de este vehiculo?');">
+                    <i class="fa-solid" th:classappend="${inv.activo ? 'fa-toggle-off' : 'fa-toggle-on'}"></i>
+                    <span th:text="${inv.activo ? 'Desactivar' : 'Activar'}"></span>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(inventarios)}">
+            <td colspan="11" class="empty-row">
+              No hay vehículos en inventario
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</body>
+</html>
+
+
+
+
+
+

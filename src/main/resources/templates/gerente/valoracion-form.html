@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Detalle de Valoración | Gerencia</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+  <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+
+  <main class="main gerente-dashboard valuation-page">
+    <section class="hero-panel valuation-hero">
+      <div class="hero-copy">
+        <span class="eyebrow"><i class="fa-solid fa-clipboard-check"></i> Ficha de decisión comercial</span>
+        <h1 th:text="${vehiculo.marca + ' ' + vehiculo.modelo + (vehiculo.anio != null ? ' ' + vehiculo.anio : '')}">Vehículo</h1>
+        <p>Valida documentación, ajusta objetivo manual si hace falta y contrasta la unidad contra referencias externas reales antes de publicarla o devolverla al flujo comercial.</p>
+        <div class="hero-meta">
+          <span class="info-pill"><i class="fa-solid fa-hashtag"></i> <strong th:text="${vehiculo.chasis}">CHASIS</strong></span>
+          <span class="info-pill"><i class="fa-solid fa-circle-info"></i> Estado documental <strong th:text="${estadoDocumental}">Sin validar</strong></span>
+          <span class="info-pill"><i class="fa-solid fa-bullseye"></i> Acción precio <strong th:text="${radarPrecio.accionSugerida}">Mantener</strong></span>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a th:href="@{/gerente/valoracion}" class="btn ghost"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+      </div>
+    </section>
+
+    <div th:if="${success}" class="card-alert success top-space" th:text="${success}">Guardado</div>
+    <div th:if="${error}" class="card-alert error top-space" th:text="${error}">Error</div>
+
+    <section class="finance-form-layout top-space">
+      <article class="card dashboard-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-file-contract"></i> Checklist documental y objetivo comercial</h2>
+        </div>
+
+        <form method="post" th:action="@{'/gerente/valoracion/vehiculo/' + ${vehiculo.idVehiculo}}" th:object="${valoracion}" class="form-grid">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+          <div>
+            <label for="soatVencimiento">Vencimiento SOAT</label>
+            <input id="soatVencimiento" type="date" th:field="*{soatVencimiento}" class="field-control"/>
+          </div>
+
+          <div>
+            <label for="tecnicomecanicaVencimiento">Vencimiento técnico-mecánica</label>
+            <input id="tecnicomecanicaVencimiento" type="date" th:field="*{tecnicomecanicaVencimiento}" class="field-control"/>
+          </div>
+
+          <div class="form-check-row">
+            <label class="checkbox-line">
+              <input type="checkbox" th:field="*{tarjetaPropiedadOk}"/>
+              Tarjeta de propiedad verificada
+            </label>
+          </div>
+
+          <div class="form-check-row">
+            <label class="checkbox-line">
+              <input type="checkbox" th:field="*{impuestosAlDia}"/>
+              Impuestos al día
+            </label>
+          </div>
+
+          <div class="form-check-row">
+            <label class="checkbox-line">
+              <input type="checkbox" th:field="*{prendaActiva}"/>
+              Tiene prenda o restricción comercial
+            </label>
+          </div>
+
+          <div>
+            <label for="precioObjetivoManual">Precio objetivo manual</label>
+            <input id="precioObjetivoManual" type="number" min="0" step="1000" th:field="*{precioObjetivoManual}" class="field-control" placeholder="Opcional"/>
+          </div>
+
+          <div class="col-span-full">
+            <label for="observaciones">Observaciones</label>
+            <textarea id="observaciones" th:field="*{observaciones}" rows="6" class="field-control field-textarea" placeholder="Notas de documentos, peritaje, negociación o bloqueo comercial."></textarea>
+          </div>
+
+          <div class="col-span-full action-buttons">
+            <button type="submit" class="btn"><i class="fa-solid fa-floppy-disk"></i> Guardar valoración</button>
+            <a th:href="@{/gerente/vehiculos(estadoPublicacion='PENDIENTE')}" class="btn ghost"><i class="fa-solid fa-car"></i> Ir a vehículos</a>
+          </div>
+        </form>
+      </article>
+
+      <aside class="card dashboard-card finance-preview-card valuation-preview-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-radar"></i> Radar y decisión</h2>
+        </div>
+
+        <div class="finance-preview-grid">
+          <div class="preview-metric">
+            <span>Precio actual</span>
+            <strong th:text="${vehiculo.precio != null ? #numbers.formatDecimal(vehiculo.precio, 1, 'POINT', 0, 'COMMA') : 'Sin precio'}">0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Precio sugerido</span>
+            <strong th:text="${#numbers.formatDecimal(radarPrecio.precioSugerido, 1, 'POINT', 0, 'COMMA')}">0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Rango recomendado</span>
+            <strong th:text="${#numbers.formatDecimal(radarPrecio.rangoMinimo, 1, 'POINT', 0, 'COMMA') + ' - ' + #numbers.formatDecimal(radarPrecio.rangoMaximo, 1, 'POINT', 0, 'COMMA')}">0 - 0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Promedio mercado</span>
+            <strong th:text="${mercadoCompetencia.disponible ? #numbers.formatDecimal(mercadoCompetencia.precioPromedio, 1, 'POINT', 0, 'COMMA') : 'Sin muestra'}">0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Origen del análisis</span>
+            <strong th:text="${radarPrecio.origenAnalisis}">Interno</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Confianza</span>
+            <strong th:text="${radarPrecio.confianza}">Media</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Comparables activos</span>
+            <strong th:text="${radarPrecio.comparablesActivos}">0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Comparables históricos</span>
+            <strong th:text="${radarPrecio.comparablesHistoricos}">0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Muestras externas</span>
+            <strong th:text="${radarPrecio.comparablesMercado}">0</strong>
+          </div>
+        </div>
+
+        <div class="finance-help-block top-space">
+          <strong><i class="fa-solid fa-bullseye"></i> Acción sugerida</strong>
+          <p th:text="${(radarPrecio.mercadoIntegrado ? 'La sugerencia mezcla mercado externo y señales internas. ' : 'No hubo suficientes avisos externos comparables; se priorizó el radar interno. ') + 'Desviación aproximada: ' + #numbers.formatDecimal(radarPrecio.desviacionPorcentual, 1, 'POINT', 1, 'COMMA') + '%. ' + 'Acción recomendada: ' + radarPrecio.accionSugerida + '.'}">Acción</p>
+        </div>
+
+        <div class="finance-help-block top-space">
+          <strong><i class="fa-solid fa-circle-check"></i> Semáforo documental</strong>
+          <p th:text="${listoParaPublicar ? 'La unidad está lista para catálogo si la ficha comercial está completa.' : 'La unidad todavía requiere intervención documental o ajuste de precio antes de salir a catálogo.'}">Estado</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="dashboard-columns top-space">
+      <article class="card dashboard-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-warehouse"></i> Relación con inventario</h2>
+        </div>
+        <div class="vin-detail-grid">
+          <div class="vin-detail-item">
+            <span>Inventario</span>
+            <strong th:text="${inventarioRelacionado != null ? inventarioRelacionado.idInventario : 'Sin vínculo'}">-</strong>
+          </div>
+          <div class="vin-detail-item">
+            <span>Ubicación actual</span>
+            <strong th:text="${inventarioRelacionado != null ? inventarioRelacionado.ubicacionActual : 'Sin dato'}">-</strong>
+          </div>
+          <div class="vin-detail-item">
+            <span>Estado logístico</span>
+            <strong th:text="${inventarioRelacionado != null ? inventarioRelacionado.estadoLogistico : 'Sin dato'}">-</strong>
+          </div>
+          <div class="vin-detail-item">
+            <span>Precio objetivo manual</span>
+            <strong th:text="${valoracion.precioObjetivoManual != null ? #numbers.formatDecimal(valoracion.precioObjetivoManual, 1, 'POINT', 0, 'COMMA') : 'Sin definir'}">-</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="card dashboard-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-store"></i> Mercado de la competencia</h2>
+        </div>
+        <div class="finance-help-block" th:if="${!mercadoCompetencia.disponible}">
+          <strong><i class="fa-solid fa-circle-info"></i> Sin mercado utilizable</strong>
+          <p th:text="${mercadoCompetencia.mensaje}">Mensaje</p>
+        </div>
+
+        <div th:if="${mercadoCompetencia.disponible}">
+          <div class="finance-preview-grid">
+            <div class="preview-metric">
+              <span>Fuentes</span>
+              <strong th:text="${mercadoCompetencia.fuentes}">Autocosmos</strong>
+            </div>
+            <div class="preview-metric">
+              <span>Muestras</span>
+              <strong th:text="${mercadoCompetencia.totalMuestras}">0</strong>
+            </div>
+            <div class="preview-metric">
+              <span>Mínimo observado</span>
+              <strong th:text="${#numbers.formatDecimal(mercadoCompetencia.precioMinimo, 1, 'POINT', 0, 'COMMA')}">0</strong>
+            </div>
+            <div class="preview-metric">
+              <span>Máximo observado</span>
+              <strong th:text="${#numbers.formatDecimal(mercadoCompetencia.precioMaximo, 1, 'POINT', 0, 'COMMA')}">0</strong>
+            </div>
+          </div>
+          <p class="muted-note top-space" th:text="${mercadoCompetencia.mensaje}">Mensaje</p>
+          <div class="market-list top-space">
+            <a th:each="aviso : ${mercadoCompetencia.comparables}"
+               th:href="${aviso.url}"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="market-card">
+              <span class="market-card__source" th:text="${aviso.fuente}">Autocosmos</span>
+              <strong class="market-card__title" th:text="${aviso.titulo}">Vehículo</strong>
+              <span class="market-card__price" th:text="${#numbers.formatDecimal(aviso.precio, 1, 'POINT', 0, 'COMMA')}">0</span>
+              <span class="market-card__meta" th:text="${(aviso.anio != null ? aviso.anio : 'Sin año') + ' · ' + (aviso.kilometraje != null && !#strings.isEmpty(aviso.kilometraje) ? aviso.kilometraje : 'Sin kilometraje')}">Meta</span>
+              <span class="market-card__meta" th:text="${aviso.ubicacion != null && !#strings.isEmpty(aviso.ubicacion) ? aviso.ubicacion : 'Ubicación no informada'}">Ubicación</span>
+              <span class="market-card__cta">Ver aviso <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <article class="card dashboard-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-satellite-dish"></i> Alertas técnicas externas</h2>
+        </div>
+        <div class="finance-help-block" th:if="${!alertasTecnicas.exito}">
+          <strong><i class="fa-solid fa-circle-info"></i> Sin respuesta útil</strong>
+          <p th:text="${alertasTecnicas.mensaje}">Mensaje</p>
+        </div>
+
+        <div th:if="${alertasTecnicas.exito}">
+          <div class="finance-preview-grid">
+            <div class="preview-metric">
+              <span>Campañas detectadas</span>
+              <strong th:text="${alertasTecnicas.totalCampanias}">0</strong>
+            </div>
+            <div class="preview-metric">
+              <span>Nivel de riesgo</span>
+              <strong th:text="${alertasTecnicas.nivelRiesgo}">Bajo</strong>
+            </div>
+          </div>
+          <p class="muted-note top-space" th:text="${alertasTecnicas.mensaje}">Mensaje</p>
+          <ul class="vin-list recommendations top-space">
+            <li th:each="recall : ${alertasTecnicas.items}" th:text="${recall.componente + ' · ' + recall.campania + ' · ' + recall.consecuencia}">Recall</li>
+          </ul>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

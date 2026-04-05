@@ -1,0 +1,300 @@
+/* ================= VARIABLES ================= */
+
+:root {
+    --blue-dark: #0A1D37;
+    --blue-secondary: #1C3B5A;
+    --gold: #F5A623;
+    --gray: #4A4A4A;
+    --white: #FFFFFF;
+    --bg: #f4f6f9;
+
+    --success: #2e7d32;
+    --danger: #c62828;
+}
+
+/* ================= RESET ================= */
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+/* ================= BODY ================= */
+
+body{
+    font-family:'Poppins',sans-serif;
+    background:var(--bg);
+    min-height:100vh;
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar{
+    width:80px; /* cerrado */
+    height:100vh;
+    background:var(--blue-dark);
+    color:var(--white);
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    transition:width .35s ease;
+    position:fixed;
+    left:0;
+    top:0;
+    overflow:hidden;
+    z-index:1000;
+}
+
+.sidebar > div:first-child{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+}
+
+.sidebar > form{
+    width:100%;
+    margin-top:auto;
+    padding:.75rem;
+}
+
+/* EXPANDE SOLO CON HOVER */
+.sidebar:hover{
+    width:260px;
+}
+
+/* ================= MAIN ================= */
+
+.main{
+    margin-left:80px;
+    padding:2rem;
+    transition:margin-left .35s ease;
+}
+
+/* cuando sidebar abre (FIX IMPORTANTE) */
+.sidebar:hover ~ .main{
+    margin-left:260px;
+}
+
+/* ================= TITULO ================= */
+
+.sidebar h3{
+    padding:1.5rem;
+    font-weight:600;
+    color:var(--gold);
+    white-space:nowrap;
+    opacity:0;
+    transition:opacity .2s ease;
+}
+
+/* mostrar texto al abrir */
+.sidebar:hover h3{
+    opacity:1;
+}
+
+/* ================= MENU ================= */
+
+.sidebar ul{
+    list-style:none;
+}
+
+.sidebar a{
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    padding:1rem 1.5rem;
+    text-decoration:none;
+    color:#dcdcdc;
+    transition:.3s;
+    white-space:nowrap;
+}
+
+.sidebar a:hover{
+    background:var(--blue-secondary);
+    color:var(--gold);
+}
+
+/* TEXTO OCULTO CUANDO ESTA CERRADO */
+.sidebar a span{
+    opacity:0;
+    transition:opacity .2s ease;
+}
+
+/* TEXTO VISIBLE AL HOVER */
+.sidebar:hover a span{
+    opacity:1;
+}
+
+/* ================= LOGOUT ================= */
+
+.logout-btn{
+    width:100%;
+    border:none;
+    padding:1rem;
+    background:#ef4444;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:.75rem;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:600;
+    font-size:.95rem;
+    transition:.3s;
+    white-space:nowrap;
+    overflow:hidden;
+}
+
+.logout-btn i{
+    flex:0 0 20px;
+    font-size:1rem;
+}
+
+.sidebar:not(:hover) .logout-btn{
+    justify-content:center;
+    padding-inline:.9rem;
+    font-size:0;
+    gap:0;
+}
+
+.sidebar:hover .logout-btn{
+    justify-content:flex-start;
+    padding-inline:1.2rem;
+}
+
+.logout-btn:hover{
+    background:#d32f2f;
+}
+
+/* ================= HEADER ================= */
+
+.content-header{
+    margin-bottom:2rem;
+}
+
+.content-header h1{
+    color:var(--blue-dark);
+    margin-bottom:.4rem;
+}
+
+.content-header p{
+    color:var(--gray);
+}
+
+/* ================= CARD ================= */
+
+.card{
+    background:white;
+    border-radius:16px;
+    padding:2rem;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    margin-bottom:2rem;
+}
+
+.section-title{
+    margin-bottom:1.5rem;
+}
+
+.section-title h2{
+    color:var(--blue-dark);
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+}
+
+/* ================= BUTTONS ================= */
+
+.btn{
+    display:inline-flex;
+    align-items:center;
+    gap:.5rem;
+    padding:.6rem 1rem;
+    border-radius:8px;
+    text-decoration:none;
+    border:none;
+    cursor:pointer;
+    font-weight:600;
+    font-size:.85rem;
+    background:var(--gold);
+    color:var(--blue-dark);
+    transition:.25s;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+    opacity:.9;
+}
+
+.btn.ghost{
+    background:#eef1f6;
+    color:var(--blue-dark);
+}
+
+/* ================= TABLE ================= */
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:var(--blue-secondary);
+    color:white;
+    padding:1rem;
+    text-align:left;
+}
+
+td{
+    padding:.9rem 1rem;
+    border-bottom:1px solid #eee;
+    color:var(--gray);
+}
+
+tr:hover{
+    background:#f7f9fc;
+}
+
+/* ================= STATUS ================= */
+
+.bg-success{
+    background:rgba(46,125,50,.12);
+    color:var(--success);
+    font-weight:600;
+}
+
+.bg-danger{
+    background:rgba(198,40,40,.12);
+    color:var(--danger);
+    font-weight:600;
+}
+
+/* ================= DROPDOWN ================= */
+
+.dropdown-menu-item{
+    position:relative;
+}
+
+.dropdown-submenu{
+    display:none;
+    list-style:none;
+    background:#081426;
+}
+
+.dropdown-menu-item:hover .dropdown-submenu{
+    display:block;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:900px){
+
+    .sidebar{
+        transform:translateX(-100%);
+    }
+
+    .main{
+        margin-left:0;
+    }
+}   

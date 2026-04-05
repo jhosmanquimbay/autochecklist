@@ -1,0 +1,178 @@
+
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+
+<meta charset="UTF-8">
+<title>Gestión de Usuarios</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/admin-theme.css">
+
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar collapsed" id="sidebar"
+       onmouseenter="openSidebar()"
+       onmouseleave="closeSidebar()">
+
+<div>
+
+<div class="sidebar-header">
+<button class="toggle-btn">
+<i class="fas fa-bars"></i>
+</button>
+<span class="logo-text">Admin Panel</span>
+</div>
+
+<nav>
+<ul>
+
+<li>
+<a th:href="@{/dashboard}">
+<i class="fas fa-chart-line"></i>
+<span>Dashboard</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/usuarios}">
+<i class="fas fa-users"></i>
+<span>Usuarios</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/vehiculos}">
+<i class="fas fa-car"></i>
+<span>Vehículos</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/inventario}">
+<i class="fas fa-warehouse"></i>
+<span>Inventario</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/roles}">
+<i class="fas fa-id-badge"></i>
+<span>Roles</span>
+</a>
+</li>
+<li>
+<a th:href="@{/correo/inbox}">
+<i class="fas fa-envelope"></i>
+<span>Correo</span>
+</a>
+</li>
+
+</ul>
+</nav>
+
+</div>
+
+<div class="logout">
+<form th:action="@{/logout}" method="post">
+<button type="submit">
+<i class="fas fa-sign-out-alt"></i>
+<span>Cerrar sesión</span>
+</button>
+</form>
+</div>
+
+</aside>
+
+
+<!-- MAIN -->
+<main class="main">
+
+<div class="content-header">
+<h1>Usuarios</h1>
+
+<a th:href="@{/usuarios/nuevo}" class="btn btn-primary">
+<i class="fas fa-user-plus"></i> Nuevo
+</a>
+</div>
+
+
+<div th:if="${success}" class="alert-success" th:text="${success}"></div>
+<div th:if="${error}" class="alert-error" th:text="${error}"></div>
+
+
+<div class="table-container">
+
+<table>
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Nombre</th>
+<th>Correo</th>
+<th>Rol</th>
+<th>Acciones</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr th:each="usuario : ${usuarios}">
+
+<td th:text="${usuario.idUsuario}"></td>
+<td th:text="${usuario.nombre}"></td>
+<td th:text="${usuario.correo}"></td>
+
+<td>
+<span th:if="${usuario.rol != null}" th:text="${usuario.rol.nombre}"></span>
+<span th:unless="${usuario.rol != null}">Sin rol</span>
+</td>
+
+<td>
+
+<div class="table-actions">
+
+<a th:href="@{/usuarios/editar/{id}(id=${usuario.idUsuario})}"
+class="btn btn-warning btn-sm">
+<i class="fas fa-pen"></i>
+</a>
+
+<a th:href="@{/usuarios/eliminar/{id}(id=${usuario.idUsuario})}"
+class="btn btn-danger btn-sm"
+onclick="return confirm('¿Eliminar usuario?')">
+<i class="fas fa-trash"></i>
+</a>
+
+</div>
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</main>
+
+
+<script>
+
+function openSidebar(){
+document.getElementById("sidebar").classList.remove("collapsed");
+}
+
+function closeSidebar(){
+document.getElementById("sidebar").classList.add("collapsed");
+}
+
+</script>
+
+</body>
+</html>
+```

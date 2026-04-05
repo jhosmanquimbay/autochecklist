@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carga Masiva de Vehículos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin-theme.css}">
+</head>
+<body>
+    <div class="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <h2 style="margin: 0; color: var(--gold); font-size: 1.7rem; font-weight: 700; display: flex; align-items: center; gap: 0.7rem;">
+                    <i class="fas fa-car"></i> AutoCheckList
+                </h2>
+            </div>
+            <nav>
+                <ul>
+                    <li><a th:href="@{/dashboard}"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+                    <li><a th:href="@{/usuarios}"><i class="fas fa-users"></i> <span>Usuarios</span></a></li>
+                    <li><a th:href="@{/vehiculos}" class="active"><i class="fas fa-car"></i> <span>Vehículos</span></a></li>
+                    <li><a th:href="@{/inventario}"><i class="fas fa-warehouse"></i> <span>Inventario</span></a></li>
+                    <li><a th:href="@{/roles}"><i class="fas fa-user-shield"></i> <span>Roles</span></a></li>
+                    <li><a th:href="@{/novedades}"><i class="fas fa-exclamation-circle"></i> <span>Novedades</span></a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="logout">
+            <form th:action="@{/logout}" method="post">
+                <button type="submit"><i class="fas fa-sign-out-alt"></i> <span>Cerrar sesión</span></button>
+            </form>
+        </div>
+    </div>
+    <main class="main">
+        <div class="control-block" style="max-width: 600px; margin: 2rem auto;">
+            <div class="control-title">
+                <i class="fas fa-file-upload"></i>
+                <h2>Carga Masiva de Vehículos</h2>
+            </div>
+            <form th:action="@{/vehiculos/carga-masiva}" method="post" enctype="multipart/form-data" style="background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(44,62,80,0.08); padding: 2rem; display: flex; flex-direction: column; gap: 1.2rem;">
+                <div>
+                    <label for="archivo" style="font-weight: 600; color: var(--blue-dark);">Selecciona archivo CSV/Excel</label>
+                    <input type="file" id="archivo" name="archivo" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" class="form-control" required style="width: 100%; padding: .7rem; border-radius: 6px; border: 1px solid var(--blue-secondary);">
+                </div>
+                <div style="display: flex; gap: 1.2rem; align-items: center;">
+                    <button type="submit" style="background: var(--gold); color: var(--blue-dark); border-radius: 8px; padding: .7rem 1.3rem; font-weight: 600; border: none; box-shadow: 0 2px 8px rgba(44,62,80,0.08); cursor: pointer;">
+                        <i class="fas fa-upload"></i> Subir Archivo
+                    </button>
+                    <a th:href="@{/vehiculos}" style="color: var(--gold); font-weight: 600; text-decoration: none;">Cancelar</a>
+                </div>
+                <div style="margin-top: 1.5rem; color: var(--gray); font-size: 0.95rem;">
+                    <i class="fas fa-info-circle" style="color: var(--gold);"></i> Descarga la <a th:href="@{/vehiculos/plantilla-carga}" style="color: var(--gold); font-weight: 600; text-decoration: underline;">plantilla</a> para el formato correcto.
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

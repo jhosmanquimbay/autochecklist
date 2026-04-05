@@ -1,0 +1,147 @@
+<!-- MESSAGE HEADER - ESTILO GMAIL MEJORADO -->
+<div class="message-container">
+    <!-- ASUNTO Y ESTADO (ARRIBA PEQUEÑO) -->
+    <div class="message-header-compact">
+        <h2 class="message-subject-compact" th:text="${mensaje.asunto}">Asunto del mensaje</h2>
+        <div class="message-status-compact">
+            <span th:if="${mensaje.leido}" class="status-badge-compact read">
+                <i class="fas fa-check-double"></i> Leído
+            </span>
+            <span th:unless="${mensaje.leido}" class="status-badge-compact unread">
+                <i class="fas fa-envelope-open"></i> Sin leer
+            </span>
+        </div>
+    </div>
+
+    <!-- REMITENTE (ARRIBA PEQUEÑO, LADO IZQUIERDO) -->
+    <div class="message-sender-header">
+        <div class="sender-avatar-large">
+            <div class="avatar-circle-large" th:text="${(mensaje.remitente != null ? mensaje.remitente.nombre : 'E').substring(0,1)}">E</div>
+        </div>
+        <div class="sender-info-compact">
+            <div class="sender-name-compact" th:text="${mensaje.remitente != null ? mensaje.remitente.nombre : 'Remitente desconocido'}">Nombre del remitente</div>
+            <div class="sender-email-compact" th:text="${mensaje.remitente != null ? mensaje.remitente.correo : 'Email desconocido'}">correo@ejemplo.com</div>
+        </div>
+        <div class="message-actions">
+            <button class="action-icon" title="Marcar como importante"><i class="fas fa-star"></i></button>
+            <button class="action-icon" title="Archivar"><i class="fas fa-archive"></i></button>
+            <button class="action-icon" title="Eliminar"><i class="fas fa-trash"></i></button>
+        </div>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="message-divider"></div>
+
+    <!-- CONTENIDO PRINCIPAL (PROMINENTE EN EL CENTRO) -->
+    <div class="message-content-main">
+        <div th:if="${mensaje.contenido != null and !mensaje.contenido.isEmpty()}" th:utext="${mensaje.contenido}"></div>
+        <div th:if="${mensaje.contenido == null or mensaje.contenido.isEmpty()}" class="empty-content">
+            (Sin contenido de texto)
+        </div>
+    </div>
+
+    <!-- FECHA Y HORA (PEQUEÑA ABAJO) -->
+    <div class="message-footer-compact">
+        <span class="message-date-small">
+            <i class="fas fa-calendar-alt"></i>
+            <span th:if="${mensaje.fechaEnvio != null}" th:text="${#temporals.format(mensaje.fechaEnvio,'dd/MM/yyyy HH:mm')}">Fecha</span>
+        </span>
+    </div>
+
+
+<!-- ATTACHMENTS -->
+<div class="attachments-section" th:if="${!#lists.isEmpty(adjuntos)}">
+    <div class="attachments-title">
+        <i class="fas fa-paperclip"></i> Adjuntos
+    </div>
+    <div class="attachments-list">
+        <div class="attachment-item" th:each="a : ${adjuntos}">
+            <div class="attachment-icon">
+                <i class="fas fa-file"></i>
+            </div>
+            <a th:href="@{/correo/adjunto/{id}(id=${a.id})}" th:text="${a.nombreArchivo}" title="Descargar">Archivo</a>
+        </div>
+    </div>
+</div>
+
+<!-- CONVERSATION/REPLIES -->
+<div th:if="${!#lists.isEmpty(respuestas)}" class="conversation-section">
+    <style>
+        .conversation-section { display:flex; flex-direction:column; gap:0.75rem; margin-top:1rem; }
+        .conversation-item { max-width:75%; padding:0.8rem 1rem; border-radius:8px; background: #f5f7fa; }
+        .conversation-item + .conversation-item { margin-top: 0.4rem; }
+        .conversation-item.outgoing { margin-left: auto; background: #fff8e6; border: 1px solid #f5d08a; }
+        .conversation-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem; }
+        .conversation-from { font-weight:600; color:var(--color-text-primary); }
+        .conversation-date { font-size:0.85rem; color:var(--color-text-tertiary); }
+        .conversation-content { white-space:pre-wrap; color:var(--color-text-primary); }
+    </style>
+    <div class="conversation-header-section">
+        <h4 class="conversation-title">
+            <i class="fas fa-comments"></i> Conversación
+        </h4>
+    </div>
+    <div th:each="r : ${respuestas}" th:classappend="${(r.remitente != null and r.remitente.idUsuario == usuarioId) ? ' outgoing' : ''}" class="conversation-item">
+        <div class="conversation-header">
+            <div class="conversation-from" th:text="${r.remitente != null ? (r.remitente.idUsuario == usuarioId ? 'Tú' : r.remitente.nombre) : (r.destinatarioExterno != null ? r.destinatarioExterno : 'Externo')}">Remitente</div>
+            <div class="conversation-date" th:text="${r.fechaEnvio != null ? #temporals.format(r.fechaEnvio,'dd/MM HH:mm') : ''}">Fecha</div>
+        </div>
+        <div class="conversation-content" th:utext="${r.contenido}">Contenido</div>
+        
+        <!-- Adjuntos de la respuesta -->
+        <div th:if="${r.adjuntos != null and !#lists.isEmpty(r.adjuntos)}" class="reply-attachments">
+            <div class="attachment-label">
+                <i class="fas fa-paperclip"></i> Adjuntos
+            </div>
+            <div class="attachment-links">
+                <a th:each="aa : ${r.adjuntos}" 
+                   th:href="@{/correo/adjunto/{id}(id=${aa.id})}" 
+                   class="attachment-link"
+                   title="Descargar">
+                    <i class="fas fa-file"></i>
+                    <span th:text="${aa.nombreArchivo}">archivo.pdf</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- REPLY FORM -->
+<div class="reply-form-section">
+    <h4 class="reply-title">
+        <i class="fas fa-reply"></i> Responder
+    </h4>
+    <form th:action="@{/correo/responder}" method="post" enctype="multipart/form-data" onsubmit="return validarRespuestaInline()">
+        <input type="hidden" name="mensajePadreId" th:value="${mensaje.id}" />
+        <input type="hidden" name="remitente" th:value="${usuarioId}" />
+        <input type="hidden" name="origen" th:value="${mensaje != null and mensaje.eliminado ? 'papelera' : (mensaje != null and mensaje.carpeta == 'sent' ? 'enviados' : 'inbox')}" />
+        
+        <div class="form-group">
+            <label for="inlineReplyContenido">Mensaje *</label>
+            <textarea id="inlineReplyContenido" name="contenido" placeholder="Escribe tu respuesta..." required class="reply-textarea"></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="inlineReplyArchivos">Adjuntos (opcional)</label>
+            <input type="file" id="inlineReplyArchivos" name="archivos" multiple />
+        </div>
+        
+        <div class="reply-actions">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('emailModal').classList.remove('active')">Cerrar</button>
+            <button type="submit" class="btn btn-primary">Enviar respuesta</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function validarRespuestaInline() {
+    const contenido = document.getElementById('inlineReplyContenido').value.trim();
+    
+    if (contenido === '') {
+        alert('Por favor, escribe un mensaje. No puedes enviar solo archivos sin texto.');
+        return false;
+    }
+    
+    return true;
+}
+</script>

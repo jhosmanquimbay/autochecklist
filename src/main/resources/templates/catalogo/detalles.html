@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${vehiculo.titulo + ' - Detalles'}">Detalles del Vehículo</title>
+
+    <!-- Íconos y Fuente -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .image-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .vehicle-image {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .category-badge {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .details-section h2 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .detail-item i {
+            color: #667eea;
+            width: 20px;
+            margin-right: 1rem;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #333;
+            min-width: 80px;
+        }
+
+        .detail-value {
+            color: #666;
+        }
+
+        .price-section {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            margin-top: 1rem;
+        }
+
+        .price {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+
+        .description-section {
+            grid-column: 1 / -1;
+            margin-top: 1rem;
+        }
+
+        .description-section h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .description {
+            color: #666;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+        }
+
+        .actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-back {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-back:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .price {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    
+    <!-- HEADER -->
+    <div class="header">
+        <h1>
+            <i class="fas fa-car"></i>
+            <span th:text="${vehiculo.titulo}">Mercedes AMG</span>
+        </h1>
+        <p>Detalles completos del vehículo</p>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="content">
+        
+        <!-- IMAGEN -->
+        <div class="image-section">
+              <img th:src="${vehiculo.imagenUrl}" 
+                 th:alt="${vehiculo.titulo}"
+                 class="vehicle-image"
+                  onerror="this.src='/images/mercedez.png'">
+            
+            <div class="category-badge" th:text="${vehiculo.categoria}">
+                Sedán
+            </div>
+        </div>
+
+        <!-- DETALLES -->
+        <div class="details-section">
+            <h2>Especificaciones</h2>
+            
+            <div class="detail-item">
+                <i class="fas fa-tag"></i>
+                <span class="detail-label">Marca:</span>
+                <span class="detail-value" th:text="${vehiculo.marca}">Mercedes</span>
+            </div>
+            
+            <div class="detail-item">
+                <i class="fas fa-car-side"></i>
+                <span class="detail-label">Modelo:</span>
+                <span class="detail-value" th:text="${vehiculo.modelo}">AMG GT</span>
+            </div>
+            
+            <div class="detail-item">
+                <i class="fas fa-list"></i>
+                <span class="detail-label">Tipo:</span>
+                <span class="detail-value" th:text="${vehiculo.categoria}">Sedán</span>
+            </div>
+        </div>
+
+        <!-- PRECIO -->
+        <div class="price-section" th:if="${vehiculo.precio != null}">
+            <div class="price">
+                $<span th:text="${#numbers.formatDecimal(vehiculo.precio, 0, 'COMMA', 0, 'POINT')}">85,000</span>
+            </div>
+            <p>Precio en dólares americanos</p>
+        </div>
+
+        <!-- DESCRIPCIÓN -->
+        <div class="description-section">
+            <h3>
+                <i class="fas fa-info-circle"></i>
+                Descripción
+            </h3>
+            <div class="description" th:text="${vehiculo.descripcion}">
+                Vehículo de alta calidad con excelente rendimiento y tecnología avanzada.
+            </div>
+        </div>
+
+        <!-- ACCIONES -->
+        <div class="actions">
+            <a th:href="@{/catalogo}" class="btn btn-back">
+                <i class="fas fa-arrow-left"></i>
+                Volver al Catálogo
+            </a>
+            
+            <!-- Botones de administración para gerentes -->
+            <div sec:authorize="hasRole('GERENTE') or hasRole('ADMIN')">
+                <a th:href="@{/catalogo/editar/{id}(id=${vehiculo.id})}" class="btn btn-secondary">
+                    <i class="fas fa-edit"></i>
+                    Editar
+                </a>
+                
+                <a th:href="@{/catalogo/gestion}" class="btn btn-success">
+                    <i class="fas fa-cogs"></i>
+                    Panel de Gestión
+                </a>
+            </div>
+            
+            <a href="tel:+576015550101" class="btn btn-primary">
+                <i class="fas fa-phone"></i>
+                Hablar con un asesor
+            </a>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

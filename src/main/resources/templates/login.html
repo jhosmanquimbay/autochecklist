@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Iniciar Sesión | AutoCheckList</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/cliente-auth.css}">
+</head>
+<body class="auth-body">
+  <div class="auth-shell auth-shell-compact">
+    <section class="auth-side">
+      <span class="auth-badge">Oficina Cliente</span>
+      <h1>Accede a tu perfil y continúa tu experiencia.</h1>
+      <p>Consulta tus favoritos, revisa tus compras y mantén tu información actualizada desde una sola cuenta.</p>
+
+      <div class="auth-side-points">
+        <div><i class="fas fa-heart"></i> Guarda vehículos favoritos</div>
+        <div><i class="fas fa-bag-shopping"></i> Consulta tus compras</div>
+        <div><i class="fas fa-user-gear"></i> Gestiona tu perfil</div>
+      </div>
+    </section>
+
+    <section class="auth-card">
+      <div class="auth-brand">
+        <img th:src="@{/images/AUTOCHECKLIST (5).png}" alt="Logo empresa">
+      </div>
+
+      <h2>Iniciar Sesión</h2>
+      <p class="auth-subtitle">Ingresa con tu correo y contraseña.</p>
+
+      <div th:if="${param.error}" class="alert-box alert-error">
+        Usuario o contraseña incorrectos.
+      </div>
+
+      <div th:if="${param.logout}" class="alert-box alert-success">
+        Has cerrado sesión correctamente.
+      </div>
+
+      <div th:if="${param.registro}" class="alert-box alert-success">
+        Tu cuenta fue creada correctamente. Ya puedes ingresar.
+      </div>
+
+      <div th:if="${param.passwordReset}" class="alert-box alert-success">
+        La contraseña fue actualizada correctamente. Ya puedes iniciar sesión.
+      </div>
+
+      <form th:action="@{/login}" method="post" class="auth-form">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+        <div class="form-field">
+          <label for="username">Correo</label>
+          <div class="input-group">
+            <i class="fa fa-user"></i>
+            <input type="text" id="username" name="username" placeholder="correo@ejemplo.com" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="password">Contraseña</label>
+          <div class="input-group">
+            <i class="fa fa-lock"></i>
+            <input type="password" id="password" name="password" placeholder="••••••••" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-auth-primary">Entrar</button>
+      </form>
+
+      <div class="inline-links">
+        <a th:href="@{/registro}">Crear cuenta</a>
+        <a th:href="@{/recuperar}">Olvidé mi contraseña</a>
+      </div>
+
+      <div class="auth-footer">
+        © 2026 AutoCheckList.<br>Todos los derechos reservados.
+      </div>
+
+      <a th:href="@{/}" class="btn-auth-secondary">Volver al inicio</a>
+    </section>
+  </div>
+</body>
+</html>

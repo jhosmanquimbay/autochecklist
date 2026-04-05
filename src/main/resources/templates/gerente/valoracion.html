@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Valoración y Validación | Gerencia</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+  <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+
+  <main class="main gerente-dashboard valuation-page">
+    <section class="hero-panel valuation-hero">
+      <div class="hero-copy">
+        <span class="eyebrow"><i class="fa-solid fa-chart-line"></i> Recepción comercial</span>
+        <h1><i class="fa-solid fa-scale-balanced"></i> Valoración y Validación</h1>
+        <p>Una sola sección para revisar documentos, detectar riesgos de publicación, contrastar el precio contra avisos reales del mercado y traer alertas técnicas del fabricante desde una API real.</p>
+        <div class="hero-meta">
+          <span class="info-pill"><i class="fa-solid fa-file-shield"></i> Checklist documental persistente</span>
+          <span class="info-pill"><i class="fa-solid fa-money-bill-trend-up"></i> Radar mixto en la ficha individual</span>
+          <span class="info-pill"><i class="fa-solid fa-satellite-dish"></i> Recall API integrada</span>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a th:href="@{/gerente/vehiculos/crear}" class="btn"><i class="fa-solid fa-plus"></i> Nuevo vehículo</a>
+        <a th:href="@{/gerente/contabilidad}" class="btn ghost"><i class="fa-solid fa-chart-pie"></i> Ir a contabilidad</a>
+      </div>
+    </section>
+
+    <section class="finance-summary-grid top-space">
+      <article class="finance-summary-card accent-positive">
+        <span class="finance-summary-label">Vehículos analizados</span>
+        <strong class="finance-summary-value" th:text="${resumenValoracion.totalVehiculos}">0</strong>
+      </article>
+      <article class="finance-summary-card">
+        <span class="finance-summary-label">Listos para publicar</span>
+        <strong class="finance-summary-value" th:text="${resumenValoracion.listosParaPublicar}">0</strong>
+      </article>
+      <article class="finance-summary-card accent-gold-soft">
+        <span class="finance-summary-label">Riesgo documental</span>
+        <strong class="finance-summary-value" th:text="${resumenValoracion.riesgoDocumental}">0</strong>
+      </article>
+      <article class="finance-summary-card">
+        <span class="finance-summary-label">Sin precio cargado</span>
+        <strong class="finance-summary-value" th:text="${resumenValoracion.sinPrecio}">0</strong>
+      </article>
+      <article class="finance-summary-card">
+        <span class="finance-summary-label">Sugerencia subir</span>
+        <strong class="finance-summary-value" th:text="${resumenValoracion.subirPrecio}">0</strong>
+      </article>
+      <article class="finance-summary-card">
+        <span class="finance-summary-label">Sugerencia bajar</span>
+        <strong class="finance-summary-value" th:text="${resumenValoracion.bajarPrecio}">0</strong>
+      </article>
+    </section>
+
+    <section class="card dashboard-card filter-card top-space">
+      <div class="section-title compact-title">
+        <h2><i class="fa-solid fa-sliders"></i> Filtros operativos</h2>
+      </div>
+      <form method="get" th:action="@{/gerente/valoracion}" class="valuation-filter-grid">
+        <div>
+          <label for="marca">Marca</label>
+          <input id="marca" name="marca" class="field-control" th:value="${marcaFiltro}" placeholder="Ej: Toyota"/>
+        </div>
+        <div>
+          <label for="modelo">Modelo</label>
+          <input id="modelo" name="modelo" class="field-control" th:value="${modeloFiltro}" placeholder="Ej: Corolla"/>
+        </div>
+        <div>
+          <label for="estadoPublicacion">Estado publicación</label>
+          <select id="estadoPublicacion" name="estadoPublicacion" class="field-control">
+            <option value="todos" th:selected="${estadoPublicacionFiltro == 'todos'}">Todos</option>
+            <option value="BORRADOR" th:selected="${estadoPublicacionFiltro == 'BORRADOR'}">Borrador</option>
+            <option value="PENDIENTE" th:selected="${estadoPublicacionFiltro == 'PENDIENTE'}">Pendiente</option>
+            <option value="PUBLICADO" th:selected="${estadoPublicacionFiltro == 'PUBLICADO'}">Publicado</option>
+            <option value="DEVUELTO" th:selected="${estadoPublicacionFiltro == 'DEVUELTO'}">Devuelto</option>
+            <option value="DESPUBLICADO" th:selected="${estadoPublicacionFiltro == 'DESPUBLICADO'}">Despublicado</option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button type="submit" class="btn"><i class="fa-solid fa-filter"></i> Filtrar</button>
+          <a th:href="@{/gerente/valoracion}" class="btn ghost"><i class="fa-solid fa-rotate-left"></i> Limpiar</a>
+        </div>
+      </form>
+    </section>
+
+    <section class="dashboard-columns top-space">
+      <article class="card dashboard-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-circle-check"></i> Qué valida este módulo</h2>
+        </div>
+        <ul class="vin-list muted-list">
+          <li>SOAT y técnico-mecánica con control de vencimiento.</li>
+          <li>Tarjeta de propiedad, prenda e impuestos al día para evitar publicar unidades con riesgo.</li>
+          <li>Semáforo comercial para saber si un vehículo está listo o requiere intervención.</li>
+        </ul>
+      </article>
+
+      <article class="card dashboard-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-compass-drafting"></i> Cómo sale el radar de precio</h2>
+        </div>
+        <p class="muted-note">En la ficha individual, el rango sugerido mezcla señales internas con avisos externos de Autocosmos y TuCarro cuando encuentra coincidencias por modelo y año. Si no encuentra mercado comparable suficiente, cae al radar interno.</p>
+      </article>
+    </section>
+
+    <section class="card dashboard-card top-space">
+      <div class="layout-between-sm">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-table-list"></i> Cola de valoración</h2>
+        </div>
+        <span class="info-pill">Total <strong th:text="${#lists.size(valoraciones)}">0</strong></span>
+      </div>
+
+      <div class="finance-table-shell">
+        <table class="finance-table valuation-table">
+          <thead>
+            <tr>
+              <th>Vehículo</th>
+              <th>Publicación</th>
+              <th>Documentos</th>
+              <th>Precio actual</th>
+              <th>Radar sugerido</th>
+              <th>Acción</th>
+              <th>Comparables</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${#lists.isEmpty(valoraciones)}">
+              <td colspan="8" class="empty-row">No hay vehículos que coincidan con el filtro actual.</td>
+            </tr>
+            <tr th:each="fila : ${valoraciones}">
+              <td>
+                <strong th:text="${fila.vehiculo}">Vehículo</strong>
+                <span class="table-subtext" th:text="${fila.chasis}">CHASIS</span>
+              </td>
+              <td>
+                <span class="status-pill bg-info-soft" th:text="${fila.estadoPublicacionEtiqueta}">Pendiente</span>
+              </td>
+              <td>
+                <span class="status-pill" th:classappend="' ' + ${fila.estadoDocumentalClase}" th:text="${fila.estadoDocumental}">Sin validar</span>
+                <span class="table-subtext" th:if="${fila.listoParaPublicar}">Listo para catálogo</span>
+              </td>
+              <td>
+                <span th:text="${fila.precioActual != null ? #numbers.formatDecimal(fila.precioActual, 1, 'POINT', 0, 'COMMA') : 'Sin precio'}">0</span>
+                <span class="table-subtext" th:if="${fila.precioObjetivoManual != null}" th:text="'Objetivo manual: ' + ${#numbers.formatDecimal(fila.precioObjetivoManual, 1, 'POINT', 0, 'COMMA')}">Objetivo</span>
+              </td>
+              <td>
+                <strong th:text="${#numbers.formatDecimal(fila.precioSugerido, 1, 'POINT', 0, 'COMMA')}">0</strong>
+              </td>
+              <td>
+                <span class="status-pill"
+                      th:classappend="${fila.accionPrecio == 'Subir'} ? ' bg-warning-soft' : (${fila.accionPrecio == 'Bajar'} ? ' bg-danger' : (${fila.accionPrecio == 'Mantener'} ? ' bg-success' : ' bg-neutral-soft'))"
+                      th:text="${fila.accionPrecio}">Mantener</span>
+              </td>
+              <td>
+                <strong th:text="${fila.totalComparables}">0</strong>
+              </td>
+              <td>
+                <a th:href="@{'/gerente/valoracion/vehiculo/' + ${fila.vehiculoId}}" class="btn ghost btn-xs">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

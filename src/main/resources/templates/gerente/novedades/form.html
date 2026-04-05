@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Nueva Novedad — Gerente</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+
+  <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+
+  <main class="main">
+    <div class="content-header">
+      <h1><i class="fa-solid fa-triangle-exclamation"></i>
+        <span th:text="${novedad.idNovedades != null ? 'Gestionar Novedad' : 'Reportar Novedad'}">Reportar Novedad</span>
+      </h1>
+      <p>Registra daños, garantías, rayones o fallas técnicas para que el gerente pueda iniciar gestión.</p>
+    </div>
+
+    <div class="card card-narrow">
+      <form th:action="${novedad.idNovedades != null ? '/gerente/novedades/actualizar/' + novedad.idNovedades : '/gerente/novedades/guardar'}"
+            th:object="${novedad}" method="post"
+            enctype="multipart/form-data">
+
+        <div class="form-grid">
+
+          <div>
+            <label>Vehículo afectado</label>
+            <select th:field="*{vehiculoChasis}" required class="field-control">
+              <option value="">-- Seleccionar vehículo --</option>
+              <option th:each="inv : ${inventariosDisponibles}"
+                      th:value="${inv.chasis}"
+                      th:text="${(inv.chasis != null ? inv.chasis : 'SIN-CHASIS') + ' | ' + (inv.marca != null ? inv.marca : 'Sin marca') + ' ' + (inv.modelo != null ? inv.modelo : 'Sin modelo')}">
+                CHASIS | Marca Modelo
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label>Origen del reporte</label>
+            <select th:field="*{origenReporte}" required class="field-control">
+              <option value="recepcion_tienda">Recepción de tienda</option>
+              <option value="vendedor">Vendedor</option>
+              <option value="postventa">Postventa</option>
+              <option value="alistamiento">Alistamiento</option>
+              <option value="bodega">Bodega</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Tipo de Daño / Novedad</label>
+            <select th:field="*{tipoNovedad}" required
+                    class="field-control">
+              <option value="">-- Seleccionar tipo --</option>
+              <option value="Garantia de fabrica">Garantía de fábrica</option>
+              <option value="Daño mecánico">Daño mecánico</option>
+              <option value="Daño de carrocería">Daño de carrocería</option>
+              <option value="Rayones o abolladuras">Rayones o abolladuras</option>
+              <option value="Daño eléctrico">Daño eléctrico</option>
+              <option value="Falla post entrega">Falla post entrega</option>
+              <option value="Daño en tapicería">Daño en tapicería</option>
+              <option value="Accidente">Accidente</option>
+              <option value="Accesorio faltante">Accesorio faltante</option>
+              <option value="Robo parcial">Robo parcial</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Prioridad</label>
+            <select th:field="*{prioridad}" required class="field-control">
+              <option value="baja">Baja</option>
+              <option value="media">Media</option>
+              <option value="alta">Alta</option>
+              <option value="critica">Crítica</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Estado de gestión</label>
+            <select th:field="*{estado}" required
+                    class="field-control">
+              <option value="pendiente">Pendiente</option>
+              <option value="en_revision">En revisión</option>
+              <option value="gestion_garantia">Gestión garantía</option>
+              <option value="resuelto">Resuelto</option>
+            </select>
+          </div>
+
+          <div class="form-check-row">
+            <label class="checkbox-line">
+              <input type="checkbox" th:field="*{aplicaGarantia}"/>
+              <span>Requiere gestión por garantía</span>
+            </label>
+          </div>
+
+          <div class="col-span-full">
+            <label>Descripción detallada</label>
+            <textarea th:field="*{descripcion}" rows="4" required
+                      placeholder="Describe qué recibió el vendedor o encargado, el daño identificado, alcance y contexto..."
+                      class="field-control field-textarea"></textarea>
+          </div>
+
+          <div class="col-span-full">
+            <label>Acción requerida al gerente</label>
+            <textarea th:field="*{accionRequerida}" rows="3"
+                      placeholder="Ej: autorizar inspección técnica, abrir caso con garantía, aprobar reparación, contactar aseguradora..."
+                      class="field-control field-textarea"></textarea>
+          </div>
+
+          <div class="col-span-full">
+            <label>Observación del gerente</label>
+            <textarea th:field="*{observacionGerente}" rows="3"
+                      placeholder="Seguimiento interno, decisión tomada, proveedor a contactar o gestión realizada..."
+                      class="field-control field-textarea"></textarea>
+          </div>
+
+          <div class="col-span-full">
+            <label>Foto de Evidencia</label>
+            <input type="file" name="file" accept="image/*"
+                   class="field-control"/>
+            <small class="empty-note">Adjunta una foto del daño. Formatos: JPG, PNG. Máx 5MB</small>
+            <div th:if="${novedad.evidencia != null and !novedad.evidencia.isBlank()}" class="top-space">
+              <a th:href="@{'/uploads/novedades/' + ${novedad.evidencia}}" target="_blank" class="btn ghost">
+                <i class="fa-solid fa-image"></i> Ver evidencia actual
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="action-buttons top-space">
+          <button type="submit" class="btn">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Novedad
+          </button>
+          <a th:href="@{/gerente/novedades}" class="btn ghost">
+            <i class="fa-solid fa-arrow-left"></i> Cancelar
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </main>
+</body>
+</html>
+
+
+
+
+
+

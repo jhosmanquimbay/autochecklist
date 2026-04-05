@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promociones del Inicio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/admin-theme.css}">
+    <style>
+        .promo-page {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .hero-card,
+        .flash-card,
+        .promo-list-card,
+        .empty-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 12px 30px rgba(10, 29, 55, 0.08);
+            border: 1px solid rgba(10, 29, 55, 0.08);
+        }
+
+        .hero-card {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .hero-card h1 {
+            margin: 0 0 0.45rem 0;
+            color: var(--blue-dark);
+        }
+
+        .hero-card p {
+            margin: 0;
+            color: var(--gray);
+            max-width: 720px;
+        }
+
+        .hero-actions a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.9rem 1.15rem;
+            border-radius: 12px;
+            background: var(--gold);
+            color: var(--blue-dark);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .flash-card {
+            padding: 1rem 1.2rem;
+            font-weight: 600;
+        }
+
+        .flash-card.success {
+            border-left: 5px solid #16a34a;
+            color: #166534;
+        }
+
+        .flash-card.error {
+            border-left: 5px solid #d92d20;
+            color: #9f1239;
+        }
+
+        .placement-guide {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .placement-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 12px 30px rgba(10, 29, 55, 0.08);
+            border: 1px solid rgba(10, 29, 55, 0.08);
+            padding: 1.2rem;
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .placement-card span {
+            color: var(--gold-dark, #b7791f);
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08rem;
+            font-weight: 800;
+        }
+
+        .placement-card strong {
+            color: var(--blue-dark);
+            font-size: 1rem;
+        }
+
+        .placement-card p {
+            margin: 0;
+            color: var(--gray);
+            line-height: 1.55;
+        }
+
+        .promo-list-card {
+            padding: 1.5rem;
+        }
+
+        .promo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .promo-item {
+            border-radius: 18px;
+            padding: 1rem;
+            border: 1px solid rgba(10, 29, 55, 0.08);
+            background: linear-gradient(180deg, #fff, #f8fafc);
+            display: grid;
+            gap: 0.85rem;
+        }
+
+        .promo-cover {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            min-height: 170px;
+            background: rgba(10, 29, 55, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .promo-cover img {
+            width: 100%;
+            height: 170px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .promo-cover-fallback {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--blue-dark);
+            background: rgba(255, 255, 255, 0.55);
+            border: 1px solid rgba(10, 29, 55, 0.08);
+        }
+
+        .promo-item.gold {
+            background: linear-gradient(180deg, rgba(245, 166, 35, 0.12), #fff);
+        }
+
+        .promo-item.blue {
+            background: linear-gradient(180deg, rgba(28, 59, 90, 0.10), #fff);
+        }
+
+        .promo-item.emerald {
+            background: linear-gradient(180deg, rgba(16, 131, 108, 0.12), #fff);
+        }
+
+        .promo-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .promo-top-copy {
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .status-pill.active {
+            background: rgba(22, 163, 74, 0.14);
+            color: #166534;
+        }
+
+        .status-pill.inactive {
+            background: rgba(217, 45, 32, 0.12);
+            color: #b42318;
+        }
+
+        .promo-item h3 {
+            margin: 0;
+            color: var(--blue-dark);
+            font-size: 1.15rem;
+        }
+
+        .promo-zone-chip {
+            display: inline-flex;
+            width: fit-content;
+            padding: 0.32rem 0.65rem;
+            border-radius: 999px;
+            background: rgba(10, 29, 55, 0.06);
+            color: var(--blue-dark);
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+
+        .promo-description {
+            margin: 0;
+            color: var(--gray);
+            line-height: 1.55;
+        }
+
+        .promo-summary-line {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .promo-summary-line span {
+            padding: 0.45rem 0.65rem;
+            border-radius: 10px;
+            background: rgba(10, 29, 55, 0.05);
+            color: var(--gray);
+            font-size: 0.84rem;
+        }
+
+        .promo-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+
+        .promo-actions a,
+        .promo-actions button {
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 0.95rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: inherit;
+        }
+
+        .btn-primary-action {
+            background: var(--gold);
+            color: var(--blue-dark);
+        }
+
+        .btn-secondary-action {
+            background: rgba(10, 29, 55, 0.08);
+            color: var(--blue-dark);
+        }
+
+        .btn-danger-action {
+            background: rgba(217, 45, 32, 0.12);
+            color: #b42318;
+        }
+
+        .empty-card {
+            padding: 2rem;
+            text-align: center;
+            color: var(--gray);
+        }
+
+        @media (max-width: 768px) {
+            .hero-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .promo-actions a,
+            .promo-actions button,
+            .hero-actions a {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<aside class="sidebar">
+    <div>
+        <div class="sidebar-header">
+            <i class="fas fa-shield-halved" style="color:var(--gold);"></i>
+            <span class="logo-text">Admin Panel</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a th:href="@{/admin}"><i class="fa-solid fa-house"></i><span>Inicio</span></a></li>
+                <li><a th:href="@{/dashboard}"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a></li>
+                <li><a th:href="@{/usuarios}"><i class="fa-solid fa-users"></i><span>Usuarios</span></a></li>
+                <li><a th:href="@{/roles}"><i class="fa-solid fa-users-gear"></i><span>Roles</span></a></li>
+                <li><a th:href="@{/vehiculos}"><i class="fa-solid fa-car"></i><span>Vehículos</span></a></li>
+                <li><a th:href="@{/admin/promociones}" style="background:var(--blue-secondary);color:var(--gold);"><i class="fa-solid fa-bullhorn"></i><span>Promociones</span></a></li>
+            </ul>
+        </nav>
+    </div>
+    <form th:action="@{/logout}" method="post" class="logout">
+        <button type="submit"><i class="fas fa-sign-out-alt"></i><span>Cerrar sesión</span></button>
+    </form>
+</aside>
+
+<main class="main">
+    <div class="promo-page">
+        <section class="hero-card">
+            <div>
+                <h1>Promociones del inicio</h1>
+                <p>Gestiona promociones con imagen, texto corto y ubicación. Sin editar archivos ni llenar campos técnicos de más.</p>
+            </div>
+            <div class="hero-actions">
+                <a th:href="@{/admin/promociones/crear}"><i class="fa-solid fa-plus"></i> Nueva promoción</a>
+            </div>
+        </section>
+
+        <div th:if="${success}" class="flash-card success" th:text="${success}">Promoción creada correctamente.</div>
+        <div th:if="${error}" class="flash-card error" th:text="${error}">Ocurrió un error.</div>
+
+        <section class="placement-guide">
+            <article class="placement-card">
+                <span>Zona 1</span>
+                <strong>Carrusel principal</strong>
+                <p>Banner grande y visual para campañas ancla o lanzamientos.</p>
+            </article>
+            <article class="placement-card">
+                <span>Zona 2</span>
+                <strong>Promociones del home</strong>
+                <p>Tarjetas más pequeñas para apoyar ofertas o mensajes concretos dentro del inicio.</p>
+            </article>
+            <article class="placement-card">
+                <span>Zona 3</span>
+                <strong>Portal cliente</strong>
+                <p>Carrusel compacto para las vistas de perfil, compras y favoritos del cliente.</p>
+            </article>
+        </section>
+
+        <section class="promo-list-card" th:if="${banners != null and !#lists.isEmpty(banners)}">
+            <div class="promo-grid">
+                <article th:each="banner : ${banners}" class="promo-item" th:classappend="' ' + ${banner.theme}">
+                    <div class="promo-cover">
+                        <img th:if="${banner.imageUrl != null and !#strings.isEmpty(banner.imageUrl)}" th:src="${banner.imageUrl}" th:alt="${banner.title}">
+                        <div th:unless="${banner.imageUrl != null and !#strings.isEmpty(banner.imageUrl)}" class="promo-cover-fallback">
+                            <i th:class="${banner.icon}"></i>
+                        </div>
+                    </div>
+
+                    <div class="promo-top">
+                        <div class="promo-top-copy">
+                            <span class="promo-zone-chip" th:text="${banner.placementLabel}">Hero principal</span>
+                        </div>
+                        <span class="status-pill" th:classappend="${banner.active} ? ' active' : ' inactive'">
+                            <i class="fas" th:classappend="${banner.active} ? ' fa-circle-check' : ' fa-eye-slash'"></i>
+                            <span th:text="${banner.active} ? 'Publicado' : 'Oculto'">Publicado</span>
+                        </span>
+                    </div>
+
+                    <div>
+                        <h3 th:text="${banner.title}">Título</h3>
+                        <p class="promo-description" th:if="${banner.description != null and !#strings.isEmpty(banner.description)}" th:text="${banner.description}">Texto editorial.</p>
+                    </div>
+
+                    <div class="promo-summary-line">
+                        <span th:text="${'Botón: ' + banner.ctaText}">Botón</span>
+                        <span th:text="${'Orden: ' + banner.displayOrder}">Orden</span>
+                        <span th:text="${banner.imageUrl != null and !#strings.isEmpty(banner.imageUrl)} ? 'Imagen lista' : 'Sin imagen'">Imagen</span>
+                    </div>
+
+                    <div class="promo-summary-line">
+                        <span th:text="${banner.ctaUrl}">Destino</span>
+                        <span th:text="${'Orden: ' + banner.displayOrder}">Orden</span>
+                    </div>
+
+                    <div class="promo-actions">
+                        <a th:href="@{/admin/promociones/{id}/editar(id=${banner.id})}" class="btn-primary-action">
+                            <i class="fa-solid fa-pen"></i>
+                            Editar
+                        </a>
+
+                        <form th:action="@{/admin/promociones/{id}/publicacion(id=${banner.id})}" method="post">
+                            <button type="submit" class="btn-secondary-action" th:onclick="${banner.active} ? 'return confirm(\'¿Despublicar esta promoción?\');' : 'return confirm(\'¿Publicar esta promoción en el inicio?\');'">
+                                <i class="fas" th:classappend="${banner.active} ? ' fa-eye-slash' : ' fa-bullhorn'"></i>
+                                <span th:text="${banner.active} ? 'Ocultar' : 'Mostrar'">Mostrar</span>
+                            </button>
+                        </form>
+
+                        <form th:action="@{/admin/promociones/{id}/eliminar(id=${banner.id})}" method="post">
+                            <button type="submit" class="btn-danger-action" onclick="return confirm('¿Eliminar esta promoción?');">
+                                <i class="fa-solid fa-trash"></i>
+                                Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="empty-card" th:unless="${banners != null and !#lists.isEmpty(banners)}">
+            <h2 style="color:var(--blue-dark);margin-top:0;">No hay promociones creadas</h2>
+            <p>Cuando crees la primera campaña, aparecerá automáticamente en el inicio o en el portal cliente según la ubicación elegida.</p>
+            <a th:href="@{/admin/promociones/crear}" class="btn-primary-action" style="justify-content:center;display:inline-flex;margin-top:1rem;">
+                <i class="fa-solid fa-plus"></i>
+                Crear primera promoción
+            </a>
+        </section>
+    </div>
+</main>
+</body>
+</html>

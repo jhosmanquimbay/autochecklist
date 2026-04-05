@@ -1,0 +1,476 @@
+    <!DOCTYPE html>
+    <html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="utf-8">
+        <title>AUTO CHECK LIST - Bandeja de Entrada</title>
+        <link rel="stylesheet" th:href="@{/css/themes.css}">
+        <link rel="stylesheet" th:href="@{/css/admin-theme.css}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+        
+    </head>
+    <body>
+
+    <aside th:replace="~{fragments/correo-sidebar :: sidebar('inbox')}"></aside>
+
+    <!-- MAIN -->
+    <main class="main">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <!-- TOPBAR -->
+        <div class="topbar">
+            <div>
+                <h1>Bandeja de entrada</h1>
+                <span>Mensajes recibidos</span>
+            </div>
+        </div>
+
+        <!-- BARRA DE BÚSQUEDA -->
+        <div th:unless="${#lists.isEmpty(mensajes)}" class="search-bar-container">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Buscar por palabra o remitente..." onkeyup="filterAndSearchEmails()">
+            </div>
+        </div>
+
+        <!-- CONTROLES DE CORREO -->
+        <div th:unless="${#lists.isEmpty(mensajes)}" class="email-controls-bar">
+            <!-- Seleccionar todo -->
+            <div class="select-all-group">
+                <input type="checkbox" id="selectAll" onclick="selectAllEmails()" class="checkbox-control">
+                <label for="selectAll" class="select-label">Seleccionar todo</label>
+            </div>
+
+            <!-- Separador -->
+            <div class="divider"></div>
+
+            <!-- Filtro -->
+            <div class="filter-group">
+                <label class="filter-label">Filtrar:</label>
+                <select id="filterSelect" onchange="filterAndSearchEmails()" class="filter-select">
+                    <option value="todos">Todos</option>
+                    <option value="noLeidos">No leídos</option>
+                    <option value="importantes">Importantes</option>
+                </select>
+            </div>
+
+            <!-- Separador -->
+            <div class="divider" style="margin-left: auto;"></div>
+
+            <!-- Botón eliminar seleccionados -->
+            <button id="deleteSelected" onclick="deleteSelected()" class="btn-delete-selected">
+                <i class="fas fa-trash-alt"></i> Eliminar
+            </button>
+        </div>
+
+        <div class="email-container">
+            <!-- Estado vacío -->
+            <div th:if="${#lists.isEmpty(mensajes)}" class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <h3>Tu bandeja está vacía</h3>
+                <p>No hay mensajes para mostrar</p>
+            </div>
+
+            <!-- Lista de mensajes -->
+            <div th:unless="${#lists.isEmpty(mensajes)}" class="email-list">
+                <div th:each="m : ${mensajes}" class="email-item" th:classappend="${!m.leido} ? 'unread' : ''" th:data-email-id="${m.id}" th:onclick="|openEmailModal(${m.id})|" style="cursor: pointer;">
+                    <div class="email-checkbox">
+                        <input type="checkbox" class="email-checkbox" th:id="'msg-' + ${m.id}" onclick="event.stopPropagation();">
+                    </div>
+                    
+                    <div class="email-content">
+                        <div class="email-meta">
+                            <div class="email-sender">
+                                <div th:if="${!m.leido}" class="unread-dot" style="display: inline-block; width: 8px; height: 8px; background: var(--color-primary); border-radius: 50%; margin-right: 0.5rem;"></div>
+                                <span th:text="${m.remitente != null ? m.remitente.nombre : 'Remitente desconocido'}">Remitente</span>
+                            </div>
+                            <div class="email-subject" th:text="${m.asunto}">Asunto</div>
+                        </div>
+                        <div class="email-preview" th:text="${m.contenido == null ? '' : (m.contenido.length() > 100 ? m.contenido.substring(0,100).concat('...') : m.contenido)}">Vista previa</div>
+                    </div>
+                    
+                    <div class="email-date">
+                        <span th:if="${m.fechaEnvio != null}" th:text="${#temporals.format(m.fechaEnvio, 'dd/MM HH:mm')}">fecha</span>
+                    </div>
+                    
+                    <div class="email-actions">
+                        <button class="action-btn" title="Marcar como importante" th:onclick="|toggleImportant(${m.id})|" onclick="event.stopPropagation();">
+                            <i class="fas fa-star"></i>
+                        </button>
+                        <form th:action="@{/correo/mover-papelera/{id}(id=${m.id})}" method="post" style="margin: 0;" onsubmit="event.stopPropagation(); return confirm('¿Mover este mensaje a la papelera?');">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <input type="hidden" name="usuarioId" th:value="${usuarioId}" />
+                            <input type="hidden" name="origen" value="inbox" />
+                            <button type="submit" class="action-btn" title="Mover a papelera">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FLOATING COMPOSE BUTTON -->
+        <button id="openCompose" class="floating-compose" title="Redactar mensaje">
+            <i class="fas fa-plus"></i>
+        </button>
+    </main>
+
+    <!-- COMPOSE MODAL -->
+    <div id="composeModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Redactar mensaje</h3>
+                <button type="button" id="closeCompose" class="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/correo/enviar}" method="post" enctype="multipart/form-data" onsubmit="return validarFormularioCompose()">
+                    <input type="hidden" name="remitente" th:value="${usuarioId}" />
+                    <input type="hidden" name="origen" value="inbox" />
+                    
+                    <div class="form-group">
+                        <label for="destinatarios">Para</label>
+                        <input type="text" id="destinatarios" name="destinatarios" placeholder="ejemplo@dominio.com, otro@dominio.com" required />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="asunto">Asunto</label>
+                        <input type="text" id="asunto" name="asunto" placeholder="Asunto del mensaje" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contenido">Mensaje *</label>
+                        <textarea id="contenido" name="contenido" placeholder="Escribe tu mensaje aquí..." required></textarea>
+                        <small style="color: var(--color-text-tertiary); font-size: 0.85rem;">El mensaje es obligatorio</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="archivos">Adjuntos</label>
+                        <input type="file" id="archivos" name="archivos" multiple />
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" id="cancelCompose" class="btn btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Enviar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- EMAIL MODAL -->
+    <div id="emailModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Ver mensaje</h3>
+                <button type="button" id="closeEmail" class="modal-close">✕</button>
+            </div>
+            <div class="modal-body" id="emailModalBody">
+                <!-- Contenido del email se carga aquí -->
+            </div>
+        </div>
+    </div>
+
+    <!-- REPLY MODAL -->
+    <div id="replyModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Responder</h3>
+                <button type="button" id="closeReply" class="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="replyForm" th:action="@{/correo/responder}" method="post" enctype="multipart/form-data" onsubmit="return validarRespuestaModal()">
+                    <input type="hidden" id="replyMensajePadreId" name="mensajePadreId" value="" />
+                    <input type="hidden" id="replyRemitente" name="remitente" th:value="${usuarioId}" />
+                    <input type="hidden" name="origen" value="inbox" />
+                    
+                    <div class="form-group">
+                        <label for="replyContenidoModal">Mensaje *</label>
+                        <textarea id="replyContenidoModal" name="contenido" placeholder="Escribe tu respuesta..." required></textarea>
+                        <small style="color: var(--color-text-tertiary); font-size: 0.85rem;">El mensaje es obligatorio</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="replyArchivosModal">Adjuntos (opcional)</label>
+                        <input type="file" id="replyArchivosModal" name="archivos" multiple />
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" id="cancelReply" class="btn btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Enviar respuesta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Función para mostrar/ocultar sidebar
+    function toggleSidebar() {
+        const sb = document.getElementById('sidebar');
+        if (sb) sb.classList.toggle('collapsed');
+    }
+
+    // Auto-collapse sidebar al salir del área - Auto-expand al entrar
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.addEventListener('mouseenter', function() {
+            this.classList.remove('collapsed');
+        });
+        sidebar.addEventListener('mouseleave', function() {
+            this.classList.add('collapsed');
+        });
+    }
+
+    // Función para toggle de submenús
+    function toggleSubmenu(id) {
+        const submenu = document.getElementById(id);
+        if (submenu) {
+            submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+
+    // COMPOSE MODAL
+    const composeModal = document.getElementById('composeModal');
+    const openComposeBtn = document.getElementById('openCompose');
+    const closeComposeBtn = document.getElementById('closeCompose');
+    const cancelComposeBtn = document.getElementById('cancelCompose');
+
+    openComposeBtn.addEventListener('click', () => composeModal.classList.add('active'));
+    closeComposeBtn.addEventListener('click', () => composeModal.classList.remove('active'));
+    cancelComposeBtn.addEventListener('click', () => composeModal.classList.remove('active'));
+
+    // EMAIL MODAL
+    const emailModal = document.getElementById('emailModal');
+    const closeEmailBtn = document.getElementById('closeEmail');
+
+    closeEmailBtn.addEventListener('click', () => emailModal.classList.remove('active'));
+
+    // REPLY MODAL
+    const replyModal = document.getElementById('replyModal');
+    const closeReplyBtn = document.getElementById('closeReply');
+    const cancelReplyBtn = document.getElementById('cancelReply');
+
+    closeReplyBtn.addEventListener('click', () => replyModal.classList.remove('active'));
+    cancelReplyBtn.addEventListener('click', () => replyModal.classList.remove('active'));
+
+    // Cerrar modales al hacer clic fuera
+    [composeModal, emailModal, replyModal].forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('active');
+        });
+    });
+
+    // Abrir modal de email
+    async function openEmailModal(id) {
+        try {
+            console.log('Abriendo modal para mensaje ID:', id);
+            const res = await fetch('/correo/fragment/' + id);
+            if (!res.ok) {
+                throw new Error('Error HTTP: ' + res.status);
+            }
+            const html = await res.text();
+            
+            document.getElementById('emailModalBody').innerHTML = html;
+            emailModal.classList.add('active');
+            
+            // Marcar como leído visualmente - mejorado
+            const emailItems = document.querySelectorAll('.email-item');
+            emailItems.forEach(item => {
+                const onclickAttr = item.getAttribute('onclick');
+                if (onclickAttr && onclickAttr.includes('openEmailModal(' + id + ')')) {
+                    item.classList.remove('unread');
+                    item.classList.add('read');
+                    // Remover el punto de no leído
+                    const unreadDot = item.querySelector('.unread-dot');
+                    if (unreadDot) {
+                        unreadDot.remove();
+                    }
+                }
+            });
+            
+            // Actualizar contador de no leídos
+            updateUnreadCount();
+            
+        } catch (e) {
+            console.error('Error al cargar mensaje:', e);
+            alert('Error al cargar el mensaje: ' + e.message);
+        }
+    }
+
+    // Función para actualizar el contador de no leídos
+    function updateUnreadCount() {
+        const unreadItems = document.querySelectorAll('.email-item.unread');
+        const badges = document.querySelectorAll('.notification-badge');
+        const newCount = unreadItems.length;
+        
+        badges.forEach(badge => {
+            if (newCount > 0) {
+                badge.textContent = newCount;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        });
+    }
+
+    // Abrir modal de respuesta
+    function openReplyModal(mensajeId) {
+        document.getElementById('replyMensajePadreId').value = mensajeId;
+        document.getElementById('replyContenidoModal').value = '';
+        emailModal.classList.remove('active');
+        replyModal.classList.add('active');
+    }
+
+    // Validaciones
+    function validarFormularioCompose() {
+        const destinatarios = document.getElementById('destinatarios').value.trim();
+        const contenido = document.getElementById('contenido').value.trim();
+        
+        if (destinatarios === '') {
+            alert('Por favor, ingresa al menos un destinatario.');
+            return false;
+        }
+        
+        if (contenido === '') {
+            alert('Por favor, escribe un mensaje. El contenido no puede estar vacío.');
+            return false;
+        }
+        
+        return true;
+    }
+
+    function validarRespuestaModal() {
+        const contenido = document.getElementById('replyContenidoModal').value.trim();
+        
+        if (contenido === '') {
+            alert('Por favor, escribe un mensaje. No puedes enviar solo archivos sin texto.');
+            return false;
+        }
+        
+        return true;
+    }
+
+    // NUEVAS FUNCIONES PARA GESTIÓN DE EMAILS
+    
+    // Seleccionar todos los emails
+    function selectAllEmails() {
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const emailCheckboxes = document.querySelectorAll('.email-checkbox');
+        
+        emailCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectAllCheckbox.checked;
+        });
+    }
+
+    // Filtrar y buscar emails
+    function filterAndSearchEmails() {
+        const filterSelect = document.getElementById('filterSelect');
+        const searchInput = document.getElementById('searchInput');
+        const filterValue = filterSelect.value;
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const emailItems = document.querySelectorAll('.email-item');
+        
+        emailItems.forEach(item => {
+            let shouldShow = true;
+            
+            // Aplicar filtro
+            if (filterValue === 'noLeidos') {
+                shouldShow = item.classList.contains('unread');
+            } else if (filterValue === 'importantes') {
+                shouldShow = item.classList.contains('important');
+            }
+            
+            // Aplicar búsqueda
+            if (shouldShow && searchTerm) {
+                const senderName = item.querySelector('.email-sender')?.textContent.toLowerCase() || '';
+                const senderEmail = item.querySelector('.email-sender')?.textContent.toLowerCase() || '';
+                const subject = item.querySelector('.email-subject')?.textContent.toLowerCase() || '';
+                const preview = item.querySelector('.email-preview')?.textContent.toLowerCase() || '';
+                
+                shouldShow = senderName.includes(searchTerm) || 
+                             senderEmail.includes(searchTerm) || 
+                             subject.includes(searchTerm) || 
+                             preview.includes(searchTerm);
+            }
+            
+            item.style.display = shouldShow ? 'flex' : 'none';
+        });
+        
+        // Resetear checkbox de seleccionar todos
+        document.getElementById('selectAll').checked = false;
+    }
+
+    // Eliminar emails seleccionados
+    function deleteSelected() {
+        const selectedCheckboxes = document.querySelectorAll('.email-checkbox:checked');
+        
+        if (selectedCheckboxes.length === 0) {
+            alert('Por favor, selecciona al menos un email para eliminar.');
+            return;
+        }
+        
+        if (confirm('¿Estás seguro de que deseas eliminar los ' + selectedCheckboxes.length + ' email(s) seleccionado(s)?')) {
+            const selectedIds = Array.from(selectedCheckboxes).map(checkbox => {
+                return checkbox.closest('.email-item').getAttribute('data-email-id');
+            });
+            
+            // Enviar solicitud para eliminar múltiples emails
+            fetch('/correo/eliminar-multiples', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
+                },
+                body: JSON.stringify({ ids: selectedIds })
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Remover visualmente los emails eliminados
+                    selectedCheckboxes.forEach(checkbox => {
+                        const emailItem = checkbox.closest('.email-item');
+                        emailItem.style.opacity = '0';
+                        setTimeout(() => emailItem.remove(), 300);
+                    });
+                    
+                    // Resetear checkbox de seleccionar todos
+                    document.getElementById('selectAll').checked = false;
+                    
+                    // Actualizar contador
+                    updateUnreadCount();
+                    
+                    alert('Email(s) eliminado(s) correctamente.');
+                } else {
+                    alert('Error al eliminar los emails.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al eliminar los emails: ' + error.message);
+            });
+        }
+    }
+
+    // Marcar email como importante
+    function toggleImportant(emailId) {
+        const emailItem = document.querySelector('.email-item[data-email-id="' + emailId + '"]');
+        if (!emailItem) return;
+        
+        emailItem.classList.toggle('important');
+        
+        // Enviar al servidor para guardar el cambio
+        fetch('/correo/toggle-importante/' + emailId, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || ''
+            }
+        })
+        .catch(error => console.error('Error al marcar como importante:', error));
+
+        
+    }
+    </script>
+
+    </body>
+    </html>

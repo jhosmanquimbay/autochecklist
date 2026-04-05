@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${inventario.idInventario != null ? 'Editar Inventario' : 'Agregar Vehículo al Inventario'}"></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin-theme.css}">
+    <link rel="stylesheet" th:href="@{/css/inventario.css}">
+    <link rel="stylesheet" th:href="@{/css/reporte-inventario.css}">
+<body>
+<aside class="sidebar collapsed" id="sidebar">
+
+<div>
+
+<!-- HEADER SIDEBAR -->
+<div class="sidebar-header">
+
+<button id="toggleSidebar" class="toggle-btn">
+<i class="fas fa-bars"></i>
+</button>
+
+<h3>
+<span>Admin Panel</span>
+</h3>
+
+</div>
+
+<!-- NAV -->
+<nav>
+<ul>
+
+<li>
+<a th:href="@{/dashboard}">
+<i class="fas fa-chart-line"></i>
+<span>Dashboard</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/usuarios}">
+<i class="fas fa-users"></i>
+<span>Usuarios</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/vehiculos}">
+<i class="fas fa-car"></i>
+<span>Vehículos</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/inventario}">
+<i class="fas fa-warehouse"></i>
+<span>Inventario</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/roles}">
+<i class="fas fa-id-badge"></i>
+<span>Roles</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/transporte}">
+<i class="fas fa-shipping-fast"></i>
+<span>Transporte</span>
+</a>
+</li>
+
+<!-- CORREO DROPDOWN -->
+<li class="dropdown-menu-item">
+
+<a th:href="@{/correo/inbox}" class="dropdown-toggle">
+<i class="fas fa-envelope"></i>
+<span>Correo</span>
+
+<span th:if="${unreadCount != null and unreadCount > 0}"
+class="notification-badge"
+th:text="${unreadCount}">
+0
+</span>
+
+</a>
+
+<ul class="dropdown-submenu">
+
+<li>
+<a th:href="@{/correo/inbox}">
+<i class="fas fa-inbox"></i> Bandeja de entrada
+</a>
+</li>
+
+<li>
+<a th:href="@{/correo/enviados}">
+<i class="fas fa-paper-plane"></i> Enviados
+</a>
+</li>
+
+<li>
+<a th:href="@{/correo/papelera}">
+<i class="fas fa-trash"></i> Papelera
+</a>
+</li>
+
+<li>
+<a th:href="@{/email/enviar}">
+<i class="fas fa-users"></i> Correos Masivos
+</a>
+</li>
+
+</ul>
+</li>
+
+</ul>
+</nav>
+
+</div>
+
+<!-- LOGOUT -->
+<form th:action="@{/logout}" method="post">
+<button type="submit" class="logout-btn">
+<i class="fas fa-sign-out-alt"></i>
+<span>Cerrar sesión</span>
+</button>
+</form>
+
+</aside>
+
+
+<!-- Main -->
+<main class="main">
+    <div class="form-container">
+        <h1 th:text="${inventario.idInventario != null ? 'Editar Inventario' : 'Agregar Vehículo al Inventario'}"></h1>
+
+        <!-- Mensaje de error -->
+        <div th:if="${error}" class="error-message">
+            <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+        </div>
+
+        <!-- Formulario -->
+        <form th:action="${inventario.idInventario != null} ? @{'/inventario/actualizar/' + ${inventario.idInventario}} : @{/inventario/guardar}"
+              method="post" th:object="${inventario}">
+
+            <div class="form-group">
+                <label for="chasis"><i class="fas fa-car"></i> Chasis</label>
+                <input type="text" id="chasis" th:field="*{chasis}" required>
+            </div>
+            <div class="form-group">
+                <label for="marca"><i class="fas fa-industry"></i> Marca</label>
+                <input type="text" id="marca" th:field="*{marca}" required>
+            </div>
+            <div class="form-group">
+                <label for="modelo"><i class="fas fa-cube"></i> Modelo</label>
+                <input type="text" id="modelo" th:field="*{modelo}" required>
+            </div>
+            <div class="form-group">
+                <label for="anio"><i class="fas fa-calendar"></i> Año</label>
+                <input type="number" id="anio" th:field="*{anio}" required>
+            </div>
+            <div class="form-group">
+                <label for="color"><i class="fas fa-palette"></i> Color</label>
+                <input type="text" id="color" th:field="*{color}" required>
+            </div>
+            <div class="form-group">
+                <label for="motor"><i class="fas fa-cogs"></i> Motor</label>
+                <input type="text" id="motor" th:field="*{motor}" required>
+            </div>
+            <div class="form-group">
+                <label for="ubicacionActual"><i class="fas fa-map-marker-alt"></i> Ubicación Actual</label>
+                <input type="text" id="ubicacionActual" th:field="*{ubicacionActual}" required>
+            </div>
+            <div class="form-group">
+                <label for="estadoLogistico"><i class="fas fa-truck-moving"></i> Estado Logístico</label>
+                <input type="text" id="estadoLogistico" th:field="*{estadoLogistico}" required>
+            </div>
+            <div class="form-group">
+                <label for="cantidadDisponible"><i class="fas fa-boxes-stacked"></i> Cantidad Disponible</label>
+                <input type="number" id="cantidadDisponible" th:field="*{cantidadDisponible}" min="1" required>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                <a th:href="@{/inventario}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+            </div>
+        </form>
+    </div>
+</main>
+<script>
+
+const sidebar = document.getElementById("sidebar");
+const toggleBtn = document.getElementById("toggleSidebar");
+
+let lockedOpen = false;
+
+/* CLICK MANUAL */
+toggleBtn.addEventListener("click", () => {
+
+lockedOpen = !lockedOpen;
+
+if(lockedOpen){
+sidebar.classList.remove("collapsed");
+sidebar.classList.add("expanded");
+}else{
+sidebar.classList.add("collapsed");
+sidebar.classList.remove("expanded");
+}
+
+});
+
+/* HOVER OPEN */
+sidebar.addEventListener("mouseenter", () => {
+
+if(!lockedOpen){
+sidebar.classList.remove("collapsed");
+sidebar.classList.add("expanded");
+}
+
+});
+
+/* HOVER CLOSE */
+sidebar.addEventListener("mouseleave", () => {
+
+if(!lockedOpen){
+sidebar.classList.add("collapsed");
+sidebar.classList.remove("expanded");
+}
+
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${vehiculo.nombreCompleto + ' | AutoCheckList'}">Vehículo | AutoCheckList</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/oficina-detalle.css}">
+</head>
+
+<body class="vehicle-detail-body">
+<header class="navbar">
+    <div class="logo">
+        <img th:src="@{/images/AUTOCHECKLIST (4).png}" alt="AutoCheckList">
+        <div class="logo-text">
+            <span>AUTO</span>
+            <strong>CHECKLIST</strong>
+        </div>
+    </div>
+
+    <nav>
+        <a th:href="@{/#inicio}">Inicio</a>
+        <a th:href="@{/#destacados}">Destacados</a>
+        <a th:href="@{/#vehiculos}">Vehículos</a>
+        <a href="#relacionados">Sugerencias</a>
+        <a href="#contacto">Contacto</a>
+
+        <a th:if="${usuarioActual == null}" th:href="@{/registro}" class="nav-register-link">Crear cuenta</a>
+
+        <a th:if="${usuarioActual == null}" th:href="@{/login}" class="btn-login">
+            <i class="fas fa-user"></i> Iniciar sesión
+        </a>
+
+        <div th:if="${usuarioActual != null and esClientePortal}" class="profile-menu">
+            <button type="button" class="profile-trigger" onclick="toggleProfileMenu(event)">
+                <span class="profile-avatar" th:text="${#strings.substring(usuarioActual.nombre, 0, 1)}">A</span>
+                <span class="profile-name" th:text="${usuarioActual.nombre}">Mi perfil</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+
+            <div id="profileDropdown" class="profile-dropdown">
+                <a th:href="@{/cliente/compras}"><i class="fas fa-bag-shopping"></i> Mis compras</a>
+                <a th:href="@{/cliente/favoritos}"><i class="fas fa-heart"></i> Mis favoritos</a>
+                <a th:href="@{/cliente/perfil}"><i class="fas fa-user-gear"></i> Gestionar perfil</a>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="profile-logout"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+
+        <form th:if="${usuarioActual != null and !esClientePortal}" th:action="@{/logout}" method="post" class="nav-logout-form">
+            <button type="submit" class="btn-login">
+                <i class="fas fa-right-from-bracket"></i> Cerrar sesión
+            </button>
+        </form>
+    </nav>
+</header>
+
+<div class="office-flash" th:if="${mensajeInteres != null}">
+    <div class="office-flash-item">
+        <i class="fas fa-circle-check"></i>
+        <span th:text="${mensajeInteres}">Tu información fue registrada correctamente.</span>
+    </div>
+</div>
+
+<section class="detail-hero">
+    <div class="detail-hero-overlay"></div>
+    <div class="detail-hero-content">
+        <div class="detail-breadcrumbs">
+            <a th:href="@{/}">Home</a>
+            <span>/</span>
+            <a th:href="@{/(marca=${vehiculo.marca})}" th:text="${vehiculo.marca}">Marca</a>
+            <span>/</span>
+            <strong th:text="${vehiculo.nombreCompleto}">Vehículo</strong>
+        </div>
+
+        <span class="detail-tag">Ficha del vehículo</span>
+        <h1 th:text="${vehiculo.nombreCompleto}">Marca Modelo</h1>
+        <p th:text="${vehiculo.descripcion != null and !#strings.isEmpty(vehiculo.descripcion) ? vehiculo.descripcion : 'Explora una ficha completa con imágenes, detalles técnicos y una solicitud de contacto profesional.'}"></p>
+
+        <div class="detail-hero-pills">
+            <span th:if="${vehiculo.anio != null}" th:text="${vehiculo.anio}">2024</span>
+            <span th:if="${vehiculo.transmision != null and !#strings.isEmpty(vehiculo.transmision)}" th:text="${vehiculo.transmision}">Automática</span>
+            <span th:text="${vehiculo.textoStock}">Disponible</span>
+        </div>
+    </div>
+    <div class="detail-hero-backdrop">
+        <img th:src="${vehiculo.imagenes[0]}" th:alt="${vehiculo.nombreCompleto}">
+    </div>
+</section>
+
+<main class="detail-shell">
+    <section class="detail-main-panel">
+        <div class="detail-gallery-card">
+            <div class="detail-main-image-wrap">
+                <img id="detailMainImage" th:src="${vehiculo.imagenes[0]}" th:alt="${vehiculo.nombreCompleto}" class="detail-main-image">
+            </div>
+
+            <div class="detail-thumb-row" th:if="${#lists.size(vehiculo.imagenes) > 1}">
+                <button type="button"
+                        th:each="imagen, iter : ${vehiculo.imagenes}"
+                        class="detail-thumb"
+                        th:classappend="${iter.index == 0} ? ' active' : ''"
+                        th:attr="data-image=${imagen}"
+                        onclick="cambiarImagenDetalle(this)">
+                    <img th:src="${imagen}" th:alt="${vehiculo.nombreCompleto + ' miniatura ' + (iter.index + 1)}">
+                </button>
+            </div>
+        </div>
+
+        <aside class="detail-summary-card">
+            <span class="detail-summary-brand" th:text="${vehiculo.marca}">Marca</span>
+            <h2 th:text="${vehiculo.nombreCompleto}">Vehículo</h2>
+            <p class="detail-price" th:if="${vehiculo.precio != null}" th:text="${'$ ' + #numbers.formatDecimal(vehiculo.precio, 1, 'COMMA', 0, 'POINT')}">$ 0</p>
+            <p class="detail-stock" th:text="${vehiculo.textoStock}">Disponible</p>
+
+            <div class="detail-info-grid">
+                <div><span>Año</span><strong th:text="${vehiculo.anio != null ? vehiculo.anio : 'N/D'}">2024</strong></div>
+                <div><span>Transmisión</span><strong th:text="${vehiculo.transmision != null and !#strings.isEmpty(vehiculo.transmision) ? vehiculo.transmision : 'N/D'}">N/D</strong></div>
+                <div><span>Combustible</span><strong th:text="${vehiculo.tipoCombustible != null and !#strings.isEmpty(vehiculo.tipoCombustible) ? vehiculo.tipoCombustible : 'N/D'}">N/D</strong></div>
+                <div><span>Cilindrada</span><strong th:text="${vehiculo.cilindrada != null and !#strings.isEmpty(vehiculo.cilindrada) ? vehiculo.cilindrada : 'N/D'}">N/D</strong></div>
+            </div>
+
+            <div class="detail-summary-actions">
+                <button type="button" class="btn-detail-primary" onclick="abrirModalInteres()">La quiero</button>
+                <button th:if="${vehiculo.precio != null}" type="button" class="btn-detail-secondary" onclick="irAFinanciamiento()">Calcular crédito</button>
+                <button th:unless="${vehiculo.precio != null}" type="button" class="btn-detail-secondary is-disabled" disabled>No disponible para crédito</button>
+
+                <form th:if="${esClientePortal}"
+                      th:action="@{'/cliente/favoritos/' + ${vehiculo.idVehiculo} + '/toggle'}"
+                      method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button type="submit"
+                            class="btn-detail-secondary"
+                            th:text="${favoritosIds.contains(vehiculo.idVehiculo)} ? 'Quitar de favoritos' : 'Guardar en favoritos'">
+                        Guardar en favoritos
+                    </button>
+                </form>
+            </div>
+
+            <div class="detail-credit-snippet" th:if="${financiamientoReferencia != null and vehiculo.precio != null}">
+                <span>Financiación referencial</span>
+                <strong th:text="${'$ ' + #numbers.formatDecimal(financiamientoReferencia.cuotaMensualTotal, 1, 'COMMA', 0, 'POINT') + ' / mes'}">$ 0 / mes</strong>
+                <small th:text="${financiamientoReferencia.plazoMeses + ' meses · entrada desde ' + #numbers.formatDecimal(financiamientoReferencia.porcentajeCuotaInicialMinima, 1, 'COMMA', 0, 'POINT') + '%'}">60 meses</small>
+            </div>
+
+            <p class="detail-summary-note">Haz clic en “La quiero” para contacto comercial o usa el simulador para conocer tasa, cuota y viabilidad preliminar antes del estudio formal.</p>
+        </aside>
+    </section>
+
+    <section class="detail-specs-section">
+        <div class="detail-section-head">
+            <span class="section-tag">Información</span>
+            <h2>Especificaciones del vehículo</h2>
+        </div>
+
+        <div class="detail-specs-grid">
+            <div class="detail-spec-card"><span>Marca</span><strong th:text="${vehiculo.marca}">Marca</strong></div>
+            <div class="detail-spec-card"><span>Modelo</span><strong th:text="${vehiculo.modelo}">Modelo</strong></div>
+            <div class="detail-spec-card"><span>Año</span><strong th:text="${vehiculo.anio != null ? vehiculo.anio : 'N/D'}">N/D</strong></div>
+            <div class="detail-spec-card"><span>Transmisión</span><strong th:text="${vehiculo.transmision != null and !#strings.isEmpty(vehiculo.transmision) ? vehiculo.transmision : 'N/D'}">N/D</strong></div>
+            <div class="detail-spec-card"><span>Combustible</span><strong th:text="${vehiculo.tipoCombustible != null and !#strings.isEmpty(vehiculo.tipoCombustible) ? vehiculo.tipoCombustible : 'N/D'}">N/D</strong></div>
+            <div class="detail-spec-card"><span>Cilindrada</span><strong th:text="${vehiculo.cilindrada != null and !#strings.isEmpty(vehiculo.cilindrada) ? vehiculo.cilindrada : 'N/D'}">N/D</strong></div>
+            <div class="detail-spec-card"><span>Disponibilidad</span><strong th:text="${vehiculo.textoStock}">Disponible</strong></div>
+            <div class="detail-spec-card" th:if="${vehiculo.precio != null}"><span>Precio</span><strong th:text="${'$ ' + #numbers.formatDecimal(vehiculo.precio, 1, 'COMMA', 0, 'POINT')}">$ 0</strong></div>
+        </div>
+
+        <div class="detail-tech-box" th:if="${vehiculo.especificacionesTecnicas != null and !#strings.isEmpty(vehiculo.especificacionesTecnicas)}">
+            <h3>Ficha técnica ampliada</h3>
+            <p th:text="${vehiculo.especificacionesTecnicas}"></p>
+        </div>
+    </section>
+
+    <section id="financiamiento" class="detail-specs-section credit-section" th:if="${vehiculo.precio != null}">
+        <div class="detail-section-head">
+            <span class="section-tag">Financiación</span>
+            <h2>Simula tu crédito del vehículo</h2>
+        </div>
+
+        <div class="credit-layout">
+            <article class="credit-card credit-reference-card">
+                <span class="credit-badge">Referencia del concesionario</span>
+                <h3 th:text="${vehiculo.nombreCompleto}">Vehículo</h3>
+                <p>Usamos una política comercial típica de concesionario: entrada mínima por antigüedad, tasa según perfil y revisión preliminar por capacidad de pago.</p>
+
+                <div class="credit-kpi-grid" th:if="${financiamientoReferencia != null}">
+                    <div>
+                        <span>Precio</span>
+                        <strong th:text="${'$ ' + #numbers.formatDecimal(financiamientoReferencia.precioVehiculo, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+                    </div>
+                    <div>
+                        <span>Cuota base</span>
+                        <strong th:text="${'$ ' + #numbers.formatDecimal(financiamientoReferencia.cuotaMensualTotal, 1, 'COMMA', 0, 'POINT') + ' / mes'}">$0</strong>
+                    </div>
+                    <div>
+                        <span>Entrada mínima</span>
+                        <strong th:text="${'$ ' + #numbers.formatDecimal(financiamientoReferencia.cuotaInicialMinima, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+                    </div>
+                    <div>
+                        <span>Tasa EA</span>
+                        <strong th:text="${#numbers.formatDecimal(financiamientoReferencia.tasaEfectivaAnual, 1, 'COMMA', 2, 'POINT') + '%'}">0%</strong>
+                    </div>
+                </div>
+
+                <div class="credit-note-block" th:if="${financiamientoReferencia != null}">
+                    <strong>Documentos que normalmente te pedirán</strong>
+                    <ul>
+                        <li th:each="documento : ${financiamientoReferencia.documentosRequeridos}" th:text="${documento}">Documento</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="credit-card credit-form-card">
+                <div class="office-flash-item credit-flash" th:if="${mensajeFinanciamiento != null}">
+                    <i class="fas fa-circle-check"></i>
+                    <span th:text="${mensajeFinanciamiento}">Simulación registrada</span>
+                </div>
+                <div class="office-flash-item credit-flash error" th:if="${errorFinanciamiento != null}">
+                    <i class="fas fa-circle-exclamation"></i>
+                    <span th:text="${errorFinanciamiento}">Error</span>
+                </div>
+
+                <h3>Solicita una preaprobación preliminar</h3>
+                <p>Completa tus datos para calcular tasa, cuota final estimada y estado preliminar de viabilidad.</p>
+
+                <form th:action="@{/oficina/vehiculos/{id}/financiamiento(id=${vehiculo.idVehiculo})}" th:object="${financiamientoForm}" method="post" class="lead-form">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" th:field="*{vehiculoId}">
+                    <input type="hidden" th:field="*{canalOrigen}">
+
+                    <div th:if="${usuarioActual != null and esClientePortal}" class="lead-profile-preview">
+                        <div><span>Nombre</span><strong th:text="${usuarioActual.nombre}">Cliente</strong></div>
+                        <div><span>Correo</span><strong th:text="${usuarioActual.correo}">correo@ejemplo.com</strong></div>
+                        <div><span>Teléfono</span><strong th:text="${usuarioActual.telefono != null ? usuarioActual.telefono : 'Sin registrar'}">3000000000</strong></div>
+                    </div>
+
+                    <div th:if="${usuarioActual != null and esClientePortal}">
+                        <input type="hidden" th:field="*{nombreCompleto}">
+                        <input type="hidden" th:field="*{correo}">
+                        <input type="hidden" th:field="*{telefono}">
+                    </div>
+
+                    <div th:if="${usuarioActual == null or !esClientePortal}" class="lead-form-grid">
+                        <div class="lead-field lead-span-2">
+                            <label for="finNombre">Nombre completo</label>
+                            <input id="finNombre" type="text" th:field="*{nombreCompleto}" placeholder="Nombre del solicitante">
+                        </div>
+                        <div class="lead-field">
+                            <label for="finCorreo">Correo</label>
+                            <input id="finCorreo" type="email" th:field="*{correo}" placeholder="correo@ejemplo.com">
+                        </div>
+                        <div class="lead-field">
+                            <label for="finTelefono">Teléfono</label>
+                            <input id="finTelefono" type="text" th:field="*{telefono}" placeholder="3001234567">
+                        </div>
+                    </div>
+
+                    <div class="lead-form-grid">
+                        <div class="lead-field">
+                            <label for="finCuotaInicial">Cuota inicial</label>
+                            <input id="finCuotaInicial" type="number" min="0" step="0.01" th:field="*{cuotaInicial}" placeholder="Valor de la entrada">
+                        </div>
+                        <div class="lead-field">
+                            <label for="finPlazo">Plazo</label>
+                            <select id="finPlazo" th:field="*{plazoMeses}">
+                                <option th:each="plazo : ${financiamientoReferencia.plazosDisponibles}" th:value="${plazo}" th:text="${plazo + ' meses'}">48 meses</option>
+                            </select>
+                        </div>
+                        <div class="lead-field">
+                            <label for="finIngreso">Ingreso mensual</label>
+                            <input id="finIngreso" type="number" min="0" step="0.01" th:field="*{ingresoMensual}" placeholder="Ingreso mensual del hogar">
+                        </div>
+                        <div class="lead-field">
+                            <label for="finObligaciones">Otras obligaciones</label>
+                            <input id="finObligaciones" type="number" min="0" step="0.01" th:field="*{otrasObligaciones}" placeholder="Créditos o cuotas actuales">
+                        </div>
+                    </div>
+
+                    <div class="lead-field lead-span-2">
+                        <label for="finObservaciones">Observaciones</label>
+                        <textarea id="finObservaciones" th:field="*{observaciones}" rows="3" placeholder="Opcional: tipo de empleo, disponibilidad de codeudor, tiempo de compra."></textarea>
+                    </div>
+
+                    <div class="lead-actions">
+                        <button type="submit" class="btn-detail-primary">Calcular preaprobación</button>
+                    </div>
+                </form>
+
+                <div class="credit-result-card" th:if="${resultadoFinanciamiento != null}">
+                    <div class="credit-result-head">
+                        <span class="detail-tag credit-tag" th:text="${resultadoFinanciamiento.estadoAnalisisEtiqueta}">Preaprobado</span>
+                        <strong th:text="${resultadoFinanciamiento.mensajeDecision}">Resultado</strong>
+                    </div>
+
+                    <div class="credit-kpi-grid compact">
+                        <div>
+                            <span>Tasa EA</span>
+                            <strong th:text="${#numbers.formatDecimal(resultadoFinanciamiento.tasaEfectivaAnual, 1, 'COMMA', 2, 'POINT') + '%'}">0%</strong>
+                        </div>
+                        <div>
+                            <span>Tasa MV</span>
+                            <strong th:text="${#numbers.formatDecimal(resultadoFinanciamiento.tasaMesVencida, 1, 'COMMA', 2, 'POINT') + '%'}">0%</strong>
+                        </div>
+                        <div>
+                            <span>Monto a financiar</span>
+                            <strong th:text="${'$ ' + #numbers.formatDecimal(resultadoFinanciamiento.montoFinanciar, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+                        </div>
+                        <div>
+                            <span>Cuota mensual</span>
+                            <strong th:text="${'$ ' + #numbers.formatDecimal(resultadoFinanciamiento.cuotaMensualTotal, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+                        </div>
+                        <div>
+                            <span>Relación cuota / ingreso</span>
+                            <strong th:text="${#numbers.formatDecimal(resultadoFinanciamiento.relacionCuotaIngreso, 1, 'COMMA', 1, 'POINT') + '%'}">0%</strong>
+                        </div>
+                        <div>
+                            <span>Monto sugerido por ingreso</span>
+                            <strong th:text="${'$ ' + #numbers.formatDecimal(resultadoFinanciamiento.montoMaximoSugerido, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section id="relacionados" class="detail-related-section" th:if="${relacionados != null and !#lists.isEmpty(relacionados)}">
+        <div class="detail-section-head">
+            <span class="section-tag">Sugerencias</span>
+            <h2>También podría interesarte</h2>
+        </div>
+
+        <div class="detail-related-grid">
+            <article th:each="relacionado : ${relacionados}"
+                     class="detail-related-card"
+                     th:attr="data-url=@{/oficina/vehiculos/{id}(id=${relacionado.idVehiculo})}"
+                     onclick="abrirDetalleVehiculo(event, this.dataset.url)">
+                <div class="detail-related-media">
+                    <img th:src="${relacionado.imagenes[0]}" th:alt="${relacionado.nombreCompleto}">
+                </div>
+                <div class="detail-related-body">
+                    <span th:text="${relacionado.marca}">Marca</span>
+                    <h3 th:text="${relacionado.nombreCompleto}">Vehículo</h3>
+                    <p th:text="${relacionado.textoStock}">Disponible</p>
+                </div>
+            </article>
+        </div>
+    </section>
+</main>
+
+<div id="modalInteres" class="lead-modal" th:classappend="${abrirModalInteres} ? ' active' : ''">
+    <div class="lead-modal-dialog">
+        <button type="button" class="lead-modal-close" onclick="cerrarModalInteres()">×</button>
+        <span class="detail-tag">Contacto comercial</span>
+        <h2>¿Deseas registrar tu información para que un agente se contacte contigo?</h2>
+        <p>Déjanos tus datos y un asesor comercial te contactará con una atención más directa sobre este vehículo.</p>
+
+        <form th:action="@{/oficina/vehiculos/{id}/interes(id=${vehiculo.idVehiculo})}" th:object="${interesForm}" method="post" class="lead-form">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input type="hidden" th:field="*{vehiculoId}">
+
+            <div th:if="${usuarioActual != null and esClientePortal}" class="lead-profile-preview">
+                <div><span>Nombre</span><strong th:text="${usuarioActual.nombre}">Cliente</strong></div>
+                <div><span>Correo</span><strong th:text="${usuarioActual.correo}">correo@ejemplo.com</strong></div>
+                <div><span>Teléfono</span><strong th:text="${usuarioActual.telefono != null ? usuarioActual.telefono : 'Sin registrar'}">3000000000</strong></div>
+            </div>
+
+            <div th:if="${usuarioActual == null or !esClientePortal}" class="lead-form-grid">
+                <div class="lead-field lead-span-2">
+                    <label for="nombreCompleto">Nombre completo</label>
+                    <input type="text" id="nombreCompleto" th:field="*{nombreCompleto}" placeholder="Tu nombre completo">
+                    <small class="lead-error" th:if="${#fields.hasErrors('nombreCompleto')}" th:errors="*{nombreCompleto}"></small>
+                </div>
+
+                <div class="lead-field">
+                    <label for="correo">Correo</label>
+                    <input type="email" id="correo" th:field="*{correo}" placeholder="correo@ejemplo.com">
+                    <small class="lead-error" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}"></small>
+                </div>
+
+                <div class="lead-field">
+                    <label for="telefono">Teléfono</label>
+                    <input type="text" id="telefono" th:field="*{telefono}" placeholder="3001234567">
+                    <small class="lead-error" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}"></small>
+                </div>
+            </div>
+
+            <div class="lead-field lead-span-2">
+                <label for="mensaje">Mensaje adicional</label>
+                <textarea id="mensaje" th:field="*{mensaje}" rows="4" placeholder="Opcional: cuéntanos qué información te gustaría recibir."></textarea>
+                <small class="lead-error" th:if="${#fields.hasErrors('mensaje')}" th:errors="*{mensaje}"></small>
+            </div>
+
+            <div class="lead-actions">
+                <button type="submit" class="btn-detail-primary">Registrar interés</button>
+                <button type="button" class="btn-detail-secondary" onclick="cerrarModalInteres()">Ahora no</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="detail-sticky-bar">
+    <div>
+        <strong th:text="${vehiculo.nombreCompleto}">Vehículo</strong>
+        <span th:if="${vehiculo.precio != null}" th:text="${'$ ' + #numbers.formatDecimal(vehiculo.precio, 1, 'COMMA', 0, 'POINT')}">$ 0</span>
+    </div>
+    <div class="sticky-actions">
+            <button th:if="${vehiculo.precio != null}" type="button" class="btn-detail-secondary" onclick="irAFinanciamiento()">Crédito</button>
+      <button type="button" class="btn-detail-primary" onclick="abrirModalInteres()">La quiero</button>
+    </div>
+</div>
+
+<footer id="contacto" class="footer detail-footer">
+    <div class="footer-grid">
+        <div>
+            <strong>AutoCheckList</strong>
+            <p>Ficha completa del vehículo, galería dinámica y registro profesional de interés comercial.</p>
+        </div>
+        <div>
+            <strong>Enlaces</strong>
+            <p><a th:href="@{/}">Oficina</a> · <a href="#relacionados">Sugerencias</a> · <a href="#contacto">Contacto</a></p>
+        </div>
+        <div>
+            <strong>Acciones</strong>
+            <p><a href="javascript:void(0)" onclick="abrirModalInteres()">Registrar interés</a></p>
+        </div>
+    </div>
+    <p class="footer-copy">© 2026 AutoCheckList · Todos los derechos reservados</p>
+</footer>
+
+<script th:inline="javascript">
+function toggleProfileMenu(event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById('profileDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('active');
+    }
+}
+
+function abrirModalInteres() {
+    const modal = document.getElementById('modalInteres');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.classList.add('modal-open');
+    }
+}
+
+function irAFinanciamiento() {
+    const target = document.getElementById('financiamiento');
+    if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function cerrarModalInteres() {
+    const modal = document.getElementById('modalInteres');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.classList.remove('modal-open');
+    }
+}
+
+function cambiarImagenDetalle(button) {
+    const targetImage = button.dataset.image;
+    const mainImage = document.getElementById('detailMainImage');
+    if (!targetImage || !mainImage) {
+        return;
+    }
+
+    mainImage.classList.add('is-switching');
+    window.setTimeout(function() {
+        mainImage.src = targetImage;
+        mainImage.classList.remove('is-switching');
+    }, 120);
+
+    document.querySelectorAll('.detail-thumb').forEach(function(thumb) {
+        thumb.classList.toggle('active', thumb === button);
+    });
+}
+
+function abrirDetalleVehiculo(event, url) {
+    if (!url) {
+        return;
+    }
+    document.body.classList.add('page-leaving');
+    window.setTimeout(function() {
+        window.location.href = url;
+    }, 180);
+}
+
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('profileDropdown');
+    if (dropdown && !event.target.closest('.profile-menu')) {
+        dropdown.classList.remove('active');
+    }
+
+    const modal = document.getElementById('modalInteres');
+    if (modal && event.target === modal) {
+        cerrarModalInteres();
+    }
+});
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        cerrarModalInteres();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('modalInteres')?.classList.contains('active')) {
+        document.body.classList.add('modal-open');
+    }
+
+    if ([[${financiamientoActivo != null ? financiamientoActivo : false}]]) {
+        window.setTimeout(function() {
+            irAFinanciamiento();
+        }, 120);
+    }
+});
+</script>
+</body>
+</html>

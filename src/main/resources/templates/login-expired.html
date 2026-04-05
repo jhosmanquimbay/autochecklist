@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sesión Expirada</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 500px;
+            text-align: center;
+        }
+        .icon {
+            font-size: 64px;
+            margin: 20px 0;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        p {
+            color: #666;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        .alert {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 12px;
+        }
+        .countdown {
+            font-size: 48px;
+            color: #764ba2;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">⏱️</div>
+        
+        <h1>Sesión Expirada</h1>
+        
+        <div class="alert">
+            ⚠️ Tu sesión se ha cerrado automáticamente por inactividad.
+            <br>
+            <strong>Tiempo de inactividad permitido: 15 minutos</strong>
+        </div>
+        
+        <p>
+            Por tu seguridad, hemos cerrado tu sesión después de 15 minutos sin actividad.
+            Por favor, inicia sesión nuevamente para continuar.
+        </p>
+        
+        <a href="/login" class="button">🔐 Volver a Iniciar Sesión</a>
+        
+        <div class="footer">
+            <p>Esta es una medida de seguridad de AutoCheckList</p>
+            <p>Todos de derechos reservados © 2026</p>
+        </div>
+    </div>
+</body>
+</html>

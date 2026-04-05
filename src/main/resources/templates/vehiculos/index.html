@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Vehículos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin-theme.css}">
+</head>
+<body>
+<div class="sidebar collapsed" id="sidebar" onmouseenter="openSidebar()" onmouseleave="closeSidebar()">
+    <div>
+        <div class="sidebar-header">
+            <button class="toggle-btn"><i class="fas fa-bars"></i></button>
+            <span class="logo-text">Admin Panel</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a th:href="@{/dashboard}"><i class="fas fa-chart-line"></i><span>Dashboard</span></a></li>
+                <li><a th:href="@{/usuarios}"><i class="fas fa-users"></i><span>Usuarios</span></a></li>
+                <li><a th:href="@{/vehiculos}"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
+                <li><a th:href="@{/inventario}"><i class="fas fa-warehouse"></i><span>Inventario</span></a></li>
+                <li><a th:href="@{/roles}"><i class="fas fa-id-badge"></i><span>Roles</span></a></li>
+                <li><a th:href="@{/correo/inbox}"><i class="fas fa-envelope"></i><span>Correo</span></a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="logout">
+        <form th:action="@{/logout}" method="post">
+            <button type="submit"><i class="fas fa-sign-out-alt"></i><span>Cerrar sesión</span></button>
+        </form>
+    </div>
+</div>
+
+<main class="main">
+    <div class="control-block" style="max-width:1100px;margin:2rem auto;">
+        <div class="control-title">
+            <i class="fas fa-car"></i>
+            <h2>Publicación de Vehículos</h2>
+        </div>
+
+        <div th:if="${success != null}" style="margin:1rem 0 1.5rem;padding:1rem 1.2rem;border-radius:12px;background:#ecfdf3;color:#166534;border:1px solid #bbf7d0;font-weight:600;" th:text="${success}">
+            Operación completada correctamente.
+        </div>
+
+        <div style="background:#f7f9fc;border-left:4px solid var(--gold);padding:1rem 1.1rem;border-radius:12px;color:var(--gray);margin:1.2rem 0 1.8rem;">
+            Gerencia carga y actualiza la información de los vehículos. Desde este panel, admin revisa cada registro y decide si se publica o se devuelve para ajustes.
+        </div>
+
+        <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:center;margin:1.5rem 0 2rem;">
+            <div style="display:flex;gap:0.8rem;flex-wrap:wrap;">
+                <a th:href="@{/vehiculos}" style="padding:.8rem 1.1rem;border-radius:8px;text-decoration:none;font-weight:600;"
+                   th:styleappend="${estadoPublicacionFiltro == 'todos'} ? 'background:var(--gold);color:var(--blue-dark);' : 'background:#eef3f8;color:var(--blue-dark);'">
+                    Todos
+                </a>
+                <a th:href="@{/vehiculos(estadoPublicacion='PENDIENTE')}" style="padding:.8rem 1.1rem;border-radius:8px;text-decoration:none;font-weight:600;"
+                   th:styleappend="${estadoPublicacionFiltro == 'PENDIENTE'} ? 'background:var(--gold);color:var(--blue-dark);' : 'background:#eef3f8;color:var(--blue-dark);'">
+                    Pendientes
+                </a>
+                <a th:href="@{/vehiculos(estadoPublicacion='PUBLICADO')}" style="padding:.8rem 1.1rem;border-radius:8px;text-decoration:none;font-weight:600;"
+                   th:styleappend="${estadoPublicacionFiltro == 'PUBLICADO'} ? 'background:var(--gold);color:var(--blue-dark);' : 'background:#eef3f8;color:var(--blue-dark);'">
+                    Publicados
+                </a>
+                <a th:href="@{/vehiculos(estadoPublicacion='DEVUELTO')}" style="padding:.8rem 1.1rem;border-radius:8px;text-decoration:none;font-weight:600;"
+                   th:styleappend="${estadoPublicacionFiltro == 'DEVUELTO'} ? 'background:var(--gold);color:var(--blue-dark);' : 'background:#eef3f8;color:var(--blue-dark);'">
+                    Devueltos
+                </a>
+                <a th:href="@{/vehiculos(estadoPublicacion='DESPUBLICADO')}" style="padding:.8rem 1.1rem;border-radius:8px;text-decoration:none;font-weight:600;"
+                   th:styleappend="${estadoPublicacionFiltro == 'DESPUBLICADO'} ? 'background:var(--gold);color:var(--blue-dark);' : 'background:#eef3f8;color:var(--blue-dark);'">
+                    Despublicados
+                </a>
+            </div>
+
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;font-weight:700;color:var(--blue-dark);justify-content:flex-end;">
+                <span>Pendientes: <span th:text="${conteoPendientes}">0</span></span>
+                <span>Publicados: <span th:text="${conteoPublicados}">0</span></span>
+                <span>Visible: <span th:text="${#lists.size(vehiculos)}">0</span></span>
+            </div>
+        </div>
+
+        <div th:if="${vehiculos != null and !#lists.isEmpty(vehiculos)}" style="overflow:auto;">
+            <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;">
+                <thead>
+                <tr style="background:var(--bg);color:var(--blue-dark);">
+                    <th style="padding:1rem;">Imagen</th>
+                    <th style="padding:1rem;">Marca</th>
+                    <th style="padding:1rem;">Modelo</th>
+                    <th style="padding:1rem;">Año</th>
+                    <th style="padding:1rem;">Stock</th>
+                    <th style="padding:1rem;">Operación</th>
+                    <th style="padding:1rem;">Publicación</th>
+                    <th style="padding:1rem;">Galería</th>
+                    <th style="padding:1rem;">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="vehiculo : ${vehiculos}" style="border-bottom:1px solid #edf1f5;">
+                    <td style="padding:1rem;text-align:center;">
+                        <img th:if="${vehiculo.imagen != null}"
+                             th:src="@{'/vehiculos/imagen/' + ${vehiculo.idVehiculo}}"
+                             alt="Vehículo"
+                             style="width:92px;height:62px;object-fit:cover;border-radius:12px;">
+                        <span th:if="${vehiculo.imagen == null}"><i class="fas fa-car" style="font-size:2rem;color:var(--gold);"></i></span>
+                    </td>
+                    <td style="padding:1rem;font-weight:700;" th:text="${vehiculo.marca}">Marca</td>
+                    <td style="padding:1rem;" th:text="${vehiculo.modelo}">Modelo</td>
+                    <td style="padding:1rem;" th:text="${vehiculo.anio}">2024</td>
+                    <td style="padding:1rem;font-weight:700;"
+                        th:text="${stockPorChasis != null and vehiculo.chasis != null ? (stockPorChasis[vehiculo.chasis.toLowerCase()] != null ? stockPorChasis[vehiculo.chasis.toLowerCase()] : 0) : 0}">
+                        0
+                    </td>
+                    <td style="padding:1rem;">
+                        <span th:text="${vehiculo.activo ? 'Activo' : 'Inactivo'}"
+                              th:style="${vehiculo.activo ? 'padding:.45rem .8rem;border-radius:999px;background:#dff3e7;color:#157347;font-weight:700;' : 'padding:.45rem .8rem;border-radius:999px;background:#fde4e4;color:#b42318;font-weight:700;'}">
+                            Activo
+                        </span>
+                    </td>
+                    <td style="padding:1rem;">
+                        <span th:text="${vehiculo.estadoPublicacionEtiqueta}"
+                              th:style="${vehiculo.estadoPublicacion == 'PUBLICADO'} ? 'padding:.45rem .8rem;border-radius:999px;background:#ecfdf3;color:#166534;font-weight:700;' : (${vehiculo.estadoPublicacion == 'PENDIENTE'} ? 'padding:.45rem .8rem;border-radius:999px;background:#fff7ed;color:#b45309;font-weight:700;' : (${vehiculo.estadoPublicacion == 'DEVUELTO'} ? 'padding:.45rem .8rem;border-radius:999px;background:#fee2e2;color:#b91c1c;font-weight:700;' : 'padding:.45rem .8rem;border-radius:999px;background:#eef2ff;color:#4338ca;font-weight:700;'))">
+                            Pendiente de publicación
+                        </span>
+                        <div th:if="${vehiculo.fechaPublicacion != null}" style="margin-top:.45rem;font-size:.8rem;color:#667085;"
+                             th:text="${'Publicado: ' + #temporals.format(vehiculo.fechaPublicacion, 'dd/MM/yyyy HH:mm')}">Publicado</div>
+                    </td>
+                    <td style="padding:1rem;" th:text="${(vehiculo.imagen != null ? 1 : 0) + (vehiculo.imagen2 != null ? 1 : 0) + (vehiculo.imagen3 != null ? 1 : 0) + (vehiculo.imagen4 != null ? 1 : 0)} + ' fotos'">1 foto</td>
+                    <td style="padding:1rem;white-space:nowrap;">
+                        <div style="display:flex;flex-wrap:wrap;gap:.5rem;">
+                        <a th:href="@{'/vehiculos/editar/' + ${vehiculo.idVehiculo}}" style="background:var(--gold);color:var(--blue-dark);border-radius:8px;padding:0.55rem 1rem;font-weight:700;text-decoration:none;display:inline-block;">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <form th:if="${vehiculo.estadoPublicacion != 'PUBLICADO'}" th:action="@{'/vehiculos/' + ${vehiculo.idVehiculo} + '/publicar'}" method="post" style="display:inline;">
+                            <button type="submit" style="background:#16a34a;color:#fff;border:none;border-radius:8px;padding:0.55rem 1rem;font-weight:700;cursor:pointer;" onclick="return confirm('¿Publicar este vehículo en la oficina pública?');">
+                                <i class="fas fa-bullhorn"></i> Publicar
+                            </button>
+                        </form>
+                        <form th:if="${vehiculo.estadoPublicacion == 'PENDIENTE'}" th:action="@{'/vehiculos/' + ${vehiculo.idVehiculo} + '/devolver'}" method="post" style="display:inline;">
+                            <button type="submit" style="background:#e11d48;color:#fff;border:none;border-radius:8px;padding:0.55rem 1rem;font-weight:700;cursor:pointer;" onclick="return confirm('¿Devolver este vehículo a gerencia para ajustes?');">
+                                <i class="fas fa-rotate-left"></i> Devolver
+                            </button>
+                        </form>
+                        <form th:if="${vehiculo.estadoPublicacion == 'PUBLICADO'}" th:action="@{'/vehiculos/' + ${vehiculo.idVehiculo} + '/despublicar'}" method="post" style="display:inline;">
+                            <button type="submit" style="background:#d92d20;color:#fff;border:none;border-radius:8px;padding:0.55rem 1rem;font-weight:700;cursor:pointer;" onclick="return confirm('¿Despublicar este vehículo?');">
+                                <i class="fas fa-eye-slash"></i> Despublicar
+                            </button>
+                        </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:if="${vehiculos == null or #lists.isEmpty(vehiculos)}" style="margin-top:2.5rem;text-align:center;background:#fff;padding:3rem;border-radius:18px;">
+            <i class="fas fa-car" style="font-size:2.4rem;color:var(--gold);"></i>
+            <h2 style="color:var(--blue-dark);">No hay vehículos para mostrar</h2>
+            <p style="color:var(--gray);">Cuando gerencia cargue vehículos o existan pendientes de publicación, aparecerán aquí para revisión de admin.</p>
+        </div>
+    </div>
+</main>
+
+<script>
+function openSidebar(){ document.getElementById('sidebar').classList.remove('collapsed'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.add('collapsed'); }
+</script>
+</body>
+</html>

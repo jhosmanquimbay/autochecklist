@@ -1,0 +1,156 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Novedades — Gerente</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+
+  <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+
+  <main class="main">
+    <div class="content-header">
+      <h1><i class="fa-solid fa-triangle-exclamation"></i> Novedades de Vehículos</h1>
+      <p>Control de daños, garantías y fallas técnicas reportadas desde tienda para gestión del gerente.</p>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-label">Pendientes de gestión</span>
+        <span class="kpi-value" th:text="${novedadesAbiertas}">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">En revisión</span>
+        <span class="kpi-value" th:text="${novedadesEnRevision}">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Con garantía</span>
+        <span class="kpi-value" th:text="${novedadesGarantia}">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Críticas / Altas</span>
+        <span class="kpi-value" th:text="${novedadesCriticas}">0</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="layout-between">
+        <div class="section-title">
+          <h2><i class="fa-solid fa-clipboard-list"></i> Reportes registrados</h2>
+        </div>
+        <a th:href="@{/gerente/novedades/crear}" class="btn">
+          <i class="fa-solid fa-plus"></i> Nueva Novedad
+        </a>
+      </div>
+    </div>
+
+    <div th:if="${success}" class="card card-alert success" th:text="${success}"></div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Vehículo</th>
+            <th>Tipo de Daño</th>
+            <th>Origen</th>
+            <th>Prioridad</th>
+            <th>Descripción</th>
+            <th>Gestión</th>
+            <th>Estado</th>
+            <th>Garantía</th>
+            <th>Reportado por</th>
+            <th>Fecha</th>
+            <th>Evidencia</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="n : ${novedades}">
+            <td th:text="${n.idNovedades}">1</td>
+            <td>
+              <strong th:text="${n.vehiculoReferencia != null and !n.vehiculoReferencia.isBlank() ? n.vehiculoReferencia : 'Sin vehículo'}">—</strong>
+              <div class="empty-note" th:text="${n.vehiculoChasis != null and !n.vehiculoChasis.isBlank() ? 'Chasis: ' + n.vehiculoChasis : 'Sin chasis asociado'}">Chasis</div>
+            </td>
+            <td th:text="${n.tipoNovedad}">—</td>
+            <td th:text="${n.origenReporte == 'recepcion_tienda' ? 'Recepción tienda' : n.origenReporte == 'postventa' ? 'Postventa' : n.origenReporte == 'alistamiento' ? 'Alistamiento' : n.origenReporte == 'bodega' ? 'Bodega' : 'Vendedor'}">—</td>
+            <td>
+              <span class="status-pill"
+                    th:classappend="${n.prioridad == 'critica' ? ' bg-danger' : (n.prioridad == 'alta' ? ' bg-warning-soft' : (n.prioridad == 'media' ? ' bg-info-soft' : ''))}"
+                    th:text="${n.prioridad == 'critica' ? 'Crítica' : n.prioridad == 'alta' ? 'Alta' : n.prioridad == 'media' ? 'Media' : 'Baja'}">Media</span>
+            </td>
+            <td th:text="${n.descripcion}">—</td>
+            <td>
+              <div th:if="${n.accionRequerida != null and !n.accionRequerida.isBlank()}" th:text="${n.accionRequerida}">—</div>
+              <div th:if="${n.observacionGerente != null and !n.observacionGerente.isBlank()}" class="empty-note" th:text="${'Gerencia: ' + n.observacionGerente}">—</div>
+              <span th:if="${(n.accionRequerida == null or n.accionRequerida.isBlank()) and (n.observacionGerente == null or n.observacionGerente.isBlank())}" class="empty-note">Sin gestión registrada</span>
+            </td>
+            <td>
+              <span th:classappend="${'pendiente'.equalsIgnoreCase(n.estado) ? 'bg-danger' :
+                                     'resuelto'.equalsIgnoreCase(n.estado) ? 'bg-success' : 'bg-info-soft'}"
+                    class="status-pill"
+                    th:text="${n.estado == 'en_revision' ? 'En revisión' : n.estado == 'gestion_garantia' ? 'Gestión garantía' : n.estado == 'resuelto' ? 'Resuelto' : 'Pendiente'}">—</span>
+            </td>
+            <td>
+              <span class="status-pill" th:classappend="${n.aplicaGarantia ? 'bg-success' : 'bg-neutral-soft'}"
+                    th:text="${n.aplicaGarantia ? 'Sí' : 'No'}">No</span>
+            </td>
+            <td th:text="${n.usuario != null ? n.usuario.nombre : 'Sin asignar'}">—</td>
+            <td>
+              <span th:text="${n.fechaReporte != null ? #temporals.format(n.fechaReporte, 'dd/MM/yyyy HH:mm') : 'Sin fecha'}">—</span>
+              <div class="empty-note" th:if="${n.fechaGestion != null}" th:text="${'Gestión: ' + #temporals.format(n.fechaGestion, 'dd/MM/yyyy HH:mm')}">—</div>
+            </td>
+            <td>
+              <a th:if="${n.evidencia != null and !n.evidencia.isEmpty()}"
+                 th:href="@{'/uploads/novedades/' + ${n.evidencia}}"
+                 target="_blank" class="btn ghost">
+                <i class="fa-solid fa-image"></i> Ver
+              </a>
+              <span th:unless="${n.evidencia != null and !n.evidencia.isEmpty()}"
+                    class="empty-note">Sin evidencia</span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <a th:href="@{/gerente/novedades/editar/{id}(id=${n.idNovedades})}" class="btn ghost">
+                  <i class="fa-solid fa-pen"></i> Gestionar
+                </a>
+                <form th:if="${n.estado != 'en_revision' and n.estado != 'resuelto'}"
+                      th:action="@{/gerente/novedades/{id}/estado(id=${n.idNovedades})}" method="post">
+                  <input type="hidden" name="estado" value="en_revision"/>
+                  <button type="submit" class="btn ghost">
+                    <i class="fa-solid fa-magnifying-glass"></i> Revisar
+                  </button>
+                </form>
+                <form th:if="${n.estado != 'resuelto'}"
+                      th:action="@{/gerente/novedades/{id}/estado(id=${n.idNovedades})}" method="post">
+                  <input type="hidden" name="estado" th:value="${n.aplicaGarantia ? 'gestion_garantia' : 'resuelto'}"/>
+                  <button type="submit" class="btn ghost">
+                    <i class="fa-solid" th:classappend="${n.aplicaGarantia ? 'fa-file-shield' : 'fa-circle-check'}"></i>
+                    <span th:text="${n.aplicaGarantia ? 'Garantía' : 'Resolver'}">Resolver</span>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(novedades)}">
+            <td colspan="13" class="empty-row">
+              No hay novedades registradas
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>
+
+
+
+
+
+

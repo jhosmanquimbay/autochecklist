@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug - Información del Usuario</title>
+    <style>
+        body {
+            background: #0d0d0d;
+            color: #FFD600;
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+        }
+        .debug-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            padding: 2rem;
+            border-radius: 10px;
+        }
+        .info-item {
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background: #333;
+            border-radius: 5px;
+        }
+        .label {
+            font-weight: bold;
+            color: #FFD600;
+        }
+        .value {
+            color: #ccc;
+            margin-left: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>Información del Usuario Actual</h1>
+        
+        <div class="info-item">
+            <span class="label">Usuario:</span>
+            <span class="value" th:text="${username}">No disponible</span>
+        </div>
+        
+        <div class="info-item">
+            <span class="label">Autenticado:</span>
+            <span class="value" th:text="${authenticated}">No disponible</span>
+        </div>
+        
+        <div class="info-item">
+            <span class="label">Autoridades/Roles:</span>
+            <span class="value" th:text="${authorities}">No disponible</span>
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            <a href="/dashboard" style="color: #FFD600;">Volver al Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>

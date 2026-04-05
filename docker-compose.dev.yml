@@ -1,0 +1,38 @@
+# Docker Compose para DESARROLLO
+# Uso: docker-compose -f docker-compose.dev.yml up -d
+
+version: '3.9'
+
+services:
+  # Base de datos MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: concesionario-mysql-dev
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: auto
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - concesionario-dev
+
+  # Redis para caché
+  redis:
+    image: redis:7-alpine
+    container_name: concesionario-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - concesionario-dev
+
+volumes:
+  mysql_dev_data:
+  redis_dev_data:
+
+networks:
+  concesionario-dev:
+    driver: bridge

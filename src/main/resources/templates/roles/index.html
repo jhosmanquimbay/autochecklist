@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Roles</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/themes.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-theme.css}">
+</head>
+<body>
+<!-- ================= SIDEBAR ================= -->
+
+
+<!-- ================= SIDEBAR ================= -->
+<aside class="sidebar collapsed" id="sidebar">
+
+<div>
+
+<!-- HEADER SIDEBAR -->
+<div class="sidebar-header">
+
+<button id="toggleSidebar" class="toggle-btn">
+<i class="fas fa-bars"></i>
+</button>
+
+<h3>
+<span>Admin Panel</span>
+</h3>
+
+</div>
+
+<!-- NAV -->
+<nav>
+<ul>
+
+<li>
+<a th:href="@{/dashboard}">
+<i class="fas fa-chart-line"></i>
+<span>Dashboard</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/usuarios}">
+<i class="fas fa-users"></i>
+<span>Usuarios</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/vehiculos}">
+<i class="fas fa-car"></i>
+<span>Vehículos</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/inventario}">
+<i class="fas fa-warehouse"></i>
+<span>Inventario</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/roles}">
+<i class="fas fa-id-badge"></i>
+<span>Roles</span>
+</a>
+</li>
+
+<!-- CORREO DROPDOWN -->
+<li class="dropdown-menu-item">
+
+<a th:href="@{/correo/inbox}" class="dropdown-toggle">
+<i class="fas fa-envelope"></i>
+<span>Correo</span>
+
+<span th:if="${unreadCount != null and unreadCount > 0}"
+class="notification-badge"
+th:text="${unreadCount}">
+0
+</span>
+
+</a>
+
+<ul class="dropdown-submenu">
+
+<li>
+<a th:href="@{/correo/inbox}">
+<i class="fas fa-inbox"></i> Bandeja de entrada
+</a>
+</li>
+
+<li>
+<a th:href="@{/correo/enviados}">
+<i class="fas fa-paper-plane"></i> Enviados
+</a>
+</li>
+
+<li>
+<a th:href="@{/correo/papelera}">
+<i class="fas fa-trash"></i> Papelera
+</a> 
+</div>
+
+<!-- LOGOUT -->
+<form th:action="@{/logout}" method="post">
+<button type="submit" class="logout-btn">
+<i class="fas fa-sign-out-alt"></i>
+<span>Cerrar sesión</span>
+</button>
+</form>
+
+</aside>
+
+
+<!-- Main -->
+<main class="main">
+    <div class="content-header">
+        <h1>Gestión de Roles</h1>
+        <a th:href="@{/roles/crear}" class="btn btn-primary"><i class="fas fa-plus"></i> Nuevo Rol</a>
+    </div>
+
+    <!-- Mensajes -->
+    <div th:if="${success}" class="alert alert-success">
+        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" class="alert alert-error">
+        <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="rol : ${roles}">
+                <td th:text="${rol.idRol}"></td>
+                <td th:text="${rol.nombre}"></td>
+                <td>
+                    <a th:href="@{'/roles/editar/' + ${rol.idRol}}" class="btn btn-warning"><i class="fas fa-edit"></i> Editar</a>
+                    <a th:href="@{'/roles/eliminar/' + ${rol.idRol}}" class="btn btn-danger" 
+                       onclick="return confirm('¿Estás seguro de eliminar este rol?')"><i class="fas fa-trash"></i> Eliminar</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<!-- ================= SCRIPT ================= -->
+<script>
+
+const sidebar = document.getElementById("sidebar");
+const toggleBtn = document.getElementById("toggleSidebar");
+
+let lockedOpen=false;
+
+toggleBtn.onclick=()=>{
+lockedOpen=!lockedOpen;
+sidebar.classList.toggle("collapsed",!lockedOpen);
+sidebar.classList.toggle("expanded",lockedOpen);
+};
+
+sidebar.onmouseenter=()=>{
+if(!lockedOpen) sidebar.classList.replace("collapsed","expanded");
+};
+
+sidebar.onmouseleave=()=>{
+if(!lockedOpen) sidebar.classList.replace("expanded","collapsed");
+};
+
+function mostrarNombreArchivo(input){
+const fileName=document.getElementById('fileName');
+fileName.textContent=
+input.files.length
+? "📄 "+input.files[0].name
+: "";
+}
+
+</script>
+
+</body>
+</html>

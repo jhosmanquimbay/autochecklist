@@ -1,0 +1,82 @@
+version: '3.9'
+
+services:
+  # Base de datos MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: concesionario-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_prod
+      MYSQL_DATABASE: auto
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_password_prod
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./scripts/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password_prod"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - concesionario-network
+
+  # Redis para caché
+  redis:
+    image: redis:7-alpine
+    container_name: concesionario-redis
+    command: redis-server --appendonly yes --requirepass redis_password_prod
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 3s
+      retries: 5
+    networks:
+      - concesionario-network
+
+  # Aplicación Spring Boot
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: concesionario-app
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:mysql://mysql:3306/auto
+      DB_USERNAME: app_user
+      DB_PASSWORD: app_password_prod
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis_password_prod
+      MAIL_HOST: smtp.gmail.com
+      MAIL_PORT: 587
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      JAVA_OPTS: -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xmx512m -Xms256m
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - concesionario-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  concesionario-network:
+    driver: bridge

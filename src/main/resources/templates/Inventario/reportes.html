@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reportes de Inventario</title>
+
+<!-- ICONOS + FONT -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" th:href="@{/css/inventario.css}">
+
+<link rel="stylesheet" th:href="@{/css/admin-theme.css}">
+<link rel="stylesheet" th:href="@{/css/reporte-inventario.css}">
+</head>
+
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+<aside class="sidebar collapsed" id="sidebar">
+
+<div>
+
+<!-- HEADER SIDEBAR -->
+<div class="sidebar-header">
+
+<button id="toggleSidebar" class="toggle-btn">
+<i class="fas fa-bars"></i>
+</button>
+
+<h3>
+<span>Admin Panel</span>
+</h3>
+
+</div>
+
+<!-- NAV -->
+<nav>
+<ul>
+
+<li>
+<a th:href="@{/dashboard}">
+<i class="fas fa-chart-line"></i>
+<span>Dashboard</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/usuarios}">
+<i class="fas fa-users"></i>
+<span>Usuarios</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/vehiculos}">
+<i class="fas fa-car"></i>
+<span>Vehículos</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/inventario}">
+<i class="fas fa-warehouse"></i>
+<span>Inventario</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/roles}">
+<i class="fas fa-id-badge"></i>
+<span>Roles</span>
+</a>
+</li>
+
+<li>
+<a th:href="@{/transporte}">
+<i class="fas fa-shipping-fast"></i>
+<span>Transporte</span>
+</a>
+</li>
+
+<!-- CORREO DROPDOWN -->
+<li class="dropdown-menu-item">
+
+<a th:href="@{/correo/inbox}" class="dropdown-toggle">
+<i class="fas fa-envelope"></i>
+<span>Correo</span>
+
+<span th:if="${unreadCount != null and unreadCount > 0}"
+class="notification-badge"
+th:text="${unreadCount}">
+0
+</span>
+
+</a>
+
+<ul class="dropdown-submenu">
+
+<li>
+<a th:href="@{/correo/inbox}">
+<i class="fas fa-inbox"></i> Bandeja de entrada
+</a>
+</li>
+
+<li>
+<a th:href="@{/correo/enviados}">
+<i class="fas fa-paper-plane"></i> Enviados
+</a>
+</li>
+
+<li>
+<a th:href="@{/correo/papelera}">
+<i class="fas fa-trash"></i> Papelera
+</a>
+</li>
+
+<li>
+<a th:href="@{/email/enviar}">
+<i class="fas fa-users"></i> Correos Masivos
+</a>
+</li>
+
+</ul>
+</li>
+
+</ul>
+</nav>
+
+</div>
+
+<!-- LOGOUT -->
+<form th:action="@{/logout}" method="post">
+<button type="submit" class="logout-btn">
+<i class="fas fa-sign-out-alt"></i>
+<span>Cerrar sesión</span>
+</button>
+</form>
+
+</aside>
+
+<!-- ================= CONTENIDO ================= -->
+<main class="main">
+
+<div class="report-wrapper">
+
+<div class="report-header">
+<h1>Reportes de Inventario</h1>
+<p>Crea reportes inteligentes y visuales en segundos.</p>
+</div>
+
+<form th:action="@{/inventario/generar-reporte-pdf}" method="post" th:object="${filtro}">
+
+<div class="report-card">
+
+<div class="report-grid">
+
+<div class="field">
+<label>Marca</label>
+<input type="text" th:field="*{marca}">
+</div>
+
+<div class="field">
+<label>Modelo</label>
+<input type="text" th:field="*{modelo}">
+</div>
+
+<div class="field">
+<label>Color</label>
+<input type="text" th:field="*{color}">
+</div>
+
+<div class="field">
+<label>Estado Logístico</label>
+<select th:field="*{estadoLogistico}">
+<option value="">Todos</option>
+<option value="Disponible">Disponible</option>
+<option value="En Tránsito">En Tránsito</option>
+<option value="Vendido">Vendido</option>
+</select>
+</div>
+
+<div class="field">
+<label>Año Desde</label>
+<input type="number" th:field="*{anioDesde}">
+</div>
+
+<div class="field">
+<label>Año Hasta</label>
+<input type="number" th:field="*{anioHasta}">
+</div>
+
+</div>
+
+<label class="checkbox">
+<input type="checkbox" th:field="*{soloActivos}">
+Solo vehículos activos
+</label>
+
+<div class="generate-area">
+
+<button type="submit" class="generate-btn">
+Generar Reporte PDF
+</button>
+
+<div class="alt-actions">
+<a th:href="@{/inventario/generar-reporte-pdf-rapido}" class="alt-btn">
+Reporte rápido
+</a>
+
+<a th:href="@{/inventario}" class="alt-btn">
+Volver
+</a>
+</div>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+</main>
+
+<!-- ================= SCRIPT SIDEBAR ================= -->
+<script>
+
+const sidebar = document.getElementById("sidebar");
+const toggleBtn = document.getElementById("toggleSidebar");
+
+let lockedOpen = false;
+
+/* CLICK MANUAL */
+toggleBtn.addEventListener("click", () => {
+
+lockedOpen = !lockedOpen;
+
+if(lockedOpen){
+sidebar.classList.remove("collapsed");
+sidebar.classList.add("expanded");
+}else{
+sidebar.classList.add("collapsed");
+sidebar.classList.remove("expanded");
+}
+
+});
+
+/* HOVER OPEN */
+sidebar.addEventListener("mouseenter", () => {
+
+if(!lockedOpen){
+sidebar.classList.remove("collapsed");
+sidebar.classList.add("expanded");
+}
+
+});
+
+/* HOVER CLOSE */
+sidebar.addEventListener("mouseleave", () => {
+
+if(!lockedOpen){
+sidebar.classList.add("collapsed");
+sidebar.classList.remove("expanded");
+}
+
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Panel Vendedor</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+  <aside th:replace="~{fragments/vendedor-sidebar :: sidebar}"></aside>
+
+  <main class="main">
+    <div class="content-header">
+      <h1><i class="fa-solid fa-handshake-angle"></i> Panel Comercial</h1>
+      <p th:text="${'Bienvenido, ' + (vendedor != null && vendedor.nombre != null ? vendedor.nombre : 'Vendedor') + '. Actualizado: ' + formatoFechaVendedor}">Bienvenido vendedor</p>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-label">Vehículos disponibles</span>
+        <span class="kpi-value" th:text="${vehiculosDisponibles}">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Ventas cerradas</span>
+        <span class="kpi-value" th:text="${ventasCerradas}">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Oportunidades</span>
+        <span class="kpi-value" th:text="${oportunidades}">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Novedades pendientes</span>
+        <span class="kpi-value" th:text="${novedadesPendientes}">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Preaprobaciones</span>
+        <span class="kpi-value" th:text="${resumenFinanciamientoVendedor.preaprobadas}">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Negocios originados</span>
+        <span class="kpi-value" th:text="${resumenFinanciamientoVendedor.negociosOriginados}">0</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <h2><i class="fa-solid fa-bolt"></i> Acciones del Vendedor</h2>
+      </div>
+      <div class="action-buttons">
+        <a th:href="@{/vendedor/vehiculos}" class="btn">
+          <i class="fa-solid fa-car-side"></i> Ver inventario disponible
+        </a>
+        <a th:href="@{/vendedor/ventas}" class="btn">
+          <i class="fa-solid fa-cash-register"></i> Registrar venta
+        </a>
+        <a href="/vendedor/ventas#financiamiento" class="btn ghost">
+          <i class="fa-solid fa-calculator"></i> Simular financiación
+        </a>
+        <a th:href="@{/vendedor/novedades}" class="btn ghost">
+          <i class="fa-solid fa-triangle-exclamation"></i> Reportar novedad
+        </a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title compact-title">
+        <h2><i class="fa-solid fa-building-columns"></i> Pipeline financiero</h2>
+      </div>
+      <div class="finance-preview-grid">
+        <div class="preview-metric">
+          <span>Solicitudes</span>
+          <strong th:text="${resumenFinanciamientoVendedor.totalSolicitudes}">0</strong>
+        </div>
+        <div class="preview-metric">
+          <span>Preaprobadas</span>
+          <strong th:text="${resumenFinanciamientoVendedor.preaprobadas}">0</strong>
+        </div>
+        <div class="preview-metric">
+          <span>En estudio</span>
+          <strong th:text="${resumenFinanciamientoVendedor.enEstudio}">0</strong>
+        </div>
+        <div class="preview-metric">
+          <span>Monto potencial</span>
+          <strong th:text="${'$ ' + #numbers.formatDecimal(resumenFinanciamientoVendedor.montoPotencialFinanciado, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+        </div>
+        <div class="preview-metric">
+          <span>Negocios</span>
+          <strong th:text="${resumenFinanciamientoVendedor.negociosOriginados}">0</strong>
+        </div>
+        <div class="preview-metric">
+          <span>Docs completos</span>
+          <strong th:text="${resumenFinanciamientoVendedor.documentacionCompleta}">0</strong>
+        </div>
+        <div class="preview-metric">
+          <span>Listas desembolso</span>
+          <strong th:text="${resumenFinanciamientoVendedor.listasDesembolso}">0</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <h2><i class="fa-solid fa-list-check"></i> Últimos registros comerciales</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>Vehículo</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="v : ${ultimasVentas}">
+            <td th:text="${v.idPedido}">1</td>
+            <td th:text="${v.descripcion}">Cliente</td>
+            <td th:text="${v.vehiculo != null ? (v.vehiculo.marca + ' ' + v.vehiculo.modelo) : 'Sin vehículo'}">Vehículo</td>
+            <td>
+              <span class="status-pill"
+                    th:classappend="${v.estado == 'vendido' or v.estado == 'entregado' ? ' bg-success' : ' bg-danger'}"
+                    th:text="${v.estado}">pendiente</span>
+            </td>
+            <td th:text="${v.fechaCreacion != null ? #temporals.format(v.fechaCreacion, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(ultimasVentas)}">
+            <td colspan="5" class="empty-row">Aún no hay ventas registradas por este vendedor.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>

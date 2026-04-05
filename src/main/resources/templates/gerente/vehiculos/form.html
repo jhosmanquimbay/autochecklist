@@ -1,0 +1,233 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Formulario Vehículo — Gerente</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+
+  <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+
+  <main class="main">
+    <div class="content-header">
+      <h1><i class="fa-solid fa-car"></i>
+        <span th:text="${vehiculo.idVehiculo != null ? 'Actualizar Vehículo para Revisión' : 'Nuevo Vehículo para Publicación'}">Vehículo</span>
+      </h1>
+      <p>Gerencia prepara la ficha del vehículo y admin realiza la publicación final.</p>
+    </div>
+
+    <div class="card card-medium">
+      <div th:if="${error != null}" style="margin-bottom:1rem;padding:.9rem 1rem;border-radius:12px;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;font-weight:600;" th:text="${error}">
+        No se pudo guardar el vehículo.
+      </div>
+
+      <div style="background:#f8fafc;border-left:4px solid #f59e0b;padding:1rem 1.1rem;border-radius:12px;color:#475569;margin-bottom:1.25rem;">
+        <strong style="color:#0f172a;">Flujo actual:</strong>
+        al guardar, este vehículo quedará <strong>pendiente de publicación</strong> para revisión de admin.
+        <span th:if="${vehiculo.idVehiculo != null and vehiculo.estadoPublicacion == 'PUBLICADO'}">Como este vehículo ya estaba publicado, al editarlo volverá a revisión hasta que admin lo republice.</span>
+      </div>
+
+      <form th:action="${vehiculo.idVehiculo != null
+            ? '/gerente/vehiculos/editar/' + vehiculo.idVehiculo
+            : '/gerente/vehiculos/crear'}"
+            th:object="${vehiculo}" method="post"
+            enctype="multipart/form-data">
+
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="form-grid">
+
+          <div class="col-span-full">
+            <label>Tomar base desde inventario</label>
+            <select th:field="*{inventarioSeleccionadoId}" class="field-control">
+              <option value="">Cargar manualmente</option>
+              <option th:each="inv : ${inventarios}"
+                      th:value="${inv.idInventario}"
+                      th:data-chasis="${inv.chasis}"
+                      th:data-marca="${inv.marca}"
+                      th:data-modelo="${inv.modelo}"
+                      th:data-anio="${inv.anio}"
+                      th:data-motor="${inv.motor}"
+                      th:text="${(inv.marca != null ? inv.marca : 'Sin marca') + ' ' + (inv.modelo != null ? inv.modelo : 'Sin modelo') + ' · Chasis: ' + (inv.chasis != null ? inv.chasis : 'N/D')}">
+                Inventario
+              </option>
+            </select>
+            <small class="empty-note">Opcional. Si seleccionas un registro de inventario, se precargan chasis, marca, modelo, año y motor/cilindrada.</small>
+          </div>
+
+          <div>
+            <label>Marca</label>
+            <input th:field="*{marca}" type="text" placeholder="Ej: Toyota" required
+                   class="field-control"/>
+          </div>
+          <div>
+            <label>Modelo</label>
+            <input th:field="*{modelo}" type="text" placeholder="Ej: Corolla" required
+                   class="field-control"/>
+          </div>
+          <div>
+            <label>Año</label>
+            <input th:field="*{anio}" type="number" placeholder="Ej: 2024" min="1990" max="2030"
+                   class="field-control"/>
+          </div>
+          <div>
+            <label>Precio (USD)</label>
+            <input th:field="*{precio}" type="number" step="0.01" placeholder="Ej: 25000.00"
+                   class="field-control"/>
+          </div>
+          <div>
+            <label>Cilindrada</label>
+            <input th:field="*{cilindrada}" type="text" placeholder="Ej: 2.0L"
+                   class="field-control"/>
+          </div>
+          <div>
+            <label>Tipo de Combustible</label>
+            <select th:field="*{tipoCombustible}"
+                    class="field-control">
+              <option value="">-- Seleccionar --</option>
+              <option value="Gasolina">Gasolina</option>
+              <option value="Diésel">Diésel</option>
+              <option value="Eléctrico">Eléctrico</option>
+              <option value="Híbrido">Híbrido</option>
+              <option value="GLP">GLP</option>
+            </select>
+          </div>
+          <div>
+            <label>Transmisión</label>
+            <select th:field="*{transmision}"
+                    class="field-control">
+              <option value="">-- Seleccionar --</option>
+              <option value="Manual">Manual</option>
+              <option value="Automática">Automática</option>
+              <option value="CVT">CVT</option>
+              <option value="Doble embrague">Doble embrague</option>
+            </select>
+          </div>
+          <div>
+            <label>Chasis (VIN)</label>
+            <input th:field="*{chasis}" type="text" placeholder="Número de chasis VIN" required pattern="^\S+$" title="El chasis no puede contener espacios"
+                   class="field-control"/>
+          </div>
+
+          <div class="col-span-full">
+            <label>Descripción</label>
+            <textarea th:field="*{descripcion}" rows="3" placeholder="Describe las características del vehículo..."
+                      class="field-control field-textarea"></textarea>
+          </div>
+
+          <div class="col-span-full">
+            <label>Especificaciones Técnicas</label>
+            <textarea th:field="*{especificacionesTecnicas}" rows="4" placeholder="Motor, seguridad, tecnología, dimensiones, equipamiento..."
+                      class="field-control field-textarea"></textarea>
+          </div>
+
+          <div class="col-span-full">
+            <label>URL externa de imagen</label>
+            <input th:field="*{imagenUrl}" type="text" placeholder="Opcional: URL de respaldo de imagen"
+                   class="field-control"/>
+          </div>
+
+          <div class="col-span-full">
+            <label>Foto principal</label>
+            <input type="file" name="imagenFile" accept="image/*"
+                   class="field-control"/>
+            <small class="empty-note">Formatos: JPG, PNG, WEBP. Máx. 5MB</small>
+          </div>
+
+          <div>
+            <label>Foto 2</label>
+            <input type="file" name="imagenFile2" accept="image/*" class="field-control"/>
+          </div>
+
+          <div>
+            <label>Foto 3</label>
+            <input type="file" name="imagenFile3" accept="image/*" class="field-control"/>
+          </div>
+
+          <div>
+            <label>Foto 4</label>
+            <input type="file" name="imagenFile4" accept="image/*" class="field-control"/>
+          </div>
+
+        </div>
+
+        <div class="action-buttons top-space">
+          <button type="submit" class="btn">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span th:text="${vehiculo.idVehiculo != null ? 'Guardar y reenviar a revisión' : 'Enviar a revisión de admin'}">Enviar a revisión</span>
+          </button>
+          <a th:href="@{/gerente/vehiculos(estadoPublicacion='PENDIENTE')}" class="btn ghost">
+            <i class="fa-solid fa-list-check"></i> Ver solicitudes
+          </a>
+          <a th:href="@{/gerente/vehiculos}" class="btn ghost">
+            <i class="fa-solid fa-arrow-left"></i> Cancelar
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const form = document.querySelector('form');
+      const selector = document.getElementById('inventarioSeleccionadoId');
+      const chasis = document.getElementById('chasis');
+      const marca = document.getElementById('marca');
+      const modelo = document.getElementById('modelo');
+      const anio = document.getElementById('anio');
+      const cilindrada = document.getElementById('cilindrada');
+
+      if (selector) {
+        selector.addEventListener('change', function () {
+          const option = selector.options[selector.selectedIndex];
+          if (!option || !option.value) {
+            return;
+          }
+
+          if (chasis && option.dataset.chasis) chasis.value = option.dataset.chasis;
+          if (marca && option.dataset.marca) marca.value = option.dataset.marca;
+          if (modelo && option.dataset.modelo) modelo.value = option.dataset.modelo;
+          if (anio && option.dataset.anio) anio.value = option.dataset.anio;
+          if (cilindrada && option.dataset.motor && !cilindrada.value.trim()) cilindrada.value = option.dataset.motor;
+        });
+      }
+
+      if (form) {
+        form.addEventListener('submit', function (event) {
+          form.querySelectorAll('input[type="text"], textarea').forEach(function (field) {
+            field.value = field.value.trim();
+          });
+
+          if (!chasis || !marca || !modelo) {
+            return;
+          }
+
+          if (!chasis.value || !marca.value || !modelo.value) {
+            event.preventDefault();
+            window.alert('Chasis, marca y modelo son obligatorios.');
+            return;
+          }
+
+          if (/\s/.test(chasis.value)) {
+            event.preventDefault();
+            window.alert('El chasis no puede contener espacios en blanco.');
+            chasis.focus();
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
+
+
+
+
+
+

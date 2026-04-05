@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Liquidación de Venta — Gerente</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+  <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+
+  <main class="main inventory-modern">
+    <div class="content-header modern-header finance-header">
+      <h1><i class="fa-solid fa-calculator"></i> Liquidación financiera de la venta</h1>
+      <p>Configura el cierre económico de esta operación y deja calculadas utilidad, comisión y monto sugerido para reinvertir.</p>
+      <div class="info-pills">
+        <span class="info-pill"><i class="fa-solid fa-hashtag"></i> Pedido <strong th:text="${contabilidad.pedido != null ? contabilidad.pedido.idPedido : '-'}">-</strong></span>
+        <span class="info-pill"><i class="fa-solid fa-user-tie"></i> Vendedor <strong th:text="${contabilidad.pedido != null and contabilidad.pedido.conductor != null ? contabilidad.pedido.conductor.nombre : 'Sin vendedor'}">Sin vendedor</strong></span>
+        <span class="info-pill"><i class="fa-solid fa-car-side"></i> Vehículo <strong th:text="${contabilidad.vehiculo != null ? contabilidad.vehiculo.marca + ' ' + contabilidad.vehiculo.modelo : 'Sin vehículo'}">Vehículo</strong></span>
+      </div>
+    </div>
+
+    <div th:if="${error}" class="card card-alert error" th:text="${error}"></div>
+
+    <div class="finance-form-layout">
+      <section class="card elevated-form-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-wallet"></i> Datos contables</h2>
+        </div>
+
+        <form th:action="@{/gerente/contabilidad/pedido/{id}(id=${contabilidad.pedido.idPedido})}" th:object="${contabilidad}" method="post" id="contabilidadForm">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+          <div class="form-grid">
+            <div>
+              <label for="precioPublicadoSnapshot">Precio publicado</label>
+              <input id="precioPublicadoSnapshot" th:field="*{precioPublicadoSnapshot}" type="number" step="0.01" min="0" class="field-control"/>
+            </div>
+            <div>
+              <label for="precioVentaFinal">Precio final de venta</label>
+              <input id="precioVentaFinal" th:field="*{precioVentaFinal}" type="number" step="0.01" min="0" class="field-control" required/>
+            </div>
+            <div>
+              <label for="costoBase">Costo base</label>
+              <input id="costoBase" th:field="*{costoBase}" type="number" step="0.01" min="0" class="field-control"/>
+            </div>
+            <div>
+              <label for="costoAcondicionamiento">Acondicionamiento</label>
+              <input id="costoAcondicionamiento" th:field="*{costoAcondicionamiento}" type="number" step="0.01" min="0" class="field-control"/>
+            </div>
+            <div>
+              <label for="costoTraslado">Traslado / logística</label>
+              <input id="costoTraslado" th:field="*{costoTraslado}" type="number" step="0.01" min="0" class="field-control"/>
+            </div>
+            <div>
+              <label for="costoAdministrativo">Costo administrativo</label>
+              <input id="costoAdministrativo" th:field="*{costoAdministrativo}" type="number" step="0.01" min="0" class="field-control"/>
+            </div>
+            <div>
+              <label for="gastoPublicacion">Gasto de publicación</label>
+              <input id="gastoPublicacion" th:field="*{gastoPublicacion}" type="number" step="0.01" min="0" class="field-control"/>
+            </div>
+            <div>
+              <label for="gastosCierre">Gastos de cierre</label>
+              <input id="gastosCierre" th:field="*{gastosCierre}" type="number" step="0.01" min="0" class="field-control"/>
+            </div>
+            <div>
+              <label for="porcentajeComision">Comisión del vendedor (%)</label>
+              <input id="porcentajeComision" th:field="*{porcentajeComision}" type="number" step="0.01" min="0" max="100" class="field-control"/>
+            </div>
+            <div>
+              <label for="porcentajeReinversion">Reinversión sugerida (%)</label>
+              <input id="porcentajeReinversion" th:field="*{porcentajeReinversion}" type="number" step="0.01" min="0" max="100" class="field-control"/>
+            </div>
+            <div class="col-span-full">
+              <label for="notas">Notas contables</label>
+              <textarea id="notas" th:field="*{notas}" rows="4" class="field-control field-textarea" placeholder="Observaciones sobre descuento aplicado, negociación, sobrecostos o condiciones especiales..."></textarea>
+            </div>
+          </div>
+
+          <div class="action-buttons top-space">
+            <button type="submit" class="btn"><i class="fa-solid fa-floppy-disk"></i> Guardar liquidación</button>
+            <a th:href="@{/gerente/contabilidad}" class="btn ghost"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+          </div>
+        </form>
+      </section>
+
+      <aside class="card upload-info-card finance-preview-card">
+        <div class="section-title compact-title">
+          <h2><i class="fa-solid fa-chart-simple"></i> Resumen automático</h2>
+        </div>
+        <div class="finance-preview-grid">
+          <div class="preview-metric">
+            <span>Costo total</span>
+            <strong id="previewCostoTotal" th:text="${'$ ' + #numbers.formatDecimal(contabilidad.costoTotalCalculado, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Utilidad bruta</span>
+            <strong id="previewUtilidadBruta" th:text="${'$ ' + #numbers.formatDecimal(contabilidad.utilidadBrutaCalculada, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Comisión</span>
+            <strong id="previewComision" th:text="${'$ ' + #numbers.formatDecimal(contabilidad.valorComisionCalculado, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Utilidad neta</span>
+            <strong id="previewUtilidadNeta" th:text="${'$ ' + #numbers.formatDecimal(contabilidad.utilidadNetaCalculada, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Reinversión sugerida</span>
+            <strong id="previewReinversion" th:text="${'$ ' + #numbers.formatDecimal(contabilidad.valorReinversionCalculado, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+          </div>
+          <div class="preview-metric">
+            <span>Margen neto</span>
+            <strong id="previewMargen" th:text="${#numbers.formatDecimal(contabilidad.margenCalculado, 1, 'COMMA', 1, 'POINT') + '%'}">0%</strong>
+          </div>
+        </div>
+        <div class="finance-help-block top-space">
+          <strong><i class="fa-solid fa-circle-info"></i> Recomendación</strong>
+          <p>Liquida primero las ventas entregadas. Si una operación sigue en vendido pero no está pagada totalmente, puedes guardarla como preliminar y luego ajustar el precio final de cierre.</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const form = document.getElementById('contabilidadForm');
+      if (!form) {
+        return;
+      }
+
+      const ids = {
+        precioVentaFinal: 'precioVentaFinal',
+        costoBase: 'costoBase',
+        costoAcondicionamiento: 'costoAcondicionamiento',
+        costoTraslado: 'costoTraslado',
+        costoAdministrativo: 'costoAdministrativo',
+        gastoPublicacion: 'gastoPublicacion',
+        gastosCierre: 'gastosCierre',
+        porcentajeComision: 'porcentajeComision',
+        porcentajeReinversion: 'porcentajeReinversion'
+      };
+
+      const fields = Object.fromEntries(Object.entries(ids).map(([key, id]) => [key, document.getElementById(id)]));
+      const previewCostoTotal = document.getElementById('previewCostoTotal');
+      const previewUtilidadBruta = document.getElementById('previewUtilidadBruta');
+      const previewComision = document.getElementById('previewComision');
+      const previewUtilidadNeta = document.getElementById('previewUtilidadNeta');
+      const previewReinversion = document.getElementById('previewReinversion');
+      const previewMargen = document.getElementById('previewMargen');
+
+      function amount(value) {
+        const parsed = parseFloat(value);
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+
+      function formatMoney(value) {
+        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value || 0);
+      }
+
+      function formatPercent(value) {
+        return new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value || 0) + '%';
+      }
+
+      function recalculate() {
+        const venta = amount(fields.precioVentaFinal?.value);
+        const costoTotal = amount(fields.costoBase?.value)
+          + amount(fields.costoAcondicionamiento?.value)
+          + amount(fields.costoTraslado?.value)
+          + amount(fields.costoAdministrativo?.value)
+          + amount(fields.gastoPublicacion?.value)
+          + amount(fields.gastosCierre?.value);
+        const utilidadBruta = venta - costoTotal;
+        const comision = Math.max(utilidadBruta, 0) * amount(fields.porcentajeComision?.value) / 100;
+        const utilidadNeta = utilidadBruta - comision;
+        const reinversion = Math.max(utilidadNeta, 0) * amount(fields.porcentajeReinversion?.value) / 100;
+        const margen = venta > 0 ? (utilidadNeta * 100 / venta) : 0;
+
+        previewCostoTotal.textContent = formatMoney(costoTotal);
+        previewUtilidadBruta.textContent = formatMoney(utilidadBruta);
+        previewComision.textContent = formatMoney(comision);
+        previewUtilidadNeta.textContent = formatMoney(utilidadNeta);
+        previewReinversion.textContent = formatMoney(reinversion);
+        previewMargen.textContent = formatPercent(margen);
+      }
+
+      Object.values(fields).forEach((field) => {
+        if (field) {
+          field.addEventListener('input', recalculate);
+        }
+      });
+
+      recalculate();
+    })();
+  </script>
+</body>
+</html>

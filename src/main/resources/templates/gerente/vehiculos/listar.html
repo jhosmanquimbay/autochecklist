@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Vehículos — Gerente</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+
+  <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+
+  <main class="main">
+    <div class="content-header">
+      <h1><i class="fa-solid fa-car"></i> Solicitudes de Publicación</h1>
+      <p>Gerencia carga la información del vehículo y admin decide cuándo publicarlo en la oficina.</p>
+    </div>
+
+    <div th:if="${success != null}" style="margin-bottom:1rem;padding:.9rem 1rem;border-radius:12px;background:#ecfdf3;color:#166534;border:1px solid #bbf7d0;font-weight:600;" th:text="${success}">
+      Operación completada correctamente.
+    </div>
+
+    <div class="card">
+      <div class="layout-between">
+        <div class="section-title">
+          <h2><i class="fa-solid fa-cars"></i> Vehículos cargados por gerencia</h2>
+        </div>
+        <div class="row-actions">
+          <a th:href="@{/gerente}" class="btn ghost">
+            <i class="fa-solid fa-arrow-left"></i> Volver al panel
+          </a>
+          <a th:href="@{/gerente/vehiculos/crear}" class="btn">
+            <i class="fa-solid fa-plus"></i> Cargar Vehículo
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;">
+        <a th:href="@{/gerente/vehiculos}" class="btn ghost"
+          th:styleappend="${estadoPublicacionFiltro == 'todos'} ? 'background:#0f172a;color:#ffffff;border-color:#0f172a;' : ''">Todos</a>
+        <a th:href="@{/gerente/vehiculos(estadoPublicacion='PENDIENTE')}" class="btn ghost"
+          th:styleappend="${estadoPublicacionFiltro == 'PENDIENTE'} ? 'background:#0f172a;color:#ffffff;border-color:#0f172a;' : ''">Pendientes</a>
+        <a th:href="@{/gerente/vehiculos(estadoPublicacion='DEVUELTO')}" class="btn ghost"
+          th:styleappend="${estadoPublicacionFiltro == 'DEVUELTO'} ? 'background:#0f172a;color:#ffffff;border-color:#0f172a;' : ''">Devueltos</a>
+        <a th:href="@{/gerente/vehiculos(estadoPublicacion='PUBLICADO')}" class="btn ghost"
+          th:styleappend="${estadoPublicacionFiltro == 'PUBLICADO'} ? 'background:#0f172a;color:#ffffff;border-color:#0f172a;' : ''">Publicados</a>
+        <a th:href="@{/gerente/vehiculos(estadoPublicacion='BORRADOR')}" class="btn ghost"
+          th:styleappend="${estadoPublicacionFiltro == 'BORRADOR'} ? 'background:#0f172a;color:#ffffff;border-color:#0f172a;' : ''">Borradores</a>
+        <a th:href="@{/gerente/vehiculos(estadoPublicacion='DESPUBLICADO')}" class="btn ghost"
+          th:styleappend="${estadoPublicacionFiltro == 'DESPUBLICADO'} ? 'background:#0f172a;color:#ffffff;border-color:#0f172a;' : ''">Despublicados</a>
+      </div>
+
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+        <span class="status-pill bg-warning">Pendientes: <strong th:text="${conteoPendientesPublicacion}">0</strong></span>
+        <span class="status-pill bg-success">Publicados: <strong th:text="${conteoPublicados}">0</strong></span>
+        <span class="status-pill bg-danger">Devueltos: <strong th:text="${conteoDevueltos}">0</strong></span>
+        <span class="status-pill">Borradores: <strong th:text="${conteoBorradores}">0</strong></span>
+        <span class="status-pill">Despublicados: <strong th:text="${conteoDespublicados}">0</strong></span>
+      </div>
+      <p class="muted-note" style="margin-top:1rem;">Si modificas un vehículo ya publicado, volverá a estado pendiente hasta que admin lo revise y lo publique de nuevo.</p>
+      <p class="muted-note" th:if="${estadoPublicacionFiltro == 'PENDIENTE'}">Vista recomendada: aquí aparecen los vehículos recién cargados o reenviados por gerencia.</p>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Imagen</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Año</th>
+            <th>Precio</th>
+            <th>Combustible</th>
+            <th>Transmisión</th>
+            <th>Operación</th>
+            <th>Publicación</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="v : ${vehiculos}"
+              th:style="${vehiculoResaltadoId != null and vehiculoResaltadoId == v.idVehiculo} ? 'background:#fff7ed;box-shadow:inset 4px 0 0 #f59e0b;' : ''">
+            <td th:text="${v.idVehiculo}">1</td>
+            <td>
+              <img th:if="${v.imagen != null}"
+                   th:src="@{'/imagenes/' + ${v.idVehiculo}}"
+                   alt="Imagen" class="thumb"/>
+              <span th:unless="${v.imagen != null}" class="empty-note">Sin imagen</span>
+            </td>
+            <td th:text="${v.marca}">—</td>
+            <td th:text="${v.modelo}">—</td>
+            <td th:text="${v.anio}">—</td>
+            <td th:text="${v.precio != null ? '$' + #numbers.formatDecimal(v.precio,1,'COMMA',0,'POINT') : '—'}">—</td>
+            <td th:text="${v.tipoCombustible}">—</td>
+            <td th:text="${v.transmision}">—</td>
+            <td>
+              <span th:classappend="${v.activo ? 'bg-success' : 'bg-danger'}"
+                    class="status-pill">
+                <span th:text="${v.activo ? 'Activo' : 'Inactivo'}"></span>
+              </span>
+            </td>
+            <td>
+              <span class="status-pill"
+                    th:classappend="${v.estadoPublicacion == 'PUBLICADO'} ? ' bg-success' : (${v.estadoPublicacion == 'PENDIENTE'} ? ' bg-warning' : (${v.estadoPublicacion == 'DEVUELTO'} ? ' bg-danger' : ''))"
+                    th:text="${v.estadoPublicacionEtiqueta}">
+                Pendiente de publicación
+              </span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <a th:href="@{'/gerente/vehiculos/editar/' + ${v.idVehiculo}}" class="btn ghost">
+                  <i class="fa-solid fa-pen"></i> Editar
+                </a>
+                <form th:if="${v.estadoPublicacion != 'PUBLICADO'}" th:action="@{'/gerente/vehiculos/eliminar/' + ${v.idVehiculo}}" method="post">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <button type="submit" class="btn ghost"
+                          onclick="return confirm('¿Retirar este vehículo del flujo de publicación?')">
+                    <i class="fa-solid fa-box-archive"></i> Retirar
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(vehiculos)}">
+            <td colspan="11" class="empty-row">
+              No hay vehículos en este estado. Usa el botón “Cargar Vehículo” para enviar uno a revisión o cambia el filtro.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>
+
+
+
+
+
+

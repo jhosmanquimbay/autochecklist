@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<body>
+<aside th:fragment="sidebar" class="sidebar">
+  <div>
+    <h3><i class="fa-solid fa-handshake"></i> <span>Vendedor</span></h3>
+    <ul>
+      <li>
+        <a th:href="@{/vendedor/panel}">
+          <i class="fa-solid fa-gauge-high"></i>
+          <span>Panel</span>
+        </a>
+      </li>
+      <li>
+        <a th:href="@{/vendedor/vehiculos}">
+          <i class="fa-solid fa-car-side"></i>
+          <span>Vehículos Disponibles</span>
+        </a>
+      </li>
+      <li>
+        <a th:href="@{/vendedor/ventas}">
+          <i class="fa-solid fa-sack-dollar"></i>
+          <span>Ventas y Oportunidades</span>
+        </a>
+      </li>
+      <li>
+        <a href="/vendedor/ventas#financiamiento">
+          <i class="fa-solid fa-building-columns"></i>
+          <span>Financiación</span>
+        </a>
+      </li>
+      <li>
+        <a th:href="@{/vendedor/novedades}">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>Reportar Novedades</span>
+        </a>
+      </li>
+      <li>
+        <a th:href="@{/correo/inbox}">
+          <i class="fa-solid fa-envelope"></i>
+          <span>Correo
+            <span th:if="${unreadCount != null and unreadCount > 0}" th:text="'(' + ${unreadCount} + ')'">(0)</span>
+          </span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <form th:action="@{/logout}" method="post">
+    <button type="submit" class="logout-btn">
+      <i class="fas fa-sign-out-alt"></i>
+      <span>Cerrar sesión</span>
+    </button>
+  </form>
+</aside>
+</body>
+</html>

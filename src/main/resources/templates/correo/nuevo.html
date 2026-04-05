@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Nuevo Mensaje</title>
+
+    <style>
+        body { margin:0; font-family: Arial; }
+        .layout { display:flex; height:100vh; }
+
+        .sidebar-list {
+            width:350px;
+            border-right:1px solid #ccc;
+            overflow-y:auto;
+            padding:15px;
+        }
+        .right-panel {
+            flex:1;
+            padding:25px;
+        }
+
+        input, textarea, select {
+            width:100%;
+            margin-bottom:15px;
+            padding:10px;
+            border:1px solid #ccc;
+        }
+
+        button {
+            padding:10px 20px;
+            background:#007bff;
+            color:white;
+            border:none;
+            cursor:pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <div class="sidebar-list">
+        <h3>✉ Correo</h3>
+
+        <a href="/correo/inbox">
+            <button style="width:100%; padding:10px;">📥 Bandeja de Entrada</button>
+        </a>
+    </div>
+
+    <div class="right-panel">
+        <h2>Redactar Mensaje</h2>
+
+        <form th:action="@{/correo/enviar}" enctype="multipart/form-data" method="post">
+
+            <label>Para:</label>
+            <select name="destinatario">
+                <option th:each="u : ${usuarios}" th:value="${u.idUsuario}"
+                        th:text="${u.nombre + ' <' + u.correo + '>'}">
+                </option>
+            </select>
+
+            <label>Asunto:</label>
+            <input name="asunto" />
+
+            <label>Mensaje:</label>
+            <textarea name="contenido" rows="8"></textarea>
+
+            <label>Adjuntos:</label>
+            <input type="file" name="archivos" multiple />
+
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+
+</div>
+
+</body>
+</html>

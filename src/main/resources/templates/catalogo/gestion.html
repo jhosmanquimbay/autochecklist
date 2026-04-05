@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Gestión de Catálogo - Concesionario AutoCheckList</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		* { box-sizing: border-box; }
+		body {
+			margin: 0;
+			font-family: 'Poppins', sans-serif;
+			background: linear-gradient(145deg, #eef2f7, #d8e0ea);
+			color: #1f2937;
+		}
+		.header {
+			background: #0f2b46;
+			color: #fff;
+			padding: 1.2rem 2rem;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 1rem;
+			flex-wrap: wrap;
+		}
+		.header h1 { margin: 0; font-size: 1.4rem; }
+		.header-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+		.container {
+			max-width: 1200px;
+			margin: 1.5rem auto;
+			padding: 0 1rem 1rem;
+		}
+		.card {
+			background: #fff;
+			border-radius: 14px;
+			padding: 1.1rem;
+			box-shadow: 0 8px 25px rgba(15, 43, 70, 0.12);
+			margin-bottom: 1rem;
+		}
+		.kpi-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+			gap: 0.8rem;
+		}
+		.kpi {
+			background: #f8fafc;
+			border: 1px solid #e2e8f0;
+			border-radius: 10px;
+			padding: 0.8rem;
+		}
+		.kpi span { display: block; }
+		.kpi .label { color: #475569; font-size: 0.85rem; }
+		.kpi .value { color: #0f2b46; font-weight: 700; font-size: 1.2rem; }
+		.toolbar {
+			display: flex;
+			justify-content: space-between;
+			gap: 1rem;
+			align-items: center;
+			flex-wrap: wrap;
+		}
+		.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+		.btn {
+			border: none;
+			border-radius: 10px;
+			padding: 0.6rem 0.9rem;
+			text-decoration: none;
+			font-weight: 600;
+			font-size: 0.92rem;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.4rem;
+			cursor: pointer;
+			transition: .2s;
+		}
+		.btn.primary { background: #f5a623; color: #111827; }
+		.btn.primary:hover { background: #e19318; }
+		.btn.secondary { background: #0f2b46; color: #fff; }
+		.btn.secondary:hover { background: #12365a; }
+		.btn.ghost { background: #e2e8f0; color: #1e293b; }
+		.btn.ghost:hover { background: #cbd5e1; }
+		.btn.danger { background: #dc2626; color: #fff; }
+		.btn.danger:hover { background: #b91c1c; }
+		.flash {
+			padding: 0.7rem 0.9rem;
+			border-radius: 10px;
+			margin-bottom: 0.8rem;
+			font-size: 0.92rem;
+		}
+		.flash.success { background: #dcfce7; color: #166534; }
+		.flash.error { background: #fee2e2; color: #991b1b; }
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 0.92rem;
+		}
+		th, td {
+			padding: 0.7rem;
+			border-bottom: 1px solid #e2e8f0;
+			text-align: left;
+			vertical-align: middle;
+		}
+		th { color: #0f2b46; font-size: 0.84rem; text-transform: uppercase; letter-spacing: .03em; }
+		.actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+		.empty {
+			text-align: center;
+			padding: 1.6rem 0.8rem;
+			color: #64748b;
+		}
+	</style>
+</head>
+<body>
+<header class="header">
+	<h1><i class="fas fa-cars"></i> Gestión de Catálogo Comercial</h1>
+	<div class="header-actions">
+		<a th:href="@{/gerente}" class="btn ghost"><i class="fas fa-gauge"></i> Panel Gerente</a>
+		<a th:href="@{/catalogo}" class="btn ghost"><i class="fas fa-eye"></i> Ver catálogo público</a>
+	</div>
+</header>
+
+<div class="container">
+	<div th:if="${success}" class="flash success" th:text="${success}"></div>
+	<div th:if="${error}" class="flash error" th:text="${error}"></div>
+
+	<section class="card">
+		<div class="kpi-grid">
+			<div class="kpi">
+				<span class="label">Vehículos publicados</span>
+				<span class="value" th:text="${vehiculos != null ? #lists.size(vehiculos) : 0}">0</span>
+			</div>
+			<div class="kpi">
+				<span class="label">Categoría activa</span>
+				<span class="value" th:text="${categoriaSeleccionada != null && categoriaSeleccionada != '' ? categoriaSeleccionada : 'Todas'}">Todas</span>
+			</div>
+			<div class="kpi">
+				<span class="label">Estado del módulo</span>
+				<span class="value">Operativo</span>
+			</div>
+		</div>
+	</section>
+
+	<section class="card">
+		<div class="toolbar">
+			<div class="filters">
+				<a th:href="@{/catalogo/gestion}" class="btn secondary">Todas</a>
+				<a th:href="@{/catalogo/gestion(categoria='Sedán')}" class="btn ghost">Sedán</a>
+				<a th:href="@{/catalogo/gestion(categoria='4x4')}" class="btn ghost">4x4</a>
+				<a th:href="@{/catalogo/gestion(categoria='Van')}" class="btn ghost">Van</a>
+				<a th:href="@{/catalogo/gestion(categoria='Pasajeros')}" class="btn ghost">Pasajeros</a>
+			</div>
+			<a th:href="@{/catalogo/agregar}" class="btn primary"><i class="fas fa-plus"></i> Nuevo vehículo</a>
+		</div>
+	</section>
+
+	<section class="card">
+		<table>
+			<thead>
+				<tr>
+					<th>Vehículo</th>
+					<th>Categoría</th>
+					<th>Precio</th>
+					<th>Descripción</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="vehiculo : ${vehiculos}">
+					<td>
+						<strong th:text="${vehiculo.titulo}">Marca Modelo</strong>
+					</td>
+					<td th:text="${vehiculo.categoria}">Sedán</td>
+					<td th:text="${vehiculo.precio != null ? '$ ' + #numbers.formatDecimal(vehiculo.precio, 0, 'COMMA', 0, 'POINT') : 'Sin precio'}">$ 0</td>
+					<td th:text="${vehiculo.descripcion != null ? (vehiculo.descripcion.length() > 65 ? vehiculo.descripcion.substring(0,65) + '...' : vehiculo.descripcion) : 'Sin descripción'}">Descripción</td>
+					<td>
+						<div class="actions">
+							<a th:href="@{/catalogo/detalles/{id}(id=${vehiculo.id})}" class="btn ghost"><i class="fas fa-eye"></i> Ver</a>
+							<a th:href="@{/catalogo/editar/{id}(id=${vehiculo.id})}" class="btn secondary"><i class="fas fa-pen"></i> Editar</a>
+							<form th:action="@{/catalogo/eliminar/{id}(id=${vehiculo.id})}" method="post" style="display:inline;">
+								<button type="submit" class="btn danger" onclick="return confirm('¿Eliminar este vehículo del catálogo?');"><i class="fas fa-trash"></i> Eliminar</button>
+							</form>
+						</div>
+					</td>
+				</tr>
+				<tr th:if="${vehiculos == null or #lists.isEmpty(vehiculos)}">
+					<td colspan="5" class="empty">No hay vehículos registrados en esta categoría.</td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+</div>
+</body>
+</html>

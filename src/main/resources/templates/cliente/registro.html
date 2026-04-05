@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Cuenta | AutoCheckList</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/cliente-auth.css}">
+</head>
+<body class="auth-body">
+<div class="auth-shell auth-shell-wide">
+    <section class="auth-side">
+        <span class="auth-badge">Registro Cliente</span>
+        <h1>Crea tu oficina personal y administra tu experiencia.</h1>
+        <p>Regístrate para guardar favoritos, seguir compras y editar tu perfil con una experiencia clara y profesional.</p>
+
+        <div class="auth-side-points auth-side-points-grid">
+            <div><i class="fas fa-id-card"></i> Cédula única por usuario</div>
+            <div><i class="fas fa-phone"></i> Datos de contacto listos</div>
+            <div><i class="fas fa-shield"></i> Contraseña segura validada</div>
+            <div><i class="fas fa-wand-magic-sparkles"></i> Acceso inmediato a tu oficina</div>
+        </div>
+    </section>
+
+    <section class="auth-card auth-card-wide">
+        <div class="auth-brand auth-brand-left">
+            <img th:src="@{/images/AUTOCHECKLIST (5).png}" alt="Logo empresa">
+        </div>
+
+        <div class="auth-card-header">
+            <h2>Crear Cuenta</h2>
+            <p class="auth-subtitle">Completa tus datos y activa tu perfil de cliente.</p>
+        </div>
+
+        <form th:action="@{/registro}" th:object="${registroForm}" method="post" class="auth-form auth-form-grid">
+            <div class="form-field">
+                <label for="cedula">Cédula</label>
+                <div class="input-group">
+                    <i class="fas fa-id-card"></i>
+                    <input type="text" id="cedula" th:field="*{cedula}" placeholder="Número de cédula" required>
+                </div>
+                <small class="field-error" th:if="${#fields.hasErrors('cedula')}" th:errors="*{cedula}"></small>
+            </div>
+
+            <div class="form-field">
+                <label for="telefono">Número de teléfono</label>
+                <div class="input-group">
+                    <i class="fas fa-phone"></i>
+                    <input type="text" id="telefono" th:field="*{telefono}" placeholder="3001234567" required>
+                </div>
+                <small class="field-error" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}"></small>
+            </div>
+
+            <div class="form-field field-span-2">
+                <label for="correo">Correo</label>
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="correo" th:field="*{correo}" placeholder="correo@ejemplo.com" required>
+                </div>
+                <small class="field-error" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}"></small>
+            </div>
+
+            <div class="form-field field-span-2">
+                <label for="nombreCompleto">Nombre completo</label>
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="nombreCompleto" th:field="*{nombreCompleto}" placeholder="Nombre completo" required>
+                </div>
+                <small class="field-error" th:if="${#fields.hasErrors('nombreCompleto')}" th:errors="*{nombreCompleto}"></small>
+            </div>
+
+            <div class="form-field field-span-2">
+                <label for="direccion">Dirección</label>
+                <div class="input-group">
+                    <i class="fas fa-location-dot"></i>
+                    <input type="text" id="direccion" th:field="*{direccion}" placeholder="Opcional">
+                </div>
+                <small class="field-error" th:if="${#fields.hasErrors('direccion')}" th:errors="*{direccion}"></small>
+            </div>
+
+            <div class="form-field field-span-2">
+                <label for="ciudad">Ciudad</label>
+                <div class="input-group">
+                    <i class="fas fa-city"></i>
+                    <input type="text" id="ciudad" th:field="*{ciudad}" placeholder="Opcional">
+                </div>
+                <small class="field-error" th:if="${#fields.hasErrors('ciudad')}" th:errors="*{ciudad}"></small>
+            </div>
+
+            <div class="form-field field-span-2">
+                <label for="contrasena">Contraseña</label>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="contrasena" th:field="*{contrasena}" placeholder="Entre 8 y 16 caracteres" required>
+                </div>
+                <small class="field-hint">Debe incluir una mayúscula, un número y un carácter especial.</small>
+                <small class="field-error" th:if="${#fields.hasErrors('contrasena')}" th:errors="*{contrasena}"></small>
+            </div>
+
+            <button type="submit" class="btn-auth-primary field-span-2">Crear cuenta</button>
+        </form>
+
+        <div class="inline-links inline-links-center">
+            <a th:href="@{/login}">Ya tengo cuenta</a>
+            <a th:href="@{/}">Volver al inicio</a>
+        </div>
+    </section>
+</div>
+</body>
+</html>

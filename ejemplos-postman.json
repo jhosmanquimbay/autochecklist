@@ -1,0 +1,141 @@
+{
+  "info": {
+    "name": "Email Service API",
+    "description": "Ejemplos para probar el servicio de correos masivos",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "1. Validar Configuración",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/email/validar-configuracion",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "email", "validar-configuracion"]
+        }
+      }
+    },
+    {
+      "name": "2. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/email/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "email", "health"]
+        }
+      }
+    },
+    {
+      "name": "3. Envío Masivo Síncrono - Texto Plano",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"destinatarios\": [\n    \"usuario1@example.com\",\n    \"usuario2@example.com\",\n    \"usuario3@example.com\"\n  ],\n  \"asunto\": \"Notificación Importante\",\n  \"mensaje\": \"Estimado usuario,\\n\\nEste es un mensaje de prueba del sistema de correos masivos.\\n\\nSaludos cordiales,\\nEquipo de Desarrollo\",\n  \"esHtml\": false\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/email/enviar",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "email", "enviar"]
+        }
+      }
+    },
+    {
+      "name": "4. Envío Masivo Síncrono - HTML",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"destinatarios\": [\n    \"usuario1@example.com\",\n    \"usuario2@example.com\"\n  ],\n  \"asunto\": \"Newsletter - Novedades del Mes\",\n  \"mensaje\": \"<html><body><h1>¡Hola!</h1><p>Este es un correo con formato <strong>HTML</strong>.</p><ul><li>Novedad 1</li><li>Novedad 2</li><li>Novedad 3</li></ul><p>Visita nuestro <a href='https://example.com'>sitio web</a></p></body></html>\",\n  \"esHtml\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/email/enviar",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "email", "enviar"]
+        }
+      }
+    },
+    {
+      "name": "5. Envío Masivo Asíncrono",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"destinatarios\": [\n    \"usuario1@example.com\",\n    \"usuario2@example.com\",\n    \"usuario3@example.com\",\n    \"usuario4@example.com\",\n    \"usuario5@example.com\"\n  ],\n  \"asunto\": \"Procesamiento Asíncrono\",\n  \"mensaje\": \"Este correo se está enviando de forma asíncrona para mejorar el rendimiento.\",\n  \"esHtml\": false\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/email/enviar-async",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "email", "enviar-async"]
+        }
+      }
+    },
+    {
+      "name": "6. Envío con Archivos Adjuntos",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "email",
+              "value": "{\n  \"destinatarios\": [\n    \"usuario1@example.com\"\n  ],\n  \"asunto\": \"Documentos Adjuntos\",\n  \"mensaje\": \"Adjunto encontrarás los documentos solicitados.\",\n  \"esHtml\": false\n}",
+              "type": "text",
+              "contentType": "application/json"
+            },
+            {
+              "key": "archivos",
+              "type": "file",
+              "src": "/ruta/a/tu/archivo.pdf"
+            },
+            {
+              "key": "archivos",
+              "type": "file",
+              "src": "/ruta/a/tu/imagen.jpg"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/email/enviar-con-adjuntos",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "email", "enviar-con-adjuntos"]
+        }
+      }
+    }
+  ]
+}

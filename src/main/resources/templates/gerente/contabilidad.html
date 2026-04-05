@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Contabilidad Comercial — Gerente</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/manager-theme.css}"/>
+  <link rel="stylesheet" th:href="@{/css/gerente-panel.css}"/>
+</head>
+<body>
+  <aside th:replace="~{fragments/gerente-sidebar :: sidebar}"></aside>
+
+  <main class="main contabilidad-page inventory-modern">
+    <div class="content-header modern-header finance-header">
+      <div class="layout-between">
+        <div>
+          <h1><i class="fa-solid fa-file-invoice-dollar"></i> Contabilidad Comercial</h1>
+          <p>Liquida cada venta conectándola con pedido, publicación e inventario para conocer utilidad neta, comisión y reinversión sugerida.</p>
+        </div>
+        <div class="action-buttons">
+          <a th:href="@{/gerente/contabilidad/reporte.pdf(periodo=${periodoFiltro},estado=${estadoFiltroContable})}" class="btn">
+            <i class="fa-solid fa-file-pdf"></i> Descargar PDF
+          </a>
+          <a th:href="@{/gerente}" class="btn ghost">
+            <i class="fa-solid fa-arrow-left"></i> Volver al panel
+          </a>
+        </div>
+      </div>
+      <div class="info-pills top-space">
+        <span class="info-pill"><i class="fa-solid fa-filter"></i> <span th:text="${descripcionFiltroContable}">Ventas cerradas</span></span>
+        <span class="info-pill"><i class="fa-solid fa-clock-rotate-left"></i> Las ventas sin liquidación no entran al cálculo neto</span>
+      </div>
+    </div>
+
+    <div th:if="${success}" class="card card-alert success" th:text="${success}"></div>
+	<div th:if="${error}" class="card card-alert error" th:text="${error}"></div>
+
+    <div class="card filter-card">
+      <form method="get" th:action="@{/gerente/contabilidad}" class="finance-filter-grid">
+        <div>
+          <label for="periodo">Periodo</label>
+          <input id="periodo" name="periodo" type="month" class="field-control" th:value="${periodoFiltro}"/>
+        </div>
+        <div>
+          <label for="estado">Estado</label>
+          <select id="estado" name="estado" class="field-control">
+            <option value="cerradas" th:selected="${estadoFiltroContable == 'cerradas'}">Ventas cerradas</option>
+            <option value="vendido" th:selected="${estadoFiltroContable == 'vendido'}">Solo vendidas</option>
+            <option value="entregado" th:selected="${estadoFiltroContable == 'entregado'}">Solo entregadas</option>
+            <option value="pendientes_liquidacion" th:selected="${estadoFiltroContable == 'pendientes_liquidacion'}">Pendientes de liquidación</option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button type="submit" class="btn"><i class="fa-solid fa-magnifying-glass"></i> Aplicar</button>
+          <a th:href="@{/gerente/contabilidad}" class="btn ghost"><i class="fa-solid fa-rotate-left"></i> Limpiar</a>
+        </div>
+      </form>
+    </div>
+
+    <section class="finance-summary-grid">
+      <article class="finance-summary-card">
+        <span class="finance-summary-label">Operaciones</span>
+        <strong class="finance-summary-value" th:text="${resumenContable.totalOperaciones}">0</strong>
+      </article>
+      <article class="finance-summary-card">
+        <span class="finance-summary-label">Liquidadas</span>
+        <strong class="finance-summary-value" th:text="${resumenContable.operacionesLiquidadas}">0</strong>
+      </article>
+      <article class="finance-summary-card">
+        <span class="finance-summary-label">Pendientes</span>
+        <strong class="finance-summary-value" th:text="${resumenContable.pendientesLiquidacion}">0</strong>
+      </article>
+      <article class="finance-summary-card">
+        <span class="finance-summary-label">Ingresos liquidados</span>
+        <strong class="finance-summary-value" th:text="${'$ ' + #numbers.formatDecimal(resumenContable.ingresosLiquidados, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+      </article>
+      <article class="finance-summary-card">
+        <span class="finance-summary-label">Costos liquidados</span>
+        <strong class="finance-summary-value" th:text="${'$ ' + #numbers.formatDecimal(resumenContable.costosLiquidados, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+      </article>
+      <article class="finance-summary-card accent-positive">
+        <span class="finance-summary-label">Utilidad neta</span>
+        <strong class="finance-summary-value" th:text="${'$ ' + #numbers.formatDecimal(resumenContable.utilidadNeta, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+      </article>
+      <article class="finance-summary-card">
+        <span class="finance-summary-label">Comisiones</span>
+        <strong class="finance-summary-value" th:text="${'$ ' + #numbers.formatDecimal(resumenContable.comisiones, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+      </article>
+      <article class="finance-summary-card accent-gold-soft">
+        <span class="finance-summary-label">Reinversión sugerida</span>
+        <strong class="finance-summary-value" th:text="${'$ ' + #numbers.formatDecimal(resumenContable.reinversionSugerida, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+      </article>
+    </section>
+
+    <section class="finance-summary-grid top-space">
+      <article class="finance-summary-card">
+        <span class="finance-summary-label">Solicitudes de crédito</span>
+        <strong class="finance-summary-value" th:text="${resumenFinanciamientoGeneral.totalSolicitudes}">0</strong>
+      </article>
+      <article class="finance-summary-card accent-positive">
+        <span class="finance-summary-label">Preaprobadas</span>
+        <strong class="finance-summary-value" th:text="${resumenFinanciamientoGeneral.preaprobadas}">0</strong>
+      </article>
+      <article class="finance-summary-card">
+    <span class="finance-summary-label">Negocios originados</span>
+    <strong class="finance-summary-value" th:text="${resumenFinanciamientoGeneral.negociosOriginados}">0</strong>
+    </article>
+    <article class="finance-summary-card">
+    <span class="finance-summary-label">Documentación completa</span>
+    <strong class="finance-summary-value" th:text="${resumenFinanciamientoGeneral.documentacionCompleta}">0</strong>
+    </article>
+    <article class="finance-summary-card">
+    <span class="finance-summary-label">Listas para desembolso</span>
+    <strong class="finance-summary-value" th:text="${resumenFinanciamientoGeneral.listasDesembolso}">0</strong>
+    </article>
+    <article class="finance-summary-card accent-positive">
+    <span class="finance-summary-label">Desembolsadas</span>
+    <strong class="finance-summary-value" th:text="${resumenFinanciamientoGeneral.desembolsadas}">0</strong>
+    </article>
+    <article class="finance-summary-card accent-gold-soft">
+    <span class="finance-summary-label">Monto pendiente</span>
+    <strong class="finance-summary-value" th:text="${'$ ' + #numbers.formatDecimal(resumenFinanciamientoGeneral.montoPendienteDesembolso, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+      </article>
+      <article class="finance-summary-card accent-gold-soft">
+    <span class="finance-summary-label">Monto desembolsado</span>
+    <strong class="finance-summary-value" th:text="${'$ ' + #numbers.formatDecimal(resumenFinanciamientoGeneral.montoDesembolsado, 1, 'COMMA', 0, 'POINT')}">$0</strong>
+      </article>
+    </section>
+
+    <div class="card finance-formula-block">
+      <div class="section-title compact-title">
+        <h2><i class="fa-solid fa-function"></i> Fórmula aplicada</h2>
+      </div>
+      <p>
+        Utilidad bruta = precio final de venta - costos totales.
+        Comisión = utilidad bruta positiva × porcentaje de comisión.
+        Reinversión = utilidad neta positiva × porcentaje de reinversión.
+      </p>
+      <p>
+        Seguimiento financiero comercial = solicitudes registradas de crédito + preaprobaciones + monto potencial de cartera originado por los equipos de web y ventas.
+      </p>
+    </div>
+
+  <section class="finance-form-layout top-space">
+    <article id="desembolso" class="card">
+    <div class="section-title compact-title">
+      <h2><i class="fa-solid fa-building-columns"></i> Tablero de desembolso</h2>
+    </div>
+    <p class="muted-note">Contabilidad y gerencia pueden ver aquí qué operaciones ya están radicadas, cuáles quedaron aprobadas por entidad y cuáles ya entraron en caja.</p>
+
+    <div class="table-shell compact-table">
+      <table>
+      <thead>
+        <tr>
+        <th>Cliente</th>
+        <th>Vehículo</th>
+        <th>Documentos</th>
+        <th>Etapa</th>
+        <th>Desembolso</th>
+        <th>Monto</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="sim : ${financiamientosSeguimiento}">
+        <td>
+          <strong th:text="${sim.solicitanteNombre}">Cliente</strong>
+          <small class="table-subtext" th:text="${sim.entidadFinanciera != null and !sim.entidadFinanciera.isBlank() ? sim.entidadFinanciera : 'Entidad por definir'}">Entidad</small>
+        </td>
+        <td th:text="${sim.vehiculo != null ? sim.vehiculo.marca + ' ' + sim.vehiculo.modelo : 'Sin vehículo'}">Vehículo</td>
+        <td>
+          <span class="status-pill"
+            th:classappend="${sim.estadoDocumental == 'COMPLETO'} ? ' bg-success' : (${sim.estadoDocumental == 'VALIDANDO'} ? ' bg-info-soft' : (${sim.estadoDocumental == 'OBSERVADO'} ? ' bg-danger' : ' bg-warning-soft'))"
+            th:text="${sim.estadoDocumentalEtiqueta}">Documentos</span>
+        </td>
+        <td>
+          <span class="status-pill"
+            th:classappend="${sim.etapaProceso == 'DESEMBOLSADO'} ? ' bg-success' : (${sim.etapaProceso == 'APROBADO_ENTIDAD' or sim.etapaProceso == 'DESEMBOLSO_PROGRAMADO'} ? ' bg-info-soft' : (${sim.etapaProceso == 'DESCARTADO'} ? ' bg-danger' : ' bg-warning-soft'))"
+            th:text="${sim.etapaProcesoEtiqueta}">Etapa</span>
+        </td>
+        <td th:text="${sim.fechaDesembolsoReal != null ? #temporals.format(sim.fechaDesembolsoReal, 'dd/MM/yyyy') : (sim.fechaDesembolsoProgramada != null ? #temporals.format(sim.fechaDesembolsoProgramada, 'dd/MM/yyyy') : '-')}">-</td>
+        <td th:text="${sim.montoDesembolsado != null and sim.montoDesembolsado > 0 ? '$ ' + #numbers.formatDecimal(sim.montoDesembolsado, 1, 'COMMA', 0, 'POINT') : '$ ' + #numbers.formatDecimal(sim.montoFinanciar, 1, 'COMMA', 0, 'POINT')}">$0</td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(financiamientosSeguimiento)}">
+        <td colspan="6" class="empty-row">Todavía no hay operaciones activas en seguimiento financiero.</td>
+        </tr>
+      </tbody>
+      </table>
+    </div>
+    </article>
+
+    <article class="card tracking-form-card">
+    <div class="section-title compact-title">
+      <h2><i class="fa-solid fa-pen-ruler"></i> Gestionar etapa</h2>
+    </div>
+    <p class="muted-note">Usa este formulario cuando ya exista radicación con entidad, aprobación formal o fecha cierta de desembolso.</p>
+
+    <div th:if="${#lists.isEmpty(financiamientosSeguimiento)}" class="finance-help-block">
+      <strong><i class="fa-solid fa-circle-info"></i> Sin casos activos</strong>
+      <p>Cuando ventas convierta una simulación en negocio, el tablero se alimentará aquí para control de desembolso.</p>
+    </div>
+
+    <form th:unless="${#lists.isEmpty(financiamientosSeguimiento)}"
+        th:action="@{/gerente/contabilidad/financiamiento/seguimiento}"
+        th:object="${seguimientoFinanciamientoForm}"
+        method="post">
+      <div class="form-grid">
+      <div class="col-span-full">
+        <label>Solicitud</label>
+        <select th:field="*{solicitudId}" class="field-control" required>
+        <option value="">-- Seleccionar solicitud --</option>
+        <option th:each="sim : ${financiamientosSeguimiento}"
+            th:value="${sim.idSolicitudFinanciamiento}"
+            th:text="${sim.solicitanteNombre + ' | ' + (sim.vehiculo != null ? sim.vehiculo.marca + ' ' + sim.vehiculo.modelo : 'Vehículo') + ' | ' + sim.etapaProcesoEtiqueta}">Solicitud</option>
+        </select>
+      </div>
+      <div>
+        <label>Estado documental</label>
+        <select th:field="*{estadoDocumental}" class="field-control">
+        <option value="PENDIENTE">Pendiente</option>
+        <option value="INCOMPLETO">Incompleto</option>
+        <option value="VALIDANDO">Validando</option>
+        <option value="COMPLETO">Completo</option>
+        <option value="OBSERVADO">Observado</option>
+        </select>
+      </div>
+      <div>
+        <label>Etapa del proceso</label>
+        <select th:field="*{etapaProceso}" class="field-control">
+        <option value="RADICACION_PENDIENTE">Radicación pendiente</option>
+        <option value="EN_ANALISIS_ENTIDAD">En análisis de entidad</option>
+        <option value="APROBADO_ENTIDAD">Aprobado por entidad</option>
+        <option value="DESEMBOLSO_PROGRAMADO">Desembolso programado</option>
+        <option value="DESEMBOLSADO">Desembolsado</option>
+        <option value="DESCARTADO">Descartado</option>
+        </select>
+      </div>
+      <div>
+        <label>Entidad financiera</label>
+        <input type="text" th:field="*{entidadFinanciera}" class="field-control" placeholder="Entidad aprobadora"/>
+      </div>
+      <div>
+        <label>Fecha programada</label>
+        <input type="date" th:field="*{fechaDesembolsoProgramada}" class="field-control"/>
+      </div>
+      <div>
+        <label>Monto desembolsado</label>
+        <input type="number" th:field="*{montoDesembolsado}" min="0" step="0.01" class="field-control" placeholder="0"/>
+      </div>
+      <div class="col-span-full form-check-row">
+        <label class="checkbox-line">
+        <input type="checkbox" th:field="*{crearNegocio}"/>
+        <span>Confirmar que la operación ya fue tomada como negocio por la compañía</span>
+        </label>
+      </div>
+      <div class="col-span-full">
+        <label>Observación</label>
+        <textarea th:field="*{observacionesGestion}" rows="4" class="field-control field-textarea" placeholder="Aprobación formal, documentos pendientes, fecha de giro, novedades de la entidad..."></textarea>
+      </div>
+      </div>
+
+      <div class="finance-help-block top-space tracking-note">
+      <strong><i class="fa-solid fa-circle-info"></i> Regla contable</strong>
+      <p>Las etapas aprobadas o de desembolso consolidan la documentación como completa para reflejar el flujo real entre ventas, banco y caja.</p>
+      </div>
+
+      <div class="action-buttons top-space">
+      <button type="submit" class="btn"><i class="fa-solid fa-floppy-disk"></i> Guardar seguimiento</button>
+      </div>
+    </form>
+    </article>
+  </section>
+
+    <div class="card">
+      <div class="section-title compact-title">
+        <h2><i class="fa-solid fa-table-list"></i> Detalle por venta</h2>
+      </div>
+
+      <div class="table-shell finance-table-shell">
+        <table class="finance-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Cliente</th>
+              <th>Vendedor</th>
+              <th>Vehículo</th>
+              <th>Estado</th>
+              <th>Publicado</th>
+              <th>Venta final</th>
+              <th>Costos</th>
+              <th>Utilidad neta</th>
+              <th>Reinversión</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="detalle : ${detalleContable}"
+                th:classappend="${!detalle.configurado} ? ' row-pending' : (${detalle.perdida} ? ' row-negative' : '')">
+              <td th:text="${detalle.fechaOperacion != null ? #temporals.format(detalle.fechaOperacion, 'dd/MM/yyyy') : '-'}">-</td>
+              <td th:text="${detalle.cliente}">Cliente</td>
+              <td th:text="${detalle.vendedor}">Vendedor</td>
+              <td>
+                <strong th:text="${detalle.vehiculo}">Vehículo</strong>
+                <small class="table-subtext" th:text="${detalle.chasis}">CHASIS</small>
+              </td>
+              <td>
+                <span class="status-pill"
+                      th:classappend="${detalle.estado == 'entregado'} ? ' bg-success' : ' bg-warning-soft'"
+                      th:text="${detalle.estadoEtiqueta}">Estado</span>
+              </td>
+              <td th:text="${detalle.precioPublicado != null ? '$ ' + #numbers.formatDecimal(detalle.precioPublicado, 1, 'COMMA', 0, 'POINT') : '-'}">$0</td>
+              <td th:text="${detalle.configurado ? '$ ' + #numbers.formatDecimal(detalle.precioVentaFinal, 1, 'COMMA', 0, 'POINT') : 'Pendiente'}">Pendiente</td>
+              <td th:text="${detalle.configurado ? '$ ' + #numbers.formatDecimal(detalle.costoTotal, 1, 'COMMA', 0, 'POINT') : 'Pendiente'}">Pendiente</td>
+              <td>
+                <span th:if="${detalle.configurado}"
+                      class="status-pill"
+                      th:classappend="${detalle.perdida} ? ' bg-danger' : ' bg-success'"
+                      th:text="${'$ ' + #numbers.formatDecimal(detalle.utilidadNeta, 1, 'COMMA', 0, 'POINT')}">$0</span>
+                <span th:unless="${detalle.configurado}" class="status-pill bg-neutral-soft">Pendiente</span>
+              </td>
+              <td th:text="${detalle.configurado ? '$ ' + #numbers.formatDecimal(detalle.reinversion, 1, 'COMMA', 0, 'POINT') : 'Pendiente'}">Pendiente</td>
+              <td>
+                <a th:href="@{/gerente/contabilidad/pedido/{id}(id=${detalle.pedidoId})}" class="btn ghost btn-xs">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                  <span th:text="${detalle.configurado ? 'Editar' : 'Liquidar'}">Liquidar</span>
+                </a>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(detalleContable)}">
+              <td colspan="11" class="empty-row">No hay ventas cerradas para el filtro actual.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,260 @@
+/* ================= INVENTARIO PAGE ================= */
+
+.main{
+flex:1;
+padding:30px 40px;
+margin-left:260px;
+transition:all .3s ease;
+}
+
+/* cuando sidebar se colapsa */
+.sidebar.collapsed ~ .main{
+margin-left:80px;
+}
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+height:100vh;
+width:260px;
+background:#0A1D37;
+padding:25px 15px;
+display:flex;
+flex-direction:column;
+justify-content:space-between;
+transition:.3s;
+border-right:1px solid #1e293b;
+z-index:1000;
+}
+.sidebar h3{
+display:flex;
+align-items:center;
+gap:10px;
+white-space:nowrap;
+overflow:hidden;
+}
+.sidebar.collapsed h3 span{
+opacity:0;
+width:0;
+overflow:hidden;
+}
+.sidebar.collapsed h3{
+justify-content:center;
+}
+
+.sidebar:not(.collapsed) ~ .main{
+    margin-left:240px;
+}
+.sidebar{
+overflow-x:hidden;
+}
+
+/* CONTROL BLOCK */
+
+.control-block{
+    background:#fff;
+    border-radius:12px;
+    padding:2rem;
+    box-shadow:0 4px 18px rgba(0,0,0,0.05);
+}
+
+.control-title{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:1.5rem;
+}
+
+.control-title i{
+    font-size:1.3rem;
+    color:var(--gold);
+}
+
+.control-title h2{
+    font-weight:700;
+    color:var(--blue-dark);
+}
+
+/* ACTION BAR */
+
+.control-block a.module-action{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--gold);
+    color:var(--blue-dark);
+    padding:.7rem 1.2rem;
+    border-radius:8px;
+    font-weight:600;
+    text-decoration:none;
+    transition:all .2s;
+}
+
+.control-block a.module-action:hover{
+    transform:translateY(-1px);
+    box-shadow:0 6px 16px rgba(0,0,0,0.08);
+}
+
+/* TABLE */
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:.95rem;
+}
+
+thead tr{
+    background:var(--bg);
+}
+
+thead th{
+    padding:.9rem;
+    text-align:left;
+    color:var(--blue-dark);
+    font-weight:600;
+}
+
+tbody tr{
+    border-bottom:1px solid rgba(0,0,0,0.05);
+}
+
+tbody td{
+    padding:.9rem;
+}
+
+tbody tr:hover{
+    background:rgba(245,166,35,0.04);
+}
+
+/* VEHICLE IMAGE */
+
+td img{
+    border-radius:6px;
+}
+
+/* ACTION BUTTONS */
+
+td a{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+}
+
+td button{
+    cursor:pointer;
+}
+
+/* EDIT BUTTON */
+
+td a{
+    background:var(--gold);
+    color:var(--blue-dark);
+}
+
+/* DELETE BUTTON */
+
+td button{
+    background:linear-gradient(135deg,#e53935 0%,#ff5252 100%);
+    color:#fff;
+}
+
+/* EMPTY STATE */
+
+.main h2{
+    color:var(--blue-dark);
+}
+
+.main p{
+    color:var(--gray);
+}
+
+/* RESPONSIVE */
+
+@media(max-width:900px){
+
+.main{
+    margin-left:80px;
+}
+
+.sidebar:not(.collapsed) ~ .main{
+    margin-left:80px;
+}
+
+.control-block{
+    padding:1.4rem;
+}
+
+table{
+    font-size:.85rem;
+}
+
+}   
+/* ===============================
+SIDEBAR HOVER AUTO EXPAND
+=============================== */
+
+/* ancho cerrado */
+.sidebar{
+width:80px;
+}
+
+/* ancho abierto */
+.sidebar.expanded{
+width:260px;
+}
+
+/* texto oculto cuando cerrado */
+.sidebar.collapsed span{
+opacity:0;
+pointer-events:none;
+}
+
+/* mostrar texto al expandir */
+.sidebar.expanded span{
+opacity:1;
+pointer-events:auto;
+transition:opacity .2s ease;
+}
+
+/* animación suave */
+.sidebar,
+.main{
+transition:all .25s ease;
+}
+
+/* mover contenido */
+.sidebar.expanded ~ .main{
+margin-left:260px;
+}
+
+.sidebar.collapsed ~ .main{
+margin-left:80px;
+}
+
+/* evitar desbordes */
+.sidebar{
+overflow-x:hidden;
+}
+.sidebar:hover{
+box-shadow:6px 0 25px rgba(0,0,0,.25);
+}
+/* ===============================
+BOTON EXCEL FIX
+=============================== */
+
+.btn-excel{
+display:inline-flex;
+align-items:center;
+gap:8px;
+padding:10px 18px;
+font-size:14px;
+font-weight:500;
+height:42px;
+white-space:nowrap;
+}
+
+/* evitar que el form lo encoja */
+.content-header form{
+display:inline-flex;
+margin:0;
+}
