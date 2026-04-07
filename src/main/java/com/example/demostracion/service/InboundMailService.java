@@ -10,6 +10,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.search.FlagTerm;
 
+@ConditionalOnProperty(name = "mail.inbound.enabled", havingValue = "true", matchIfMissing = false)
 @Service
 public class InboundMailService {
 
