@@ -17,6 +17,9 @@ LABEL description="Aplicación de Gestión de Concesionario"
 
 WORKDIR /app
 
+# Instalar curl (requerido para HEALTHCHECK)
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
 # Copiar JAR desde builder
 COPY --from=builder /build/target/demostracion-0.0.1-SNAPSHOT.jar app.jar
 
@@ -24,12 +27,12 @@ COPY --from=builder /build/target/demostracion-0.0.1-SNAPSHOT.jar app.jar
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:8081/actuator/health || exit 1
+# Health check — usa ${PORT:-8080} para coincidir con el puerto que Railway asigna
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:${PORT:-8080}/actuator/health || exit 1
 
-# Puertos: 8081 (app), 8009 (AJP si es necesario)
-EXPOSE 8081
+# Puerto por defecto (Railway sobreescribe PORT en tiempo de ejecución)
+EXPOSE 8080
 
 # Variables de entorno
 ENV JAVA_OPTS="-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xmx512m -Xms256m"
